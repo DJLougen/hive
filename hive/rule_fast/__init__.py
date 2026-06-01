@@ -27,7 +27,6 @@ The classes in this module are drop-in compatible with the
 from __future__ import annotations
 
 import re
-import time
 from collections import Counter
 from dataclasses import dataclass, field
 from typing import Any
@@ -38,7 +37,6 @@ __all__ = [
     "Message",
     "CompressedMessage",
     "RuleFastHoneyComb",
-    "ContentType",
 ]
 
 
@@ -79,7 +77,9 @@ class ContentType:
 _RE_PATCH = re.compile(r"^[-+]{3} |^diff --git|^@@ ", re.M)
 _RE_TOOL_CALL = re.compile(r'"name"\s*:\s*"(?:read_file|run_tests|apply_patch|search|run_command)"')
 _RE_TEST_LINE = re.compile(r"\b\d+\s*(?:passed|failed|errors?)\b", re.I)
-_RE_CODE = re.compile(r"^(class|def|import|from|export|function|pub |fn |struct |enum |impl )", re.M)
+_RE_CODE = re.compile(
+    r"^(class|def|import|from|export|function|pub |fn |struct |enum |impl )", re.M
+)
 _RE_TRACEBACK = re.compile(r"Traceback \(most recent call last\)|^\w+(?:Error|Exception): ", re.M)
 _RE_FILE_LINE = re.compile(r"^[^\s:]+:\d+:", re.M)
 _RE_EXIT = re.compile(r"exit[= ]+\d+", re.M)
@@ -146,7 +146,9 @@ def _classify(role: str, content_type: str, content: str = "") -> str:
 # ---------------------------------------------------------------------------
 
 
-_TEST_LINE_RE = re.compile(r"(?P<ok>\d+ passed|\d+ ok)|(?P<bad>\d+ failed|\d+ error)", re.I)
+_TEST_LINE_RE = re.compile(
+    r"(?P<ok>\d+ passed|\d+ ok)|(?P<bad>\d+ failed|\d+ error)", re.I
+)
 
 
 def _compress_test_output(content: str) -> str:
@@ -164,7 +166,10 @@ def _compress_test_output(content: str) -> str:
 
 def _compress_search(content: str) -> str:
     lines = [l for l in content.splitlines() if l.strip()][:8]
-    return f"[search] {len(content.splitlines())} hits; sample: " + " | ".join(lines)
+    return (
+        f"[search] {len(content.splitlines())} hits; sample: "
+        + " | ".join(lines)
+    )
 
 
 def _compress_command(content: str) -> str:
@@ -179,11 +184,23 @@ def _compact_file(content: str) -> str:
 
 
 def _distill(content: str) -> str:
-    """Best-effort distillation: keep first/last few lines, drop the middle."""
+    """Best-effort distillation.
+
+    Multi-line content (test output, file listings): keep first 3 and
+    last 3 lines, drop the rest. Single-line but very long content
+    (LLM reasoning, repeated boilerplate): keep first 60 and last 60
+    words, drop the middle. Short content is passed through unchanged.
+    """
     lines = content.splitlines()
-    if len(lines) <= 8:
-        return content
-    return "\n".join(lines[:3] + ["..."] + lines[-3:])
+    if len(lines) > 8:
+        return "\n".join(lines[:3] + ["..."] + lines[-3:])
+    if len(content) > 800:
+        words = content.split()
+        if len(words) > 80:
+            head = " ".join(words[:60])
+            tail = " ".join(words[-60:])
+            return f"{head}\n...\n{tail}"
+    return content
 
 
 def _compress(content: str, content_type: str, label: str) -> str:
@@ -270,7 +287,10 @@ class RuleFastHoneyComb:
     def process(self, message: Message) -> CompressedMessage:  # noqa: D401
         """Process a single message through the rule-based hot loop."""
         self._turn += 1
-        content_type = message.content_type or _infer_content_type(message.role, message.content)
+        content_type = (
+            message.content_type
+            or _infer_content_type(message.role, message.content)
+        )
         label = _classify(message.role, content_type, message.content)
         compressed = _compress(message.content, content_type, label)
         in_tok = _estimate_tokens(message.content)

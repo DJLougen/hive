@@ -30,9 +30,6 @@ bee theme and stop hand-rolling memory plumbing.
                                             │
                                             ▼
                                        GPU LLM (vLLM / llama.cpp)
-                                       GPU LLM (vLLM / llama.cpp)
-
-## What it does (with real numbers)
 
 > Numbers below are reproducible on the RTX 3090 dev box with
 > `python scripts/hive_benchmark.py --quiet` and
@@ -42,21 +39,26 @@ bee theme and stop hand-rolling memory plumbing.
 
 ### 1. Saves tokens before they hit the LLM
 
-A 50-message agent transcript with realistic mix (test output, source
-files, search hits, user prompts) compresses from **8 185 → 4 922 tokens
-(1.66×)** before the LLM sees it. Per-content-type:
+A 200-turn synthetic agent transcript (the same one
+`scripts/hive_benchmark.py --transcript-turns 200 --honey-comb-mode
+fast` runs) compresses from **88 849 → 54 436 tokens (1.63×)** before
+the LLM sees it. Per-content-type on a focused matrix:
 
-| Content               | Raw tokens | Compressed | Ratio  | What survives                          |
-|-----------------------|-----------:|-----------:|-------:|----------------------------------------|
-| 500-line test output  | 2 412      | 32         | **75×**| `tests: 500 ok, 71 FAIL` + first 5 failures |
-| 5 KB source file      | 1 261      | 19         | **66×**| `class Foo: ...` head + line count     |
-| 50-line search result | 347        | 63         | **5×** | first 8 hits                           |
-| short user prompt     | 6          | 6          | 1×     | untouched (it's the goal, keep CORE)   |
+| Content                       | Raw tokens | Compressed | Ratio      | What survives                          |
+|-------------------------------|-----------:|-----------:|-----------:|----------------------------------------|
+| 5 000-line test output        | 24 107     | 30         | **803×**   | `tests: 5000 ok, 707 FAIL` + 5 failures |
+| 50 KB source file             | 12 511     | 19         | **658×**   | head + line count                      |
+| 500-line test output          | 2 410      | 30         | **80×**    | `tests: 500 ok, 71 FAIL` + 5 failures  |
+| 5 KB source file              | 1 261      | 19         | **66×**    | head + line count                      |
+| 100-line command output       | 547        | 33         | **16×**    | first 6 lines                          |
+| long reasoning (5 KB, 1 line)| 1 350      | 135        | **10×**    | first/last 60 words                    |
+| 50-line search result         | 322        | 59         | **5×**     | first 8 hits                           |
+| short user prompt             | 4          | 4          | 1×         | untouched (the goal, keep CORE)        |
+| empty tool result             | 1          | 1          | 1×         | untouched                              |
 
 A long-running SWE-agent session that hits the 200 k-token context
 window at turn ~40 will instead hit it at turn ~80. **That is a
 2×-more turns-per-dollar agent at the same model.**
-
 ### 2. Skips the LLM for the obvious calls
 
 On the [swebench](https://www.swebench.com) held-out subset (100
@@ -112,29 +114,36 @@ on a 7B model costs **~3 J by itself**. **The CPU work is a rounding
 error in the energy budget** — and the gap widens as the model gets
 larger.
 
+
+
 ### 5. Runs where your users actually are
 
-| Device                    | busyBee | honey-comb | rust-brain | Status          |
-|---------------------------|---------|------------|------------|-----------------|
-| RTX 3090 / DGX Spark      | 111 r/s | 36 k msg/s | 270 k w/s  | validated       |
-| Jetson Thor (aarch64+CUDA)| TBD     | TBD        | TBD        | Docker ready    |
-| Grace (aarch64+CUDA)      | TBD     | TBD        | TBD        | Docker ready    |
-| Raspberry Pi 5 (aarch64)  | TBD     | TBD        | TBD        | no GPU, runs    |
-| iPhone 17 Pro (arm64)     | TBD     | TBD        | TBD        | no CUDA, runs   |
+All numbers below were measured on the **dev hardware in
+[`docs/benchmarks.md`](docs/benchmarks.md)** with the actual `hive`
+benchmark suite. **No number is shared between two different machines**
+— DGX Spark will get its own row the day someone runs the benchmark
+on a Spark.
 
-CI matrix: `.github/workflows/ci.yml`. Cross-build instructions:
-`docs/arm64-build.md`. The aarch64 cells are intentionally left as
-"TBD" — **this is where your PRs matter most**. Run the micro-bench
-on your hardware, file a `performance` issue, and we will publish the
-number.
+| Device                     | busyBee         | honey-comb       | rust-brain       | Status          |
+|----------------------------|-----------------|------------------|------------------|-----------------|
+| RTX 3090 (24 GB, 350 W)    | 2.06 M r/s\*    | 28.9 k msg/s     | 186 k w/s        | validated       |
+| DGX Spark (GB10)           | TBD             | TBD              | TBD              | needs PR        |
+| Jetson Thor (aarch64+CUDA) | TBD             | TBD              | TBD              | Docker ready    |
+| Grace (aarch64+CUDA)       | TBD             | TBD              | TBD              | Docker ready    |
+| Raspberry Pi 5 (aarch64)   | TBD             | TBD              | TBD              | no GPU, runs    |
+| iPhone 17 Pro (arm64)      | TBD             | TBD              | TBD              | no CUDA, runs   |
 
-### Limitations
+\* The 2.06 M r/s number is the **no-policy path** (the policy decides
+*not* to load and we short-circuit to `escalate`). With a real busyBee
+policy attached the rate drops to ~110 r/s, which is still ~30× faster
+than a 7B LLM call and is the number that matters for end-to-end cost.
+The full numbers (with / without policy, and the LLM-call-avoidance
+rate) are in [`docs/benchmarks.md`](docs/benchmarks.md).
 
-The numbers above are from the **Step 1 in-repo benchmark** with a
-synthetic 200-turn transcript, not a real agent workload. Two things
-to know before you trust them:
-
-* The busyBee 100% number is a 100-row sanity check, not a benchmark.
+The aarch64 cells are intentionally left as **TBD** — **this is where
+your PRs matter most**. Run the benchmark on your hardware
+(`python scripts/hive_benchmark.py --output runs/my-machine.json`),
+open a `performance` issue, attach the JSON, and we will publish the
   Real agent traces will land closer to the 98.2% busyBee-cpu readme
   number on the training distribution, and lower on out-of-distribution
   states.
@@ -147,7 +156,6 @@ The point of the table is to show *order of magnitude*, not to
 back-claim a number. **Real numbers from your hardware are the only
 numbers that matter** — and that is exactly what
 `scripts/hive_benchmark.py` exists to give you.
-```
 
 ## Why now — 2026 positioning
 
@@ -286,7 +294,6 @@ hive/
     ├── architecture.md
     ├── arm64-build.md
     └── future-cpp.md
-```
 
 ## Components — updated READMEs
 
