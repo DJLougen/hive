@@ -22,7 +22,20 @@
 
 ## TL;DR: What Hive is worth
 
-**Stop scrolling. Look at this table.**
+## TL;DR: What Hive is worth
+
+**Cost savings at scale** (based on GPT-5.4 API pricing and a blended $0.03/agent-turn workload assumption):
+
+**Assumptions:**
+- Model: GPT-5.4
+- Input: $2.50 / 1M tokens
+- Output: $15.00 / 1M tokens
+- No prompt-cache discount assumed
+- 30-day month
+- 1,000 turns/agent/day
+- Average blended cost per turn: $0.03
+
+**At 65% cost reduction:**
 
 | Your deployment | Monthly cost without Hive | Monthly cost with Hive | **You save** | Annual savings |
 |-----------------|---------------------------|------------------------|--------------|----------------|
@@ -30,27 +43,9 @@
 | **Product team** (100 agents × 1k turns/day) | $90,000/mo | $31,500/mo | **$58,500/mo** | **$702,000/yr** |
 | **Enterprise** (1000 agents × 1k turns/day) | $900,000/mo | $315,000/mo | **$585,000/mo** | **$7.02M/yr** |
 
-**Hive cuts your AI costs by 65%.** Not theoretical. Not "up to." **65%.**
+Hive can reduce your LLM spend by up to 65% by moving mechanical work to the CPU, compressing context, and preventing redundant memory recalls.
 
-The math is simple:
-
-- **65% fewer LLM calls** (busybee-cpu routes mechanical actions on CPU)
-- **39% fewer tokens per call** (honey-comb compresses context 1.63×)
-- **13.3% time savings** (rust-brain causal memory prevents redundant work)
-
-These effects compound. The actual savings are higher than the headline number suggests.
-
-### One install. No configuration.
-
-```bash
-pip install busybee-cpu honey-comb hive-cpp hive
-```
-
-That's it. Your agents are now 65% cheaper to run.
-
----
-
-## Why you care (before the technical details)
+## Why you care
 
 ### The problem
 
