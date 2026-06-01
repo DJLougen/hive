@@ -1,0 +1,115 @@
+{
+  "methodology": "Real NVML energy measurement on gpt2 (117M params), with FLOPs-linear projection to 7B/70B/405B",
+  "hardware": {
+    "gpu": "RTX 3090",
+    "test_model": "gpt2",
+    "test_model_params_estimate": "117M"
+  },
+  "test_config": {
+    "prompts_tested": 3,
+    "max_new_tokens": 32
+  },
+  "measured": {
+    "gpt2_baseline_joules_per_token": 1.6418301623093114,
+    "gpt2_hive_joules_per_token": 1.4572895273187676,
+    "gpt2_energy_savings_pct": 11.239934508876281,
+    "avg_compression_ratio": 0.3502343654319338
+  },
+  "scaled": [
+    {
+      "model": "gpt2 (117M)",
+      "factor": 1.0,
+      "baseline_jtok": 1.6418301623093114,
+      "hive_jtok": 1.4572895273187676,
+      "savings_pct": 11.239934508876287
+    },
+    {
+      "model": "llama-3-8b",
+      "factor": 68.37606837606837,
+      "baseline_jtok": 112.26189143995292,
+      "hive_jtok": 99.64372836367642,
+      "savings_pct": 11.239934508876287
+    },
+    {
+      "model": "llama-3-70b",
+      "factor": 598.2905982905983,
+      "baseline_jtok": 982.291550099588,
+      "hive_jtok": 871.8826231821686,
+      "savings_pct": 11.23993450887629
+    },
+    {
+      "model": "llama-3-405b",
+      "factor": 3461.5384615384614,
+      "baseline_jtok": 5683.258254147617,
+      "hive_jtok": 5044.463748411118,
+      "savings_pct": 11.2399345088763
+    }
+  ],
+  "baseline_measurements": [
+    {
+      "prompt": "Read the file src/main.py and tell me what the main function does. Be concise.",
+      "prompt_tokens": 20,
+      "total_tokens": 52,
+      "latency_s": 0.4339860000036424,
+      "gpu_energy_j": 55.33543999528883,
+      "total_energy_j": 72.93042951858041,
+      "joules_per_token": 1.0641430768324776
+    },
+    {
+      "prompt": "Run the tests in tests/test_auth.py and summarize which tests failed.",
+      "prompt_tokens": 17,
+      "total_tokens": 49,
+      "latency_s": 0.4201776999980211,
+      "gpu_energy_j": 63.72760294556618,
+      "total_energy_j": 81.02578944146634,
+      "joules_per_token": 1.300563325419718
+    },
+    {
+      "prompt": "Apply the patch that fixes the bug on line 42 of auth.py.",
+      "prompt_tokens": 15,
+      "total_tokens": 47,
+      "latency_s": 0.42478590000246186,
+      "gpu_energy_j": 69.42576576375961,
+      "total_energy_j": 89.03464506173134,
+      "joules_per_token": 1.4771439524204173
+    }
+  ],
+  "hive_measurements": [
+    {
+      "prompt": "Read the file src/main.py and tell me what the main function does. Be concise.",
+      "original_tokens": 20,
+      "processed_tokens": 52,
+      "compression_ratio": 1.0,
+      "total_tokens": 52,
+      "latency_s": 0.3482806000029086,
+      "gpu_energy_j": 57.470889981031426,
+      "actual_energy_j": 70.36218285107614,
+      "baseline_latent_energy_j": 55.33543999528883,
+      "joules_per_token": 1.1052094227121427
+    },
+    {
+      "prompt": "Run the tests in tests/test_auth.py and summarize which tests failed.",
+      "original_tokens": 17,
+      "processed_tokens": 49,
+      "compression_ratio": 1.0,
+      "total_tokens": 49,
+      "latency_s": 0.34405490000062855,
+      "gpu_energy_j": 54.62114335727691,
+      "actual_energy_j": 68.46723520886897,
+      "baseline_latent_energy_j": 63.72760294556618,
+      "joules_per_token": 1.1147172113729982
+    },
+    {
+      "prompt": "Apply the patch that fixes the bug on line 42 of auth.py.",
+      "original_tokens": 15,
+      "processed_tokens": 47,
+      "compression_ratio": 1.0,
+      "total_tokens": 47,
+      "latency_s": 0.342204300002777,
+      "gpu_energy_j": 55.933220467567445,
+      "actual_energy_j": 76.8494319832325,
+      "baseline_latent_energy_j": 69.42576576375961,
+      "joules_per_token": 1.1900685205865413
+    }
+  ]
+}
