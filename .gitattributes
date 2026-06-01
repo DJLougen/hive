@@ -1,13 +1,11 @@
-language: python
-code_search: python
-exclude_paths:
-  - docs/
-  - "*.md"
-  - "*.yml"
-  - "*.yaml"
-  - "*.toml"
-  - "*.txt"
-  - LICENSE
-  - .gitignore
-  - docker/
-  - .github/
+* text=auto eol=lf
+
+*.py linguist-language=Python
+*.md linguist-documentation
+*.yml linguist-documentation
+*.yaml linguist-documentation
+*.toml linguist-documentation
+*.txt linguist-documentation
+docker/* linguist-documentation
+.github/* linguist-documentation
+docs/* linguist-documentation
