@@ -1,6 +1,4 @@
-# Hive — unified agent memory & context compression stack
-
-**Save tokens, skip the LLM on obvious calls, and keep causal memory — on a 3090, a Jetson, or a Raspberry Pi.**
+# Hive
 
 <p align="center">
   <img src="https://img.shields.io/badge/version-0.2.0-22c55e?style=flat-square" alt="version"/>
@@ -12,16 +10,23 @@
   <img src="https://img.shields.io/badge/nvidia%20grace%20%2F%20spark%20%2F%203090-validated-22c55e?style=flat-square" alt="nvidia"/>
 </p>
 
-**The 2026 agent memory stack for NVIDIA + edge.**
+> **Unified agent memory & context compression stack for 2026 NVIDIA + edge.**
+>
+> Save tokens, skip the LLM on obvious calls, and keep causal memory —
+> on a 3090, a DGX Spark, a Jetson, or a Raspberry Pi.
+>
+> One CPU-only fast path. One GPU-bound slow path. One
+> timestamp-protected graph between them. Glues
+> [busyBee-cpu](https://github.com/DJLougen/busyBee-cpu),
+> [honey-comb](https://github.com/DJLougen/honey-comb), and a
+> [timestamped graph memory](hive/rust_brain/__init__.py) into a
+> single Python API and a single benchmark surface, so an agent harness
+> can keep the bee theme and stop hand-rolling memory plumbing.
 
-Hive glues three independently-developed components into a single Python
-API and a single benchmark surface, so an agent harness can keep the
-bee theme and stop hand-rolling memory plumbing.
-
-```
-                  ┌──────────────────────────────────────────────┐
+```text
+   user request ─►┌──────────────────────────────────────────────┐
                   │                  Hive                        │
-   user request ─►│  route ─► compress ─► llm ─► remember        │─► response
+                  │  route ─► compress ─► llm ─► remember        │─► response
                   │  │           │              │                │
                   │  ▼           ▼              ▼                │
                   │ busyBee    honey-comb    rust-brain          │
@@ -30,6 +35,26 @@ bee theme and stop hand-rolling memory plumbing.
                                             │
                                             ▼
                                        GPU LLM (vLLM / llama.cpp)
+```
+
+## Contents
+
+- [What it does](#what-it-does)
+  - [1. Saves tokens before they hit the LLM](#1-saves-tokens-before-they-hit-the-llm)
+  - [2. Skips the LLM for the obvious calls](#2-skips-the-llm-for-the-obvious-calls)
+  - [3. Remembers what matters, refuses to forget what didn't happen](#3-remembers-what-matters-refuses-to-forget-what-didnt-happen)
+  - [4. Pays for itself on the GPU](#4-pays-for-itself-on-the-gpu)
+  - [5. Runs where your users actually are](#5-runs-where-your-users-actually-are)
+- [Status](#status)
+- [Quick start](#quick-start)
+- [Five-line tour](#five-line-tour)
+- [Repository layout](#repository-layout)
+- [Limitations](#limitations)
+- [Roadmap](#roadmap)
+- [Contributing](#contributing)
+- [License](#license)
+
+## What it does
 
 > Numbers below are reproducible on the RTX 3090 dev box with
 > `python scripts/hive_benchmark.py --quiet` and
@@ -59,6 +84,7 @@ the LLM sees it. Per-content-type on a focused matrix:
 A long-running SWE-agent session that hits the 200 k-token context
 window at turn ~40 will instead hit it at turn ~80. **That is a
 2×-more turns-per-dollar agent at the same model.**
+
 ### 2. Skips the LLM for the obvious calls
 
 On the [swebench](https://www.swebench.com) held-out subset (100
@@ -66,7 +92,7 @@ rows, 4-class routing problem), the busyBee CPU classifier picks the
 correct next action **100%** of the time in this small-sample sanity
 check:
 
-```
+```text
 test set: 100
 hits:  {'apply_patch': 40, 'read_file': 39, 'escalate': 21}
 misses: {}
@@ -90,6 +116,7 @@ x86_64 core, and rejects replay-of-older writes with a hard
 
 ```python
 from hive import HiveStack
+
 stack = HiveStack()
 
 stack.remember("api.endpoint", "/v1/chat", trust=0.95, tags=("http",))
@@ -113,8 +140,6 @@ agent wall-clock** end-to-end, while a single 4 k-token forward pass
 on a 7B model costs **~3 J by itself**. **The CPU work is a rounding
 error in the energy budget** — and the gap widens as the model gets
 larger.
-
-
 
 ### 5. Runs where your users actually are
 
@@ -159,36 +184,6 @@ The aarch64 cells below the Spark are intentionally left as **TBD** —
 hardware (`python scripts/hive_benchmark.py --output
 runs/my-machine.json`), open a `performance` issue, attach the JSON,
 and we will publish the number.
-## Why now — 2026 positioning
-
-Three forces are colliding in 2026 that make this stack timely:
-
-1. **Agentic AI is shipping on NVIDIA.** Vera CPU + Grace + Jetson Thor
-   are the default target for long-running agents, and the LLM is *one*
-   cost in a larger loop. Memory, routing and compression are the
-   others.
-2. **The CPU is the bottleneck.** Once the LLM is on the GPU, every
-   wall-clock second spent routing, compressing, or remembering is a
-   second the agent is *not* using the GPU. Hive's hot path is CPU-only
-   and tuned for cache-friendly access patterns.
-3. **Edge is real.** Phones, Raspberry Pis, and Jetson boards need the
-   same agent capability as a 3090 — without the same power budget.
-   Hive runs on the same Python on every device, with no mandatory CUDA.
-
-## Components
-
-| Component                                                                 | Role                                                              | Where it lives     |
-|---------------------------------------------------------------------------|-------------------------------------------------------------------|--------------------|
-| **[`busyBee-cpu`](https://github.com/DJLougen/busyBee-cpu)**              | CPU-only action routing — answers "which of the 4 tools?"         | sibling package    |
-| **[`honey-comb`](https://github.com/DJLougen/honey-comb)**                | Inline context compression — keep the honey, drop the wax         | sibling package    |
-| **[`rust-brain`](hive/rust_brain/__init__.py)**                           | Timestamped graph memory with Hermes integration (Python shim)    | this repo          |
-| **[`rule_fast`](hive/rule_fast/__init__.py)**                             | In-repo rule-based compressor (fallback if honey-comb is absent)  | this repo          |
-| **[`hive.hardware`](hive/hardware.py)**                                   | NVML power + GPU memory sampler                                   | this repo          |
-| **[`hive.llm`](hive/llm.py)**                                             | Unified LLM client (vLLM / llama.cpp / echo)                      | this repo          |
-
-The Python shim of `rust-brain` is the *reference* implementation. The
-Rust port (`hive-cpp`) is the planned Step 2 — see
-[`docs/future-cpp.md`](docs/future-cpp.md).
 
 ## Status
 
@@ -201,16 +196,16 @@ Rust port (`hive-cpp`) is the planned Step 2 — see
 
 **Step 1 acceptance criteria** (all met on RTX 3090 / Spark + ARM64 build):
 
-* [x] Single Python import (`from hive import HiveStack`) glues all three
+- [x] Single Python import (`from hive import HiveStack`) glues all three
       components.
-* [x] `hive_benchmark.py` measures peak host + GPU memory, compression
+- [x] `hive_benchmark.py` measures peak host + GPU memory, compression
       ratio, throughput, **and** real NVML joules.
-* [x] Integration example wires Hive in front of a vLLM / llama.cpp server.
-* [x] `docker/Dockerfile.aarch64` builds on Jetson Thor / Grace.
-* [x] Component READMEs updated with Hive branding.
-* [x] 37 tests pass in `pytest -q`.
-* [x] Per-component micro-benchmark with statistical envelope.
-* [x] CI matrix covers x86 CPU, x86+CUDA, aarch64.
+- [x] Integration example wires Hive in front of a vLLM / llama.cpp server.
+- [x] `docker/Dockerfile.aarch64` builds on Jetson Thor / Grace.
+- [x] Component READMEs updated with Hive branding.
+- [x] 37 tests pass in `pytest -q`.
+- [x] Per-component micro-benchmark with statistical envelope.
+- [x] CI matrix covers x86 CPU, x86+CUDA, aarch64.
 
 ## Quick start
 
@@ -233,7 +228,8 @@ python scripts/hive_benchmark.py --quiet
 python scripts/hive_benchmark_micro.py --runs 5 --output runs/micro.json
 
 # 4. Run the integration example (with a vLLM server already up).
-python examples/hive_llama_integration.py --inference-backend vllm --inference-endpoint http://127.0.0.1:8000
+python examples/hive_llama_integration.py --inference-backend vllm \
+    --inference-endpoint http://127.0.0.1:8000
 
 # 5. Or, on a Jetson:
 docker build -f docker/Dockerfile.aarch64 -t hive:aarch64 .
@@ -269,43 +265,60 @@ stack.remember("endpoint", "/v1/chat", trust=0.9)  # rust-brain: timestamped
 
 ```
 hive/
-├── README.md                  ← you are here
-├── CHANGELOG.md               ← release notes (Keep a Changelog)
-├── LICENSE                    ← MIT
-├── CONTRIBUTING.md            ← how to send a PR
-├── CODE_OF_CONDUCT.md         ← Contributor Covenant v2.1
-├── SECURITY.md                ← how to report a vulnerability
-├── pyproject.toml             ← meta-package definition
+├── README.md                          ← you are here
+├── CHANGELOG.md                       ← release notes (Keep a Changelog)
+├── LICENSE                            ← MIT
+├── CONTRIBUTING.md                    ← how to send a PR
+├── CODE_OF_CONDUCT.md                 ← Contributor Covenant v2.1
+├── SECURITY.md                        ← how to report a vulnerability
+├── pyproject.toml                     ← meta-package definition
 ├── hive/
-│   ├── __init__.py            ← lazy import for HiveStack
-│   ├── stack.py               ← orchestrator (busyBee + honey-comb + brain)
-│   ├── hardware.py            ← NVML power + memory sampler
-│   ├── llm.py                 ← vLLM / llama.cpp / echo client
-│   ├── rust_brain/            ← in-repo reference implementation
-│   └── rule_fast/             ← in-repo rule-based compressor fallback
+│   ├── __init__.py                    ← lazy import for HiveStack
+│   ├── stack.py                       ← orchestrator
+│   ├── hardware.py                    ← NVML power + memory sampler
+│   ├── llm.py                         ← vLLM / llama.cpp / echo client
+│   ├── rust_brain/                    ← in-repo reference implementation
+│   └── rule_fast/                     ← in-repo rule-based compressor fallback
 ├── scripts/
-│   ├── hive_benchmark.py      ← macro benchmark (the Step 1 deliverable)
-│   ├── hive_benchmark_micro.py← per-component micro-benchmarks
-│   └── smoke_rust_brain.py    ← minimal smoke test
+│   ├── hive_benchmark.py              ← macro benchmark
+│   ├── hive_benchmark_micro.py        ← per-component micro-benchmarks
+│   ├── run_spark_bench.sh             ← DGX Spark runner
+│   └── smoke_rust_brain.py            ← minimal smoke test
 ├── examples/
-│   └── hive_llama_integration.py   ← vLLM / llama.cpp integration
+│   └── hive_llama_integration.py      ← vLLM / llama.cpp integration
 ├── docker/
-│   └── Dockerfile.aarch64     ← Jetson Thor / Grace image
-├── tests/                     ← 37 pytest tests
-└── docs/
-    ├── architecture.md
-    ├── arm64-build.md
-    └── future-cpp.md
+│   └── Dockerfile.aarch64             ← Jetson Thor / Grace image
+├── tests/                             ← 37 pytest tests
+├── docs/
+│   ├── architecture.md
+│   ├── arm64-build.md
+│   ├── future-cpp.md
+│   ├── component-rust_brain.md        ← rust-brain Hive-branding README
+│   └── benchmarks/                    ← real-machine JSON envelopes
+└── .github/
+    ├── workflows/ci.yml
+    ├── ISSUE_TEMPLATE/                ← bug / feature_request / performance
+    └── citation.cff
+```
+## Limitations
 
-## Components — updated READMEs
+The numbers above are from the **Step 1 in-repo benchmark** with a
+synthetic 200-turn transcript, not a real agent workload. Two things
+to know before you trust them:
 
-* [`busyBee-cpu/README.md`](https://github.com/DJLougen/busyBee-cpu/blob/main/README.md)
-  — CPU action routing; Hive's first stage.
-* [`honey-comb/README.md`](https://github.com/DJLougen/honey-comb/blob/main/README.md)
-  — Inline context compression; Hive's second stage.
-* [`rust-brain` reference](HIVE_README_rust_brain.md) — timestamped graph
-  memory; the in-repo Python shim is the reference oracle for the
-  upcoming Rust port.
+- The busyBee 100% number is a 100-row sanity check, not a benchmark.
+  Real agent traces will land closer to the 98.2% busyBee-cpu readme
+  number on the training distribution, and lower on out-of-distribution
+  states.
+- The compression ratios assume the honey-comb `rule_fast` path, not
+  the ML classifier. The ML classifier is **3-5× slower** on the same
+  workload (still well under 1 ms / message on x86_64) and may produce
+  different ratios on real text.
+
+The point of the table is to show *order of magnitude*, not to
+back-claim a number. **Real numbers from your hardware are the only
+numbers that matter** — and that is exactly what
+`scripts/hive_benchmark.py` exists to give you.
 
 ## Roadmap
 
@@ -319,7 +332,8 @@ Jetson Thor and still scales to a Grace rack.
 We welcome bug reports, performance measurements, and small PRs. Please
 read [`CONTRIBUTING.md`](CONTRIBUTING.md) and the
 [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) before opening an issue.
+For security-sensitive issues, see [`SECURITY.md`](SECURITY.md).
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT — see [`LICENSE`](LICENSE).

@@ -13,12 +13,14 @@ GPU model. Two inference backends are supported:
 Typical use on RTX 3090 / DGX Spark::
 
     vllm serve meta-llama/Llama-3.2-3B-Instruct --port 8000 &
-    python examples/hive_llama_integration.py --inference-backend vllm --inference-endpoint http://127.0.0.1:8000
+    python examples/hive_llama_integration.py \\
+        --inference-backend vllm --inference-endpoint http://127.0.0.1:8000
 
 Typical use on Jetson Thor (llama.cpp)::
 
     llama-server -m model.gguf --port 8080 &
-    python examples/hive_llama_integration.py --inference-backend llama.cpp --inference-endpoint http://127.0.0.1:8080
+    python examples/hive_llama_integration.py \\
+        --inference-backend llama.cpp --inference-endpoint http://127.0.0.1:8080
 """
 
 from __future__ import annotations
@@ -90,7 +92,12 @@ def run_agent(
             ],
         }
     )
-    _log.info("busybee → %s (conf=%.2f, escalated=%s)", decision.tool, decision.confidence, decision.escalated)
+    _log.info(
+        "busybee → %s (conf=%.2f, escalated=%s)",
+        decision.tool,
+        decision.confidence,
+        decision.escalated,
+    )
 
     # 2. honey-comb compresses the transcript before the LLM sees it.
     compressed = stack.compress_many(transcript)
@@ -148,9 +155,15 @@ def run_agent(
 
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description="Hive + GPU LLM integration example.")
-    p.add_argument("--inference-backend", choices=("vllm", "llama.cpp", "echo"), default="echo")
+    p.add_argument(
+        "--inference-backend",
+        choices=("vllm", "llama.cpp", "echo"),
+        default="echo",
+    )
     p.add_argument("--inference-endpoint", default="http://127.0.0.1:8000")
-    p.add_argument("--inference-model", default="meta-llama/Llama-3.2-3B-Instruct")
+    p.add_argument(
+        "--inference-model", default="meta-llama/Llama-3.2-3B-Instruct"
+    )
     p.add_argument(
         "--goal",
         default="Refactor the auth module to use dependency injection.",
@@ -164,7 +177,10 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--quiet", action="store_true")
     args = p.parse_args(argv)
 
-    logging.basicConfig(level=logging.WARNING if args.quiet else logging.INFO, format="%(levelname)s %(name)s: %(message)s")
+    logging.basicConfig(
+        level=logging.WARNING if args.quiet else logging.INFO,
+        format="%(levelname)s %(name)s: %(message)s",
+    )
 
     # Build the stack. busyBee is optional.
     busybee = None
@@ -178,12 +194,17 @@ def main(argv: list[str] | None = None) -> int:
 
     comb = _resolve_comb(args.honey_comb_mode)
     stack = HiveStack(busybee_policy=busybee, honey_comb=comb)
-    stack.brain.remember("endpoint", args.inference_endpoint, trust=0.95, tags=("config",))
+    stack.brain.remember(
+        "endpoint", args.inference_endpoint, trust=0.95, tags=("config",)
+    )
 
     # Build a tiny synthetic transcript so the demo is self-contained.
     transcript: list[tuple[str, str]] = [
         ("user", "Read the auth module first."),
-        ("assistant", "Reading src/auth.py — it's 312 lines, uses a global Session singleton."),
+        (
+            "assistant",
+            "Reading src/auth.py — it's 312 lines, uses a global Session singleton.",
+        ),
         ("tool", "file: src/auth.py\n" + ("x" * 1500)),
         ("tool", "tests: 12 passed, 1 failed (test_session_invalidation)"),
     ]
@@ -195,11 +216,15 @@ def main(argv: list[str] | None = None) -> int:
             _log.warning("model server unreachable (%s); falling back to echo", exc)
             args.inference_backend = "echo"
     client = llm_mod.make_backend(
-        args.inference_backend, endpoint=args.inference_endpoint, model=args.inference_model
+        args.inference_backend,
+        endpoint=args.inference_endpoint,
+        model=args.inference_model,
     )
 
     with hardware.power_window() as sampler:
-        result = run_agent(stack, client, user_goal=args.goal, transcript=transcript)
+        result = run_agent(
+            stack, client, user_goal=args.goal, transcript=transcript
+        )
     result["power"] = {
         "avg_w": sampler.avg_power_w(),
         "energy_joules": sampler.energy_joules(),

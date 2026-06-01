@@ -2,12 +2,12 @@
 
 > **Status:** Reference Python shim, shipping inside the
 > [Hive](https://github.com/DJLougen/hive) meta-package (Step 1).
->
-> **Role in Hive:** Timestamped, graph-structured agent memory with
+> Role in Hive: timestamped, graph-structured agent memory with
 > Hermes integration. The Python shim is the reference oracle; the
 > production runtime is the planned `hive-cpp` Rust port.
-
----
+>
+> Part of [Hive](https://github.com/DJLougen/hive) — the unified agent
+> memory & context compression stack for 2026 NVIDIA + edge.
 
 ## Hive positioning (2026)
 
@@ -34,7 +34,7 @@ A pure embedding store loses both.
 ```markdown
 > Part of [Hive](https://github.com/DJLougen/hive) — the unified agent
 > memory & context compression stack. The Python shim lives in
-> [`hive/rust_brain/`](hive/rust_brain/) and is the reference for the
+> [`hive/rust_brain/`](../hive/rust_brain/) and is the reference for the
 > native `hive-cpp` port.
 ```
 
@@ -63,6 +63,6 @@ python scripts/smoke_rust_brain.py
 ## See also
 
 * Hive root: <https://github.com/DJLougen/hive>
-* [`docs/future-cpp.md`](docs/future-cpp.md) for the Rust port plan.
-* [`docs/architecture.md`](docs/architecture.md) for how rust-brain fits
+* [`future-cpp.md`](future-cpp.md) for the Rust port plan.
+* [`architecture.md`](architecture.md) for how rust-brain fits
   into the wider stack.

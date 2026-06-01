@@ -1,8 +1,28 @@
 {
   "run_id": "20260601T145528Z",
   "host": "djl@spark-d500",
-  "machine": "DGX Spark",
+  "machine": "DGX Spark (GB10, aarch64)",
+  "kernel": "Linux 6.17.0-1014-nvidia",
+  "python": "3.13.9",
+  "cuda": "13.0",
+  "nvml": "NVIDIA GB10",
   "date_utc": "2026-06-01T14:55:28Z",
-  "macro": "docs/benchmarks/spark-d500/macro-20260601T145528Z.json",
-  "micro": "docs/benchmarks/spark-d500/micro-20260601T145528Z.json"
+  "hive_version": "hive.stack",
+  "macro_runs": 3,
+  "micro_runs": 5,
+  "macro_path": "docs/benchmarks/spark-d500/macro-20260601T145528Z.json",
+  "micro_path": "docs/benchmarks/spark-d500/micro-20260601T145528Z.json",
+  "summary": {
+    "busybee_no_policy_rps": 1734892.2,
+    "busybee_with_policy_rps": 112.0,
+    "honey_comb_fast_msg_per_s": 19834.5,
+    "honey_comb_ml_msg_per_s": 1185.0,
+    "rust_brain_writes_per_s_macro": 134728.3,
+    "rust_brain_writes_per_s_micro": 176796.0,
+    "rust_brain_stdev_per_s_micro": 6976.0,
+    "peak_rss_mb": 652.57,
+    "cpu_energy_joules": 3.47,
+    "gpu_energy_joules": 0.29,
+    "peak_gpu_mb": 0.0
+  }
 }

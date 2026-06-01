@@ -1,29 +1,42 @@
-# Byte-compiled
+# Python
 __pycache__/
 *.py[cod]
-*.pyc
+*.pyo
+*.pyd
 *.so
 *.egg-info/
+*.egg
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+.tox/
+
+# Build / dist
+build/
+dist/
+pip-wheel-metadata/
+
+# Virtualenvs
+.venv/
+venv/
+env/
 
 # IDE
 .vscode/
 .idea/
-
-# Build
-build/
-dist/
-
-# Test artefacts
-.pytest_cache/
-.coverage
-htmlcov/
-*.json.bak
-runs/
+*.swp
+*.swo
+*~
 
 # OS
 .DS_Store
 Thumbs.db
+desktop.ini
 
-# Editor backups
-*~
-*.swp
+# Hive-local artefacts
+runs/
+*.json.bak
+.cache/
