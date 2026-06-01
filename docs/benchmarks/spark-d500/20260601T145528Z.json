@@ -1,0 +1,8 @@
+{
+  "run_id": "20260601T145528Z",
+  "host": "djl@spark-d500",
+  "machine": "DGX Spark",
+  "date_utc": "2026-06-01T14:55:28Z",
+  "macro": "docs/benchmarks/spark-d500/macro-20260601T145528Z.json",
+  "micro": "docs/benchmarks/spark-d500/micro-20260601T145528Z.json"
+}

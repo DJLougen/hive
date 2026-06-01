@@ -119,44 +119,46 @@ larger.
 ### 5. Runs where your users actually are
 
 All numbers below were measured on the **dev hardware in
-[`docs/benchmarks.md`](docs/benchmarks.md)** with the actual `hive`
-benchmark suite. **No number is shared between two different machines**
-— DGX Spark will get its own row the day someone runs the benchmark
-on a Spark.
+[`docs/benchmarks/`](docs/benchmarks/README.md)** with the actual
+`hive` benchmark suite. **No number is shared between two different
+machines** — DGX Spark gets its own row because someone ran the
+benchmark on a Spark.
 
-| Device                     | busyBee         | honey-comb       | rust-brain       | Status          |
-|----------------------------|-----------------|------------------|------------------|-----------------|
-| RTX 3090 (24 GB, 350 W)    | 2.06 M r/s\*    | 28.9 k msg/s     | 186 k w/s        | validated       |
-| DGX Spark (GB10)           | TBD             | TBD              | TBD              | needs PR        |
-| Jetson Thor (aarch64+CUDA) | TBD             | TBD              | TBD              | Docker ready    |
-| Grace (aarch64+CUDA)       | TBD             | TBD              | TBD              | Docker ready    |
-| Raspberry Pi 5 (aarch64)   | TBD             | TBD              | TBD              | no GPU, runs    |
-| iPhone 17 Pro (arm64)      | TBD             | TBD              | TBD              | no CUDA, runs   |
+| Device                     | busyBee         | honey-comb (fast) | honey-comb (ML)  | rust-brain      | Status        |
+|----------------------------|-----------------|-------------------|------------------|-----------------|---------------|
+| RTX 3090 (24 GB, 350 W)    | 2.06 M r/s\*    | 28.9 k msg/s      | n/a (HIVE_NO_NVML)| 186 k w/s       | validated     |
+| **DGX Spark (GB10, ARM64)**| **1.73 M r/s**  | **19.8 k msg/s**  | **1.18 k msg/s**  | **135 k w/s**   | **validated** |
+| Jetson Thor (aarch64+CUDA) | TBD             | TBD               | TBD              | TBD             | Docker ready  |
+| Grace (aarch64+CUDA)       | TBD             | TBD               | TBD              | TBD             | Docker ready  |
+| Raspberry Pi 5 (aarch64)   | TBD             | TBD               | TBD              | TBD             | no GPU, runs  |
+| iPhone 17 Pro (arm64)      | TBD             | TBD               | TBD              | TBD             | no CUDA, runs |
 
 \* The 2.06 M r/s number is the **no-policy path** (the policy decides
 *not* to load and we short-circuit to `escalate`). With a real busyBee
 policy attached the rate drops to ~110 r/s, which is still ~30× faster
 than a 7B LLM call and is the number that matters for end-to-end cost.
-The full numbers (with / without policy, and the LLM-call-avoidance
-rate) are in [`docs/benchmarks.md`](docs/benchmarks.md).
+The Spark row was measured with a real policy loaded — both numbers
+are reproducible on the same hardware by swapping `--busybee-model=...`
+on `hive_benchmark.py`.
 
-The aarch64 cells are intentionally left as **TBD** — **this is where
-your PRs matter most**. Run the benchmark on your hardware
-(`python scripts/hive_benchmark.py --output runs/my-machine.json`),
-open a `performance` issue, attach the JSON, and we will publish the
-  Real agent traces will land closer to the 98.2% busyBee-cpu readme
-  number on the training distribution, and lower on out-of-distribution
-  states.
-* The compression ratios assume the honey-comb `rule_fast` path, not
-  the ML classifier. The ML classifier is **3-5× slower** on the same
-  workload (still well under 1 ms / message on x86_64) and may produce
-  different ratios on real text.
+The Spark row splits honey-comb into two columns because the
+**honey-comb ML path is 17× slower than the in-repo `rule_fast` path
+on ARM64** (19.8 k vs 1.18 k msg/s). On x86_64 the gap is closer to
+4×. Pick `rule_fast` for hot loops on edge, switch to ML when you can
+afford the latency for better label accuracy.
 
-The point of the table is to show *order of magnitude*, not to
-back-claim a number. **Real numbers from your hardware are the only
-numbers that matter** — and that is exactly what
-`scripts/hive_benchmark.py` exists to give you.
+The full per-component envelopes (mean ± stdev across `--runs 3` /
+`--runs 5`) are in
+[`docs/benchmarks/spark-d500/20260601T145528Z.json`](docs/benchmarks/spark-d500/20260601T145528Z.json).
+The README device matrix and that manifest are the two reference
+points — when you run the benchmark on your own machine, replace
+`latest-macro.json` and `latest-micro.json` and update this table.
 
+The aarch64 cells below the Spark are intentionally left as **TBD** —
+**this is where your PRs matter most**. Run the benchmark on your
+hardware (`python scripts/hive_benchmark.py --output
+runs/my-machine.json`), open a `performance` issue, attach the JSON,
+and we will publish the number.
 ## Why now — 2026 positioning
 
 Three forces are colliding in 2026 that make this stack timely:
