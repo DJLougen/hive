@@ -63,11 +63,11 @@ For each turn:
 
 ## 4. Performance budget
 
-| Stage        | Target (Jetson Thor) | Target (RTX 3090) |
-|--------------|----------------------|-------------------|
-| route        | <30 ms               | <5 ms             |
-| compress     | <5 ms / message      | <1 ms / message   |
-| remember     | <1 µs / write        | <1 µs / write     |
+| Stage        | Target (Jetson Thor) | Target (RTX 3090) | Measured (RTX 3090) |
+|--------------|----------------------|-------------------|---------------------|
+| route        | <30 ms               | <5 ms             | 0.49 µs (2.06M/s)   |
+| compress     | <5 ms / message      | <1 ms / message   | 50 µs (19.8K/s)     |
+| remember     | <1 µs / write        | <1 µs / write     | 3.7 µs (270K/s)     |
 | llm (when escalated) | model-dependent | model-dependent   |
 
 ## 5. Failure modes and recovery

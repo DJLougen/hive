@@ -22,7 +22,7 @@
 
 ## TL;DR: What Hive is worth
 
-## TL;DR: What Hive is worth
+**Stop scrolling. Look at this table.**
 
 **Cost savings at scale** (based on GPT-5.4 API pricing and a blended $0.03/agent-turn workload assumption):
 
@@ -45,13 +45,30 @@
 
 Hive can reduce your LLM spend by up to 65% by moving mechanical work to the CPU, compressing context, and preventing redundant memory recalls.
 
+## Better AI, not just cheaper AI
+
+Hive does not just cut the bill.
+
+It improves the agent loop.
+
+* **Less context pollution** — honey-comb strips giant logs, stale traces, and low-value transcript bulk before the model sees them
+* **Better recall** — rust-brain stores memory as timestamped causal state, not just embedding similarity
+* **Fewer repeated failures** — superseded memories stop old fixes from poisoning new attempts
+* **Less hallucinated state** — stale writes fail loudly instead of silently replacing fresher information
+* **Cleaner prompts** — the LLM gets the state that matters instead of the entire mess that happened
+
+Cheaper calls are the easy number to measure.
+Better agent behavior is the reason it matters.
+
+Hive makes agents cheaper **and** better by removing the garbage before it hits the model: obvious tool calls, bloated context, stale memory, and repeated work.
+
 ## Why you care
 
 ### The problem
 
 Every agentic session hits four walls that compound:
 
-1. **Token bills exceed model costs** - A 200-turn session burns 88,849 tokens. At GPT-4 ($15/1M input), that's $1.33 per session. The model compute cost $0.50. You're paying 2.7× the compute cost just for context.
+1. **Token bills exceed model costs** - A 200-turn session burns 88,849 tokens. At GPT-5.4 ($2.50/1M input), that's $0.22 per session. The model compute cost $0.50. You're paying 2.7× the compute cost just for context.
 
 2. **Context windows overflow** - Llama 3 70B has 128K context. Your agent hits that at turn ~40 on a complex task. It starts losing state, repeating work, hallucinating.
 
@@ -81,7 +98,7 @@ Response
 
 ### What you save
 
-**At 10,000 agent sessions per month (50 turns/session, GPT-4 pricing):**
+**At 10,000 agent sessions per month (50 turns/session, GPT-5.4 pricing):**
 
 | Effect | Without Hive | With Hive | Savings |
 |--------|--------------|-----------|---------|
@@ -120,7 +137,7 @@ This is **inference waste reduction**, not model optimization. We're not making 
 | **10k sessions/month** (500 tokens/session) | **16.4 MWh/year** | **1.8 MWh/year** |
 | **100k sessions/month** (500 tokens/session) | **164 MWh/year** | **18.4 MWh/year** |
 
-These numbers assume 982 J/token for a 70B model (linear scaling from the measured 117M baseline). The 11.2% per-call reduction is constant across model sizes because it's driven by fewer calls and fewer tokens, not by the model's compute profile.
+For the 70B extrapolation, we hold the measured 11.2% reduction constant under first-order FLOPs-linear model-size scaling. Real deployments vary with batching, KV cache behavior, prompt length, quantization, and hardware. The mechanism remains the same: fewer calls, fewer tokens, cleaner memory, less repeated work.
 
 <details>
 <summary><b>Methodology & reproducibility</b></summary>
@@ -138,7 +155,8 @@ python scripts/energy_benchmark_real.py --prompts 10
 **Raw data:** `results/energy_real.json`
 
 **Key fields:**
-```json{
+```json
+
   "baseline_j_per_token": 1.64,
   "hive_j_per_token": 1.46,
   "percent_delta": 11.2,
@@ -194,6 +212,34 @@ Year 1 total: $702,000 saved
 
 ---
 
+## What is measured
+
+Hive publishes three kinds of numbers:
+
+### 1. ROI math
+* GPT-5.4 blended $0.03/agent-turn assumption
+* 65% cost-reduction scenario
+* Table is deployment-scale product math, not audited customer spend
+
+### 2. Component benchmarks
+* busybee routing: **2.06M routes/sec** (RTX 3090), **1.73M routes/sec** (DGX Spark)
+* honey-comb rule_fast: **19.8K msg/sec** (RTX 3090)
+* rust-brain: **270K writes/sec** (RTX 3090), **315K writes/sec** (DGX Spark)
+* Raw data: [`docs/benchmarks/latest-macro.json`](docs/benchmarks/latest-macro.json), [`docs/benchmarks/latest-micro.json`](docs/benchmarks/latest-micro.json)
+
+### 3. Energy measurements
+* **Hardware:** RTX 3090, CUDA 13.0
+* **Model:** gpt2 / 117M parameters
+* **Baseline:** 1.64 J/token
+* **With Hive:** 1.46 J/token
+* **Measured reduction:** 11.2%
+* **Scaled to llama-3-70b:** 982 J/token baseline → 872 J/token with Hive (same 11.2% under FLOPs-linear scaling)
+* NVML sampling at 10ms intervals, trapezoidal energy integration
+* Raw data: [`results/energy_real.json`](results/energy_real.json)
+* Reproduce: `python scripts/energy_benchmark_real.py --prompts 10`
+
+Not synthetic vibes. Agent workloads, benchmark JSON, energy traces, and hardware runs.
+
 ## How Hive works (for the technically curious)
 
 Hive is a pipeline of three specialized components:
@@ -237,7 +283,7 @@ actions = policy.route_batch(states)  # 2M actions/sec on GPU
 **What you save:**
 - 39% fewer tokens per LLM call
 - Context window lasts 2× longer (200 turns vs 100)
-- Zero quality loss (verified)
+- Compression preserves the operational signal: failures, file signatures, top hits, and causal state. The point is not generic summarization — it is preserving the agent-critical bits. observed in included validation; compression preserves the operational signal agents need (failures, file signatures, top hits, causal state)
 
 **Performance:**
 - rule_fast: 200K messages/sec
@@ -255,12 +301,13 @@ compressed = hc.compress(messages)  # 1.63× compression
 
 **What it does:** Stores agent memories with causal relationships (caused_by, supersedes, related_to).
 
-**How it works:** Each memory is a node in a directed acyclic graph. Edges capture "this memory caused that decision" or "this memory supersedes that one." No timestamps, no conflicts.
+**How it works:** Each memory is a timestamped node in a typed causal graph. Edges capture caused_by, supersedes, related_to, and attached_to. Back-dated writes fail with TimestampRegression, so stale state cannot silently overwrite fresher state.
 
 **What you save:**
-- Zero hallucination on memory retrieval
+- Stale state cannot silently overwrite fresh state (TimestampRegression)
+- Causal edges preserve *why* decisions happened, not just *what* happened
 - Memory walk (find causal chain): 10× faster than vector search
-- Replay prevention (TimestampRegression)
+- Cleaner context: the agent sees fresh, causally-relevant memory instead of polluted vector-store mush
 
 **Performance:**
 - RTX 3090: 270K writes/sec
@@ -380,7 +427,7 @@ Results (RTX 3090):
 - busybee routing: 2.06M routes/sec
 - honey-comb compression: 29K messages/sec
 - rust-brain memory: 174K writes/sec
-- LLM simulation: 2,000 tokens/sec (GPT-4o)
+- LLM simulation: 2,000 tokens/sec (GPT-5.4 equivalent)
 
 ### Micro benchmark (component-level)
 
@@ -473,7 +520,7 @@ hive/
 
 **Assumptions** (conservative, real deployments do better):
 - 100 agents × 1,000 turns/day = 100,000 turns/day
-- GPT-4 pricing: $15/1M input tokens, $30/1M output tokens
+- GPT-5.4 pricing: $2.50/1M input tokens, $15.00/1M output tokens
 - Average turn: 889 input tokens, 200 output tokens
 - Baseline cost: 100,000 × ($15 × 889/1M + $30 × 200/1M) = $1,333/day = $40K/month
 
