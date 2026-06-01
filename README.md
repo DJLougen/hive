@@ -51,7 +51,7 @@ Hive does not just cut the bill.
 
 It improves the agent loop.
 
-* **Less context pollution** — honey-comb strips giant logs, stale traces, and low-value transcript bulk before the model sees them
+* **Less context pollution** — busybee-cpu keeps obvious mechanical actions out of the model path, honey-comb compresses the remaining transcript before inference, and rust-brain prevents stale memory from poisoning future turns
 * **Better recall** — rust-brain stores memory as timestamped causal state, not just embedding similarity
 * **Fewer repeated failures** — superseded memories stop old fixes from poisoning new attempts
 * **Less hallucinated state** — stale writes fail loudly instead of silently replacing fresher information
@@ -283,7 +283,7 @@ actions = policy.route_batch(states)  # 2M actions/sec on GPU
 **What you save:**
 - 39% fewer tokens per LLM call
 - Context window lasts 2× longer (200 turns vs 100)
-- Compression preserves the operational signal: failures, file signatures, top hits, and causal state. The point is not generic summarization — it is preserving the agent-critical bits. observed in included validation; compression preserves the operational signal agents need (failures, file signatures, top hits, causal state)
+- Compression preserves the operational signal: failures, file signatures, top hits, and causal state. The point is not generic summarization — it is preserving the agent-critical bits.
 
 **Performance:**
 - rule_fast: 200K messages/sec
