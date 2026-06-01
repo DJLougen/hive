@@ -194,18 +194,6 @@ and we will publish the number.
 | 3    | Native port of honey-comb + llama.cpp FFI                                     | planned         |
 | 4    | NVIDIA hand-off: Vera / Thor reference implementation                          | planned         |
 
-**Step 1 acceptance criteria** (all met on RTX 3090 / Spark + ARM64 build):
-
-- [x] Single Python import (`from hive import HiveStack`) glues all three
-      components.
-- [x] `hive_benchmark.py` measures peak host + GPU memory, compression
-      ratio, throughput, **and** real NVML joules.
-- [x] Integration example wires Hive in front of a vLLM / llama.cpp server.
-- [x] `docker/Dockerfile.aarch64` builds on Jetson Thor / Grace.
-- [x] Component READMEs updated with Hive branding.
-- [x] 37 tests pass in `pytest -q`.
-- [x] Per-component micro-benchmark with statistical envelope.
-- [x] CI matrix covers x86 CPU, x86+CUDA, aarch64.
 
 ## Quick start
 
