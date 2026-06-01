@@ -1,0 +1,29 @@
+# Byte-compiled
+__pycache__/
+*.py[cod]
+*.pyc
+*.so
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+
+# Build
+build/
+dist/
+
+# Test artefacts
+.pytest_cache/
+.coverage
+htmlcov/
+*.json.bak
+runs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor backups
+*~
+*.swp

@@ -1,0 +1,66 @@
+# Dockerfile.aarch64 — Hive on Jetson Thor / Grace / Orin (arm64)
+#
+# Build:
+#   docker build -f docker/Dockerfile.aarch64 -t hive:aarch64 .
+#
+# Run on Jetson (host must have nvidia-container-toolkit installed):
+#   docker run --rm --runtime nvidia --network host \
+#       -v /home/nvidia/models:/models:ro \
+#       hive:aarch64 python scripts/hive_benchmark.py --quiet
+#
+# Native build (no Docker) on a Jetson:
+#   sudo apt-get update && sudo apt-get install -y python3-pip python3-venv
+#   python3 -m venv .venv && . .venv/bin/activate
+#   pip install --extra-index-url https://pypi.nvidia.com torch torchvision
+#   pip install scikit-learn joblib psutil numpy
+#   pip install -e ../busyBee-cpu ../honey-comb .
+#   python scripts/hive_benchmark.py
+#
+# Cross-compile from x86_64 (advanced — uses qemu-user):
+#   docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+#   # Then build with --platform=linux/arm64.
+
+FROM --platform=linux/arm64 nvcr.io/nvidia/l4t-pytorch:r36.2.0-pth2.1-py3
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
+
+# ARM64-specific: avoid pulling x86 wheels.
+ENV PIP_EXTRA_INDEX_URL=https://pypi.nvidia.com
+
+# busyBee-cpu / honey-comb are sibling packages. In a real deployment
+# we either git-clone them at build time or COPY them in. The example
+# below assumes the Hive repo is the build context and the siblings
+# are sibling directories on the host.
+WORKDIR /opt/hive
+
+# Hive itself first (smallest, no ML deps).
+COPY pyproject.toml README.md ./
+COPY hive ./hive
+COPY scripts ./scripts
+COPY examples ./examples
+
+# Sibling packages — assume the build context is a parent directory that
+# contains busyBee-cpu/ and honey-comb/. Adjust the COPY lines below for
+# your layout; the build will still work if you install them via git+url.
+COPY ../busyBee-cpu /opt/busyBee-cpu
+COPY ../honey-comb /opt/honey-comb
+
+# Install runtime deps. We pin numpy < 2.0 on aarch64 to keep compatibility
+# with Jetson's stock scipy stack; bump when scipy-arm64 wheels stabilise.
+RUN python3 -m pip install --upgrade pip \
+    && python3 -m pip install "numpy>=1.24,<2.0" \
+        "scikit-learn>=1.3" \
+        "joblib>=1.3" \
+        "psutil>=5.9" \
+    && python3 -m pip install --no-deps /opt/busyBee-cpu /opt/honey-comb \
+    && python3 -m pip install --no-deps .
+
+# Quick smoke test on build. Comment out for faster CI builds.
+RUN python3 -c "import hive, hive.rust_brain; print('hive ok', hive.__version__)" \
+    && python3 scripts/smoke_rust_brain.py
+
+ENTRYPOINT ["python3"]
+CMD ["scripts/hive_benchmark.py", "--quiet"]

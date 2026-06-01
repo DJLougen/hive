@@ -1,0 +1,13 @@
+language: python
+code_search: python
+exclude_paths:
+  - docs/
+  - "*.md"
+  - "*.yml"
+  - "*.yaml"
+  - "*.toml"
+  - "*.txt"
+  - LICENSE
+  - .gitignore
+  - docker/
+  - .github/

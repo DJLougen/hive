@@ -1,0 +1,41 @@
+name: performance
+description: Report a benchmark regression or a hardware comparison.
+labels: ["performance"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for benchmark regressions and for sharing
+        cross-hardware numbers. Attach the JSON report produced by
+        `hive_benchmark.py --output report.json` if you have one.
+  - type: input
+    id: hardware
+    attributes:
+      label: Hardware
+      description: GPU, CPU, TDP, OS, Python, hive / busybee-cpu / honeycomb versions.
+      placeholder: "RTX 3090, i9-12900K, 350W, Windows 11, Python 3.12, hive 0.2.0"
+    validations:
+      required: true
+  - type: input
+    id: command
+    attributes:
+      label: Command
+      description: The exact command you ran.
+      render: shell
+      placeholder: "python scripts/hive_benchmark.py --honey-comb-mode auto --inference-backend echo --quiet"
+    validations:
+      required: true
+  - type: textarea
+    id: numbers
+    attributes:
+      label: Numbers
+      description: Paste the table from the benchmark output, or attach
+        the JSON report.
+    validations:
+      required: true
+  - type: textarea
+    id: compare
+    attributes:
+      label: Comparison
+      description: If you have a "before" number, paste it here. If this is
+        a new measurement, describe the comparison you are making.
