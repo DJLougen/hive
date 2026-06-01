@@ -96,57 +96,66 @@ Response
 | **Total** | **$9M/yr** | **$2.85M/yr** | **$6.15M/yr savings** |
 
 **That's $512,500 saved per month. $16,850 per day. $702 per hour.**
-**And 69% less GPU energy per session** — measured, not estimated.
 
-<details>
-<summary><b>Energy savings: the measured data</b></summary>
+### And 11.2% less GPU energy — measured, not estimated
 
-Measured on **RTX 3090, gpt2 (117M params)**, NVML sampled at 10 ms intervals:
+We measured real energy consumption on an **RTX 3090** running **gpt2 (117M params)** with NVML sampling at 10ms intervals:
 
 | Metric | Baseline (no Hive) | With Hive | Savings |
 |--------|-------------------|-----------|---------|
-| **Energy per token** | **1.64 J/tok** | **1.46 J/tok** | **11.2%** |
-| **LLM calls per session** | 100 | ~35 | **65%** |
-| **Total session GPU energy** | 100% | ~31% | **~69%** |
+| **Joules per token** | **1.64 J/tok** | **1.46 J/tok** | **11.2%** |
 
-Combined: **11% less per call × 65% fewer calls = ~69% total session GPU energy savings**.
+<details>
+<summary><b>What causes this 11.2% reduction?</b></summary>
 
-**Extrapolation to 7B / 70B / 405B** (FLOPs linear — transformer physics, not marketing):
+Three mechanisms compound:
 
-| Model | Baseline J/tok | Hive J/tok | Per-call saving |
-|-------|---------------|-----------|-----------------|
-| gpt2 (117M) — *measured* | 1.64 | 1.46 | **11.2%** |
-| Llama 3 8B | 112 | 100 | 11.2% |
-| Llama 3 70B | 982 | 872 | 11.2% |
-| Llama 3 405B | 5683 | 5044 | 11.2% |
+1. **Fewer LLM calls** — busybee-cpu routes ~65% of mechanical actions on CPU, never touching the GPU
+2. **Fewer tokens per call** — honey-comb compresses context 1.63× before sending to the LLM
+3. **Cleaner context** — rust-brain prevents redundant memory recalls that pollute inference
 
-The per-call saving is **constant across model sizes** because it's driven by fewer/compressed tokens, not by the model's compute profile.
-
-**At 10k sessions/month on a 70B model (500 tok each):**
-- Baseline: 70B × 500 tok × 982 J/117M×70B tokens ÷ 3.6M = 205 kWh/year
-- Hive: 31% of that = **63 kWh/year**
-- Difference: **140 kWh/year saved**
-
-**For perspective** (140 kWh):
-- Charging a Tesla Model 3 from 0→100% **23 times**
-- Powering **12 homes** for one month
-- 1,500 hours of LED lighting
-
-**Carbon impact** (US grid average: 0.4 kg CO₂/kWh):
-- 140 kWh/year = **56 kg CO₂/year** avoided per 10k sessions
-- That's driving a gas car **230 km less** per year
-
-**At enterprise scale (100k sessions/month):**
-- 1,400 kWh/year = **560 kg CO₂/year** = 2,300 km of driving avoided
-- At $0.12/kWh: **$168/year** in energy cost savings alone
-
-**Energy savings compound just like cost savings.** The fewer tokens you send to the GPU, the less power you draw. The fewer LLM calls you make, the cooler your rack runs.
-
-**Methodology & reproducibility:** `scripts/energy_benchmark_real.py` runs the same prompts through both paths and measures NVML power samples at 10ms intervals, integrates energy with the trapezoidal rule. Raw data: `results/energy_real.json`. Run it yourself: `python scripts/energy_benchmark_real.py --prompts 10`.
+This is **inference waste reduction**, not model optimization. We're not making the model smarter; we're making the system stop wasting inference on mechanical work.
 
 </details>
 
-So you're saving **$6.15M/year AND 1,900 kWh/year** at enterprise scale. Both compound the same way: fewer calls × fewer tokens per call.
+**Extrapolation to 70B-class models** (FLOPs scale linearly with parameter count):
+
+| Scenario | Baseline energy | Hive savings |
+|----------|----------------|--------------|
+| **10k sessions/month** (500 tokens/session) | **16.4 MWh/year** | **1.8 MWh/year** |
+| **100k sessions/month** (500 tokens/session) | **164 MWh/year** | **18.4 MWh/year** |
+
+These numbers assume 982 J/token for a 70B model (linear scaling from the measured 117M baseline). The 11.2% per-call reduction is constant across model sizes because it's driven by fewer calls and fewer tokens, not by the model's compute profile.
+
+<details>
+<summary><b>Methodology & reproducibility</b></summary>
+
+**Hardware:** RTX 3090, CUDA 13.0  
+**Model:** gpt2 (117M parameters)  
+**Protocol:** NVML GPU power sampling at 10ms intervals, trapezoidal integration  
+**Sample size:** 10 prompts, measured 3 times
+
+**Reproduce:**
+```bash
+python scripts/energy_benchmark_real.py --prompts 10
+```
+
+**Raw data:** `results/energy_real.json`
+
+**Key fields:**
+```json{
+  "baseline_j_per_token": 1.64,
+  "hive_j_per_token": 1.46,
+  "percent_delta": 11.2,
+  "tokens_baseline": 445,
+  "tokens_hive": 396,
+  "num_llm_calls_baseline": 3,
+  "num_llm_calls_hive": 1
+}```
+
+</details>
+
+**The bottom line:** Hive saves 11.2% per call on measured workloads. At scale, that's **1.8 MWh/year** for a 10k session/month deployment on a 70B model — and the savings compound with scale.
 
 ### Compare to alternatives
 
