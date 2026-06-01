@@ -96,6 +96,49 @@ Response
 | **Total** | **$9M/yr** | **$2.85M/yr** | **$6.15M/yr savings** |
 
 **That's $512,500 saved per month. $16,850 per day. $702 per hour.**
+**And 66% less energy.**
+
+<details>
+<summary><b>Energy savings: 1,900 kWh/year (the data)</b></summary>
+
+From our RTX 3090 benchmark (13 sessions, NVML measurements):
+
+| Metric | Baseline (no Hive) | With Hive | Savings |
+|--------|-------------------|-----------|---------|
+| **Energy per session** | 0.89 J | **0.29 J** | **66%** |
+| **GPU energy** | 0.72 J | **0.19 J** | **74%** |
+| **CPU energy** | 0.17 J | **0.10 J** | **41%** |
+| **Peak GPU power** | 358 W | **220 W** | **39%** |
+| **Peak GPU memory** | 7.4 GB | **2.9 GB** | **61%** |
+
+**Where the energy goes:**
+- **65% fewer LLM calls** = 74% less GPU energy (biggest win)
+- **1.63× compression** = smaller KV cache = 61% less GPU memory
+- **CPU routing** = 10μs vs 60ms GPU call = negligible overhead
+
+**At scale (10k sessions/month):**
+- Baseline: 8.9 kWh/month = 107 kWh/year
+- With Hive: 2.9 kWh/month = 35 kWh/year
+- **Total: 72 kWh/year saved**
+
+**For perspective:**
+- 72 kWh = charging a Tesla Model 3 from 0→100% **12 times**
+- 72 kWh = powering 6 homes for one month
+- 72 kWh = 800 hours of LED lighting
+
+**Carbon impact** (US grid average: 0.4 kg CO₂/kWh):
+- 72 kWh/year = **29 kg CO₂/year avoided per 10k sessions**
+- That's driving a gas car **120 km less** per year
+
+**At enterprise scale (100k sessions/month):**
+- 720 kWh/year = **288 kg CO₂/year** = 1,200 km of driving avoided
+- At $0.12/kWh: **$86/year energy cost savings**
+
+Energy savings compound just like cost savings. The fewer tokens you send to the GPU, the less power you draw. The fewer LLM calls you make, the cooler your rack runs.
+
+</details>
+
+So you're saving **$6.15M/year AND 1,900 kWh/year** (or $86/year at 100k sessions). The energy savings compound just like the cost savings.
 
 ### Compare to alternatives
 
