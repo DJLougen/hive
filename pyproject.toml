@@ -65,14 +65,6 @@ dev = [
     "ruff>=0.5",
     "hive-cpp>=0.1.0",  # Include in dev for testing
 ]
-vllm = ["vllm>=0.5"]
-# Hardware monitoring. pynvml works on NVIDIA + nvidia-ml-py on Jetson.
-monitor = ["pynvml>=2.0"]
-dev = [
-    "pytest>=8.0",
-    "pytest-cov>=4.1",
-    "ruff>=0.5",
-]
 
 [project.urls]
 Homepage = "https://github.com/DJLougen/hive"
@@ -87,8 +79,3 @@ include-package-data = true
 "hive" = ["py.typed"]
 "hive.rust_brain" = ["py.typed"]
 "hive.rule_fast" = ["py.typed"]
-
-[tool.pytest.ini_options]
-minversion = "8.0"
-testpaths = ["tests"]
-addopts = "-ra -q"
