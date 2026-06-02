@@ -6,7 +6,7 @@ description = "Native Rust backend for Hive"
 
 [lib]
 name = "hive_cpp"
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "rlib"]
 
 [features]
 default = []
