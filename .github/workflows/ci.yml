@@ -6,8 +6,11 @@ on:
   pull_request:
     branches: [main]
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
-  # x86_64 + CPU only. The cheapest matrix entry; runs everywhere.
+  # x86_64 + CPU only. Runs everywhere, no external deps.
   cpu:
     name: x86_64 / Python ${{ matrix.python }} / CPU
     runs-on: ubuntu-latest
@@ -20,10 +23,9 @@ jobs:
       - name: Install
         run: |
           python -m pip install --upgrade pip
-          # Sibling packages are not under test here; we only need the
-          # rule_fast + rust_brain paths. ``hive-comb`` is included so
-          # the honey-comb code path is exercised in CI too.
-          pip install -e ../busyBee-cpu -e ../honey-comb -e .[dev,monitor,observability]
+          # Install hive only — sibling packages (busyBee-cpu, honey-comb) are
+          # NOT present in the checkout. Tests gracefully skip when absent.
+          pip install -e .[dev,monitor,observability]
       - name: Test
         env:
           HIVE_NO_NVML: "1"
@@ -36,17 +38,23 @@ jobs:
               --transcript-turns 50 --brain-writes 500 \
               --honey-comb-mode auto --inference-backend echo \
               --quiet
+      - name: Lint
+        run: |
+          python -m ruff check hive/ tests/
+          python -m mypy hive/ --ignore-missing-imports
 
-  # x86_64 + CUDA. The main dev target.
+  # x86_64 + CUDA. Requires self-hosted runner with GPU label.
+  # Disabled until self-hosted runner is registered.
   gpu:
     name: x86_64 / Python 3.12 / CUDA
+    if: false  # Re-enable when self-hosted GPU runner is available
     runs-on: [self-hosted, gpu, cuda]
     steps:
       - uses: actions/checkout@v4
       - name: Install
         run: |
           python -m pip install --upgrade pip
-          pip install -e ../busyBee-cpu -e ../honey-comb -e .[dev,monitor,observability]
+          pip install -e .[dev,monitor,observability]
       - name: Test
         run: pytest -v
       - name: Benchmark
@@ -62,10 +70,11 @@ jobs:
           name: bench-gpu
           path: bench-gpu.json
 
-  # aarch64 + CUDA. Jetson / Grace. Self-hosted because GH does not
-  # provide arm64 GPU runners.
+  # aarch64 + CUDA. Jetson / Grace.
+  # Disabled until self-hosted runner is registered.
   jetson:
     name: aarch64 / Python 3.12 / Jetson
+    if: false  # Re-enable when self-hosted Jetson runner is available
     runs-on: [self-hosted, jetson]
     steps:
       - uses: actions/checkout@v4
@@ -75,7 +84,6 @@ jobs:
           pip install --extra-index-url https://pypi.nvidia.com -e .[dev,monitor,observability]
       - name: Test
         env:
-          # Real NVML on Jetson works via nvidia-ml-py; pynvml is a shim.
           HIVE_NO_NVML: "0"
         run: pytest -v
       - name: Benchmark
@@ -103,19 +111,14 @@ jobs:
         include:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
-            cibw_arch: x86_64
           - os: ubuntu-latest
             target: aarch64-unknown-linux-gnu
-            cibw_arch: aarch64
           - os: macos-latest
             target: x86_64-apple-darwin
-            cibw_arch: x86_64
           - os: macos-latest
             target: aarch64-apple-darwin
-            cibw_arch: arm64
           - os: windows-latest
             target: x86_64-pc-windows-msvc
-            cibw_arch: AMD64
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
