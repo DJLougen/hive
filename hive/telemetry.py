@@ -109,6 +109,7 @@ class Telemetry:
     jsonl_path: str | None = None
     _otel_enabled: bool = field(default=False, repr=False)
     _prom_enabled: bool = field(default=False, repr=False)
+    _prom: dict[str, Any] = field(default_factory=dict, repr=False)
 
     # -- internal helpers -------------------------------------------------
 
@@ -148,6 +149,9 @@ class Telemetry:
         self.routing.append(ev)
         self._maybe_trim(self.routing)
         self._emit({"event": "routing", **asdict(ev)})
+        if self._prom_enabled:
+            self._prom["routing_total"].labels(source=source, action=action).inc()
+            self._prom["routing_latency"].observe(latency_ms)
 
     def record_compression(
         self,
@@ -168,6 +172,10 @@ class Telemetry:
         self.compression.append(ev)
         self._maybe_trim(self.compression)
         self._emit({"event": "compression", **asdict(ev)})
+        if self._prom_enabled:
+            ratio = original_tokens / max(compressed_tokens, 1)
+            self._prom["compression_total"].labels(label=label).inc()
+            self._prom["compression_ratio"].set(ratio)
 
     def record_memory_write(
         self,
@@ -188,6 +196,8 @@ class Telemetry:
         self.memory_writes.append(ev)
         self._maybe_trim(self.memory_writes)
         self._emit({"event": "memory_write", **asdict(ev)})
+        if self._prom_enabled:
+            self._prom["memory_writes_total"].inc()
 
     def record_memory_read(
         self,
@@ -200,6 +210,9 @@ class Telemetry:
         self.memory_reads.append(ev)
         self._maybe_trim(self.memory_reads)
         self._emit({"event": "memory_read", **asdict(ev)})
+        if self._prom_enabled:
+            self._prom["memory_reads_total"].labels(hit=str(hit).lower()).inc()
+            self._prom["memory_read_latency"].observe(latency_ms)
 
     # -- aggregation (caller-facing) --------------------------------------
 
@@ -303,13 +316,13 @@ class Telemetry:
             # Use a fresh registry so multiple Telemetry instances don't collide
             registry = CollectorRegistry()
             self._prom = {
-                "routing_total": Counter("hive_routing_total", "Routing decisions", ["source", "action"], registry=registry),
-                "routing_latency": Histogram("hive_routing_latency_ms", "Routing latency", registry=registry),
-                "compression_total": Counter("hive_compression_total", "Compression runs", ["label"], registry=registry),
-                "compression_ratio": Gauge("hive_compression_ratio", "Current compression ratio", registry=registry),
-                "memory_writes_total": Counter("hive_memory_writes_total", "Memory writes", registry=registry),
-                "memory_reads_total": Counter("hive_memory_reads_total", "Memory reads", ["hit"], registry=registry),
-                "memory_read_latency": Histogram("hive_memory_read_latency_ms", "Memory read latency", registry=registry),
+                "routing_total": Counter("hive_routing_total", "Routing decisions", ["source", "action"], registry=registry),  # type: ignore[no-untyped-call]
+                "routing_latency": Histogram("hive_routing_latency_ms", "Routing latency", registry=registry),  # type: ignore[no-untyped-call]
+                "compression_total": Counter("hive_compression_total", "Compression runs", ["label"], registry=registry),  # type: ignore[no-untyped-call]
+                "compression_ratio": Gauge("hive_compression_ratio", "Current compression ratio", registry=registry),  # type: ignore[no-untyped-call]
+                "memory_writes_total": Counter("hive_memory_writes_total", "Memory writes", registry=registry),  # type: ignore[no-untyped-call]
+                "memory_reads_total": Counter("hive_memory_reads_total", "Memory reads", ["hit"], registry=registry),  # type: ignore[no-untyped-call]
+                "memory_read_latency": Histogram("hive_memory_read_latency_ms", "Memory read latency", registry=registry),  # type: ignore[no-untyped-call]
             }
             start_http_server(port, registry=registry)
             self._prom_enabled = True
