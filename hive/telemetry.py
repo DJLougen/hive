@@ -298,18 +298,20 @@ class Telemetry:
     def start_prometheus_server(self, port: int = 9090) -> None:
         """Start a Prometheus metrics HTTP endpoint (blocking; run in thread)."""
         try:
-            from prometheus_client import start_http_server, Gauge, Counter, Histogram
+            from prometheus_client import start_http_server, Gauge, Counter, Histogram, CollectorRegistry
 
+            # Use a fresh registry so multiple Telemetry instances don't collide
+            registry = CollectorRegistry()
             self._prom = {
-                "routing_total": Counter("hive_routing_total", "Routing decisions", ["source", "action"]),
-                "routing_latency": Histogram("hive_routing_latency_ms", "Routing latency"),
-                "compression_total": Counter("hive_compression_total", "Compression runs", ["label"]),
-                "compression_ratio": Gauge("hive_compression_ratio", "Current compression ratio"),
-                "memory_writes_total": Counter("hive_memory_writes_total", "Memory writes"),
-                "memory_reads_total": Counter("hive_memory_reads_total", "Memory reads", ["hit"]),
-                "memory_read_latency": Histogram("hive_memory_read_latency_ms", "Memory read latency"),
+                "routing_total": Counter("hive_routing_total", "Routing decisions", ["source", "action"], registry=registry),
+                "routing_latency": Histogram("hive_routing_latency_ms", "Routing latency", registry=registry),
+                "compression_total": Counter("hive_compression_total", "Compression runs", ["label"], registry=registry),
+                "compression_ratio": Gauge("hive_compression_ratio", "Current compression ratio", registry=registry),
+                "memory_writes_total": Counter("hive_memory_writes_total", "Memory writes", registry=registry),
+                "memory_reads_total": Counter("hive_memory_reads_total", "Memory reads", ["hit"], registry=registry),
+                "memory_read_latency": Histogram("hive_memory_read_latency_ms", "Memory read latency", registry=registry),
             }
-            start_http_server(port)
+            start_http_server(port, registry=registry)
             self._prom_enabled = True
             _log.info("Prometheus metrics on http://localhost:%d/metrics", port)
         except ImportError:
