@@ -87,6 +87,16 @@ class Telemetry:
     memory_writes: list[MemoryWriteEvent] = field(default_factory=list)
     memory_reads: list[MemoryReadEvent] = field(default_factory=list)
 
+    max_events: int = 10_000
+
+    # -- internal helpers -------------------------------------------------
+
+    def _maybe_trim(self, lst: list) -> None:
+        """Trim list to max_events, keeping newest (right side)."""
+        excess = len(lst) - self.max_events
+        if excess > 0:
+            del lst[:excess]
+
     # -- recording helpers (called by HiveStack) --------------------------
 
     def record_routing(
@@ -107,6 +117,7 @@ class Telemetry:
                 escalated=escalated,
             )
         )
+        self._maybe_trim(self.routing)
 
     def record_compression(
         self,
@@ -126,6 +137,7 @@ class Telemetry:
                 latency_ms=latency_ms,
             )
         )
+        self._maybe_trim(self.compression)
 
     def record_memory_write(
         self,
@@ -145,6 +157,7 @@ class Telemetry:
                 latency_ms=latency_ms,
             )
         )
+        self._maybe_trim(self.memory_writes)
 
     def record_memory_read(
         self,
@@ -156,6 +169,7 @@ class Telemetry:
         self.memory_reads.append(
             MemoryReadEvent(key=key, hit=hit, latency_ms=latency_ms)
         )
+        self._maybe_trim(self.memory_reads)
 
     # -- aggregation (caller-facing) --------------------------------------
 

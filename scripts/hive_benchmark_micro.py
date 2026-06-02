@@ -90,17 +90,10 @@ def bench_compress(turns: list[tuple[str, str]], *, runs: int, mode: str) -> dic
         if mode != "fast":
             comb = type(comb)(thread_safe=True, metrics_enabled=True)
         t0 = time.perf_counter()
-        from dataclasses import fields as dc_fields
-
-        msg_fields = {f.name for f in dc_fields(comb.__class__.__module__ == "hive.rule_fast"
-                                                 and __import__("hive.rule_fast", fromlist=["Message"]).Message
-                                                 or comb.__class__.__module__.startswith("honeycomb")
-                                                 and __import__("honeycomb", fromlist=["Message"]).Message)}
-        Message = msg_fields and next(iter(__import__("hive.rule_fast" if mode == "fast" else "honeycomb",
-                                                       fromlist=["Message"]).__dict__.values())) or None
-        from hive.rule_fast import Message as RFMessage
-        from honeycomb import Message as HCMessage
-        Msg = RFMessage if mode == "fast" else HCMessage
+        if mode == "fast":
+            from hive.rule_fast import Message as Msg
+        else:
+            from honeycomb import Message as Msg
         for role, content in turns:
             comb.process(Msg(role=role, content=content))
         timings.append(time.perf_counter() - t0)
