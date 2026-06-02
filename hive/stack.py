@@ -51,6 +51,7 @@ class RouteDecision:
     confidence: float
     escalated: bool
     source: str  # "busybee" | "honeycomb-escalate" | "fallback"
+    state: dict[str, Any] | None = None  # snapshot from the route() call
 
 
 @dataclass(slots=True)
@@ -164,6 +165,7 @@ class HiveStack:
                 confidence=0.0,
                 escalated=True,
                 source="fallback",
+                state=dict(state),
             )
             if self.telemetry is not None:
                 self.telemetry.record_routing(
@@ -185,6 +187,7 @@ class HiveStack:
             confidence=float(action.get("confidence", 0.0)),
             escalated=bool(action.get("escalated", False)),
             source="busybee",
+            state=dict(state),
         )
         if self.telemetry is not None:
             self.telemetry.record_routing(
@@ -348,8 +351,15 @@ class HiveStack:
             except ValueError:
                 outcome_type = OutcomeType.UNKNOWN
 
+        if decision.state is not None:
+            outcome_state = dict(decision.state)
+        elif self._last_decision is decision and self._last_state is not None:
+            outcome_state = dict(self._last_state)
+        else:
+            outcome_state = {}
+
         outcome = RoutingOutcome(
-            state=dict(self._last_state) if self._last_state else {},
+            state=outcome_state,
             routed_action=decision.tool if decision else None,
             actual_action=actual_action,
             outcome_type=outcome_type,

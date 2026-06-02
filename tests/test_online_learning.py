@@ -114,6 +114,22 @@ def test_hivestack_with_feedback_buffer():
     assert isinstance(stack._policy_updater, PolicyUpdater)
 
 
+def test_record_outcome_preserves_state_after_later_route():
+    """Outcome state must match the route() call that produced the decision."""
+    from hive.stack import HiveStack
+
+    fb = FeedbackBuffer(capacity=5)
+    policy = MockPolicy()
+    stack = HiveStack(busybee_policy=policy, feedback_buffer=fb)
+
+    d1 = stack.route({"goal": "A", "current_step": 1})
+    stack.route({"goal": "B", "current_step": 2})
+    stack.record_outcome(d1, "read_file", OutcomeType.CORRECT)
+
+    assert fb.buffer[0].state["goal"] == "A"
+    assert fb.buffer[0].state["current_step"] == 1
+
+
 def test_record_outcome():
     """Test recording an outcome."""
     from hive.stack import HiveStack
