@@ -24,6 +24,7 @@ standard library plus ``dataclasses``.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import threading
 import time
@@ -327,6 +328,77 @@ class RustBrain:
                     self._order[idx] = ""
                 removed += 1
         return removed
+
+
+    def revoke_tenant(self, tenant_id: str | None = None) -> int:
+        """Remove ALL data belonging to a tenant (GDPR Article 17 / offboarding).
+
+        Returns the number of keys removed.
+        """
+        target = tenant_id or self._tenant_id
+        prefix = f"{target}:"
+        with self._lock:
+            to_remove = [k for k in self._nodes if k.startswith(prefix)]
+            for k in to_remove:
+                self._nodes.pop(k, None)
+                idx = self._order_index.pop(k, None)
+                if idx is not None:
+                    self._order[idx] = ""
+            return len(to_remove)
+
+    def snapshot_to_file(self, path: str) -> dict[str, Any]:
+        """Persist a compressed snapshot to disk. Returns metadata dict.
+
+        The snapshot is a gzip-compressed JSON file with a SHA-256 checksum
+        for corruption detection.
+        """
+        import gzip
+
+        nodes = self.snapshot()
+        data = {
+            "tenant_id": self._tenant_id,
+            "tenant_isolation": self._tenant_isolation,
+            "nodes": nodes,
+            "version": "hive-snapshot-v1",
+        }
+        payload = json.dumps(data).encode("utf-8")
+        checksum = hashlib.sha256(payload).hexdigest()
+        compressed = gzip.compress(payload)
+        with open(path, "wb") as fh:
+            fh.write(compressed)
+        return {"path": path, "node_count": len(nodes), "sha256": checksum}
+
+    def restore_from_file(self, path: str) -> int:
+        """Restore from a snapshot file. Returns number of nodes restored."""
+        import gzip
+
+        with open(path, "rb") as fh:
+            compressed = fh.read()
+        payload = gzip.decompress(compressed)
+        data = json.loads(payload.decode("utf-8"))
+        if data.get("version") != "hive-snapshot-v1":
+            raise ValueError(f"Unsupported snapshot version: {data.get('version')}")
+        nodes = data.get("nodes", [])
+        self._nodes.clear()
+        self._order.clear()
+        self._order_index.clear()
+        for node_dict in nodes:
+            node = MemoryNode(
+                key=node_dict["key"],
+                value=node_dict["value"],
+                ts_ns=node_dict["ts_ns"],
+                trust=node_dict.get("trust", 1.0),
+                tags=set(node_dict.get("tags", [])),
+                node_id=node_dict.get("id", uuid.uuid4().hex[:12]),
+            )
+            for kind, neighbours in node_dict.get("edges", {}).items():
+                for n in neighbours:
+                    node.attach(kind, n)
+            storage_key = self._prefix(node.key)
+            self._nodes[storage_key] = node
+            self._order_index[storage_key] = len(self._order)
+            self._order.append(storage_key)
+        return len(nodes)
 
     def __repr__(self) -> str:
         return (

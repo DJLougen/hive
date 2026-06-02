@@ -1,6 +1,6 @@
 # SOC 2 Evidence Stubs
 
-**Control Environment**: Hive Agent Memory v0.4.0  
+**Control Environment**: Hive Agent Memory v0.5.0  
 **Trust Service Criteria**: Security, Availability
 
 ---
@@ -40,9 +40,25 @@
 - All changes via GitHub PR
 - CI runs: `ruff`, `mypy`, `bandit`, `pytest`
 - CHANGELOG.md maintained
-- Semantic versioning (currently v0.4.0)
+- Semantic versioning (currently v0.5.0)
 
 **Audit trail**: Git history + `hive/audit.py` signed logs.
+
+---
+
+## CC6.6 — Encryption at Rest
+
+**Evidence**:  provides AES-256-GCM transparent encryption.
+
+**Test**: 
+
+---
+
+## CC6.2 / CC6.3 — Authentication & Offboarding
+
+**Evidence**:  JWT validation with JWKS + RBAC.  for GDPR Article 17.
+
+**Test**: , 
 
 ---
 

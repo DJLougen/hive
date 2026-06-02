@@ -41,7 +41,9 @@ classifiers = [
 # For local development we install siblings via `pip install -e ../busyBee-cpu ../honey-comb`.
 dependencies = [
     "joblib>=1.3",
-    "pydantic>=2.0",
+        "pydantic>=2.0",
+        "cryptography>=41.0",
+    "PyJWT>=2.8",
     "numpy>=1.24",
     "scikit-learn>=1.3",
     # Component deps are pulled in via the local editable installs above.
