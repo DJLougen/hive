@@ -24,6 +24,7 @@ from hive.rust_brain import EdgeKind, MemoryNode, RustBrain
 from hive.telemetry import Telemetry
 from hive.feedback import FeedbackBuffer, RoutingOutcome, OutcomeType
 from hive.policy_updater import PolicyUpdater
+from hive.schemas import validate_state
 
 __all__ = [
     "HiveStack",
@@ -139,10 +140,14 @@ class HiveStack:
         rust_brain: RustBrain | None = None,
         telemetry: Telemetry | None = None,
         feedback_buffer: FeedbackBuffer | None = None,
+        tenant_id: str = "default",
+        validate: bool = False,
     ) -> None:
         self.busybee = busybee_policy
         self.comb = honey_comb if honey_comb is not None else _default_honey_comb()
-        self.brain = rust_brain or RustBrain()
+        self.brain = rust_brain or RustBrain(tenant_id=tenant_id)
+        self._tenant_id = tenant_id
+        self._validate = validate
         self.telemetry = telemetry
         self.feedback = feedback_buffer
         self._policy_updater = PolicyUpdater() if feedback_buffer is not None else None
@@ -160,6 +165,8 @@ class HiveStack:
 
     def route(self, state: Mapping[str, Any]) -> RouteDecision:
         """Decide which tool to invoke next. CPU-only."""
+        if self._validate:
+            validate_state(state)
         # Store state for later feedback
         self._last_state = dict(state)
 

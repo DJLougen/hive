@@ -129,7 +129,9 @@ class RustBrain:
     implementation lands.
     """
 
-    def __init__(self, *, enforce_monotonic: bool = True) -> None:
+    def __init__(self, *, tenant_id: str = "default", tenant_isolation: bool = True, enforce_monotonic: bool = True) -> None:
+        self._tenant_id = tenant_id
+        self._tenant_isolation = tenant_isolation
         self._nodes: dict[str, MemoryNode] = {}
         self._lock = threading.RLock()
         self._enforce_monotonic = enforce_monotonic
@@ -137,6 +139,12 @@ class RustBrain:
         # without re-sorting the whole store on every read.
         self._order: list[str] = []
         self._order_index: dict[str, int] = {}
+
+    def _prefix(self, key: str) -> str:
+        """Return the internal storage key with tenant prefix when isolation is on."""
+        if not self._tenant_isolation or key.startswith(f"{self._tenant_id}:"):
+            return key
+        return f"{self._tenant_id}:{key}"
 
     # -- write path ---------------------------------------------------------
 
@@ -150,6 +158,7 @@ class RustBrain:
         edges: Mapping[str, Iterable[str]] | None = None,
         ts_ns: int | None = None,
     ) -> MemoryNode:
+        storage_key = self._prefix(key)
         """Insert or update a node.
 
         If ``ts_ns`` is omitted the wall clock is used. If the key already
@@ -159,10 +168,10 @@ class RustBrain:
         """
         ts = ts_ns if ts_ns is not None else _now_ns()
         with self._lock:
-            existing = self._nodes.get(key)
+            existing = self._nodes.get(storage_key)
             if existing is not None and self._enforce_monotonic and ts < existing.ts_ns:
                 raise TimestampRegression(
-                    f"refusing to write {key!r}: ts={ts} < stored={existing.ts_ns}"
+                    f"refusing to write {storage_key!r}: ts={ts} < stored={existing.ts_ns}"
                 )
             node = MemoryNode(
                 key=key,
@@ -174,10 +183,10 @@ class RustBrain:
             for kind, neighbours in (edges or {}).items():
                 for n in neighbours:
                     node.attach(kind, n)
-            self._nodes[key] = node
-            if key not in self._order_index:
-                self._order_index[key] = len(self._order)
-                self._order.append(key)
+            self._nodes[storage_key] = node
+            if storage_key not in self._order_index:
+                self._order_index[storage_key] = len(self._order)
+                self._order.append(storage_key)
             return node
 
     def supersede(self, key: str, new_value: Any, **kwargs: Any) -> MemoryNode:
@@ -188,14 +197,16 @@ class RustBrain:
         monotonic-timestamp invariant is held across the whole operation
         so a concurrent write cannot sneak in a stale ts.
         """
+        storage_key = self._prefix(key)
         with self._lock:
-            previous = self._nodes.get(key)
+            previous = self._nodes.get(storage_key)
             node = self.remember(key, new_value, **kwargs)
         if previous is not None and previous.node_id != node.node_id:
             previous.attach(EdgeKind.SUPERSEDES, key)
         return node
 
     def forget(self, key: str) -> None:
+        key = self._prefix(key)
         with self._lock:
             self._nodes.pop(key, None)
             idx = self._order_index.pop(key, None)
@@ -205,13 +216,15 @@ class RustBrain:
     # -- read path ----------------------------------------------------------
 
     def recall(self, key: str, default: Any = None) -> Any:
+        key = self._prefix(key)
         node = self._nodes.get(key)
         return default if node is None else node.value
 
     def get(self, key: str) -> MemoryNode | None:
-        return self._nodes.get(key)
+        return self._nodes.get(self._prefix(key))
 
     def neighbours(self, key: str, kind: str | None = None) -> list[str]:
+        key = self._prefix(key)
         """Return keys reachable from ``key`` via ``kind`` edges (any kind if
         ``None``)."""
         node = self._nodes.get(key)
@@ -281,11 +294,11 @@ class RustBrain:
         return len(self._nodes)
 
     def __contains__(self, key: object) -> bool:
-        return isinstance(key, str) and key in self._nodes
+        return isinstance(key, str) and self._prefix(key) in self._nodes
 
     def __repr__(self) -> str:
         return (
-            f"RustBrain(nodes={len(self._nodes)}, monotonic={self._enforce_monotonic})"
+            f"RustBrain(tenant={self._tenant_id!r}, nodes={len(self._nodes)}, monotonic={self._enforce_monotonic})"
         )
 
 
