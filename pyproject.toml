@@ -63,6 +63,12 @@ dev = [
     "pytest-cov>=4.1",
     "ruff>=0.5",
 ]
+# Real-time observability: Prometheus, OpenTelemetry, JSONL export
+observability = [
+    "prometheus-client>=0.20",
+    "opentelemetry-api>=1.40",
+    "opentelemetry-sdk>=1.40",
+]
 
 [project.urls]
 Homepage = "https://github.com/DJLougen/hive"

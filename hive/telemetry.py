@@ -23,12 +23,27 @@ Usage::
     stack.route(state)
     stack.compress("user", "hello")
     print(tel.summary())
+
+Export options (all optional)::
+
+    # JSONL — one JSON object per line, append-only
+    tel.export_jsonl("hive_events.jsonl")
+
+    # Prometheus metrics endpoint (requires prometheus-client)
+    tel.start_prometheus_server(port=9090)
+
+    # OpenTelemetry spans (requires opentelemetry-api)
+    tel.enable_otel_traces()
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+import json
+import logging
+from dataclasses import asdict, dataclass, field
 from typing import Any
+
+_log = logging.getLogger("hive.telemetry")
 
 
 @dataclass(slots=True)
@@ -89,6 +104,12 @@ class Telemetry:
 
     max_events: int = 10_000
 
+    # -- export configuration -----------------------------------------------
+
+    jsonl_path: str | None = None
+    _otel_enabled: bool = field(default=False, repr=False)
+    _prom_enabled: bool = field(default=False, repr=False)
+
     # -- internal helpers -------------------------------------------------
 
     def _maybe_trim(self, lst: list) -> None:
@@ -96,6 +117,15 @@ class Telemetry:
         excess = len(lst) - self.max_events
         if excess > 0:
             del lst[:excess]
+
+    def _emit(self, record: dict[str, Any]) -> None:
+        """Write a single record to configured exporters."""
+        if self.jsonl_path:
+            try:
+                with open(self.jsonl_path, "a", encoding="utf-8") as fh:
+                    fh.write(json.dumps(record, default=str) + "\n")
+            except OSError as exc:
+                _log.warning("jsonl export failed: %s", exc)
 
     # -- recording helpers (called by HiveStack) --------------------------
 
@@ -108,16 +138,16 @@ class Telemetry:
         latency_ms: float,
         escalated: bool,
     ) -> None:
-        self.routing.append(
-            RoutingEvent(
-                source=source,
-                action=action,
-                confidence=confidence,
-                latency_ms=latency_ms,
-                escalated=escalated,
-            )
+        ev = RoutingEvent(
+            source=source,
+            action=action,
+            confidence=confidence,
+            latency_ms=latency_ms,
+            escalated=escalated,
         )
+        self.routing.append(ev)
         self._maybe_trim(self.routing)
+        self._emit({"event": "routing", **asdict(ev)})
 
     def record_compression(
         self,
@@ -128,16 +158,16 @@ class Telemetry:
         compressed_tokens: int,
         latency_ms: float,
     ) -> None:
-        self.compression.append(
-            CompressionEvent(
-                role=role,
-                label=label,
-                original_tokens=original_tokens,
-                compressed_tokens=compressed_tokens,
-                latency_ms=latency_ms,
-            )
+        ev = CompressionEvent(
+            role=role,
+            label=label,
+            original_tokens=original_tokens,
+            compressed_tokens=compressed_tokens,
+            latency_ms=latency_ms,
         )
+        self.compression.append(ev)
         self._maybe_trim(self.compression)
+        self._emit({"event": "compression", **asdict(ev)})
 
     def record_memory_write(
         self,
@@ -148,16 +178,16 @@ class Telemetry:
         has_tags: bool,
         latency_ms: float,
     ) -> None:
-        self.memory_writes.append(
-            MemoryWriteEvent(
-                key=key,
-                trust=trust,
-                has_causal_edge=has_causal_edge,
-                has_tags=has_tags,
-                latency_ms=latency_ms,
-            )
+        ev = MemoryWriteEvent(
+            key=key,
+            trust=trust,
+            has_causal_edge=has_causal_edge,
+            has_tags=has_tags,
+            latency_ms=latency_ms,
         )
+        self.memory_writes.append(ev)
         self._maybe_trim(self.memory_writes)
+        self._emit({"event": "memory_write", **asdict(ev)})
 
     def record_memory_read(
         self,
@@ -166,10 +196,10 @@ class Telemetry:
         hit: bool,
         latency_ms: float,
     ) -> None:
-        self.memory_reads.append(
-            MemoryReadEvent(key=key, hit=hit, latency_ms=latency_ms)
-        )
+        ev = MemoryReadEvent(key=key, hit=hit, latency_ms=latency_ms)
+        self.memory_reads.append(ev)
         self._maybe_trim(self.memory_reads)
+        self._emit({"event": "memory_read", **asdict(ev)})
 
     # -- aggregation (caller-facing) --------------------------------------
 
@@ -209,7 +239,9 @@ class Telemetry:
                     2,
                 ),
                 "escalated_count": escalated,
-                "escalated_pct": round(escalated / max(routing_count, 1) * 100, 2),
+                "escalated_pct": round(
+                    escalated / max(routing_count, 1) * 100, 2
+                ),
             },
             "compression": {
                 **latency_stats(self.compression),
@@ -225,7 +257,9 @@ class Telemetry:
             },
             "memory_reads": {
                 **latency_stats(self.memory_reads),
-                "hit_rate_pct": round(read_hits / max(read_count, 1) * 100, 2),
+                "hit_rate_pct": round(
+                    read_hits / max(read_count, 1) * 100, 2
+                ),
             },
         }
 
@@ -235,3 +269,64 @@ class Telemetry:
         self.compression.clear()
         self.memory_writes.clear()
         self.memory_reads.clear()
+
+    # -- export helpers ---------------------------------------------------
+
+    def export_jsonl(self, path: str) -> int:
+        """Flush all accumulated events to a JSONL file and return count written."""
+        events: list[dict[str, Any]] = []
+        events += [{"event": "routing", **asdict(ev)} for ev in self.routing]
+        events += [{"event": "compression", **asdict(ev)} for ev in self.compression]
+        events += [{"event": "memory_write", **asdict(ev)} for ev in self.memory_writes]
+        events += [{"event": "memory_read", **asdict(ev)} for ev in self.memory_reads]
+
+        if not events:
+            return 0
+
+        with open(path, "w", encoding="utf-8") as fh:
+            for record in events:
+                fh.write(json.dumps(record, default=str) + "\n")
+
+        _log.info("Exported %d events to %s", len(events), path)
+        return len(events)
+
+    def enable_jsonl_append(self, path: str) -> None:
+        """Enable real-time JSONL append mode. Every recorded event is appended immediately."""
+        self.jsonl_path = path
+        _log.info("JSONL append enabled: %s", path)
+
+    def start_prometheus_server(self, port: int = 9090) -> None:
+        """Start a Prometheus metrics HTTP endpoint (blocking; run in thread)."""
+        try:
+            from prometheus_client import start_http_server, Gauge, Counter, Histogram
+
+            self._prom = {
+                "routing_total": Counter("hive_routing_total", "Routing decisions", ["source", "action"]),
+                "routing_latency": Histogram("hive_routing_latency_ms", "Routing latency"),
+                "compression_total": Counter("hive_compression_total", "Compression runs", ["label"]),
+                "compression_ratio": Gauge("hive_compression_ratio", "Current compression ratio"),
+                "memory_writes_total": Counter("hive_memory_writes_total", "Memory writes"),
+                "memory_reads_total": Counter("hive_memory_reads_total", "Memory reads", ["hit"]),
+                "memory_read_latency": Histogram("hive_memory_read_latency_ms", "Memory read latency"),
+            }
+            start_http_server(port)
+            self._prom_enabled = True
+            _log.info("Prometheus metrics on http://localhost:%d/metrics", port)
+        except ImportError:
+            _log.warning("prometheus-client not installed; run: pip install prometheus-client")
+
+    def enable_otel_traces(self) -> None:
+        """Enable OpenTelemetry span creation for every recorded event."""
+        try:
+            from opentelemetry import trace
+            from opentelemetry.sdk.trace import TracerProvider
+            from opentelemetry.sdk.resources import Resource
+
+            resource = Resource.create({"service.name": "hive"})
+            provider = TracerProvider(resource=resource)
+            trace.set_tracer_provider(provider)
+            self._otel_tracer = trace.get_tracer("hive.telemetry")
+            self._otel_enabled = True
+            _log.info("OpenTelemetry traces enabled")
+        except ImportError:
+            _log.warning("opentelemetry-sdk not installed; run: pip install opentelemetry-api opentelemetry-sdk")
