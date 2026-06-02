@@ -5,12 +5,43 @@ All notable changes to Hive are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-06-02
+
+### Added
+- **Production observability exports** (`hive.telemetry`):
+  - **JSONL batch export**: `telemetry.export_jsonl(path)` flushes all events
+  - **JSONL append mode**: `telemetry.enable_jsonl_append(path)` writes events in real-time
+  - **Prometheus metrics endpoint**: `telemetry.start_prometheus_server(port=9090)` serves
+    `hive_routing_total`, `hive_compression_total`, `hive_memory_writes_total`,
+    `hive_memory_reads_total` (hit/miss labels), plus latency histograms
+  - **OpenTelemetry traces**: `telemetry.enable_otel_traces()` creates spans per operation
+  - Isolated `CollectorRegistry` per `Telemetry` instance prevents metric collisions
+- **`observability` extras** in `pyproject.toml`: `pip install hive-agent-memory[observability]`
+- **CI workflow fixes**: Removed sibling repo installs that broke CPU jobs; disabled
+  self-hosted GPU/Jetson jobs until runners are registered; added Node 24 opt-in
+- **Live integration tests** for Prometheus (`/metrics` endpoint hit) and OpenTelemetry
+  (tracer provider + span creation verified)
+- **`docs/rlhf-roadmap.md`**: RLHF pipeline exploration doc with 4 options evaluated
+
+### Changed
+- `hive-cpp` version bumped from 0.1.0 to 0.4.0 (aligned with main package)
+- `crate-type` changed to `["cdylib", "rlib"]` so `cargo bench` links correctly
+- Telemetry `record_*` methods now increment Prometheus counters in real-time
+- CI `cpu` job now runs lint (ruff + mypy) in addition to tests
+
+### Fixed
+- Prometheus duplicate timeseries error when multiple `Telemetry` instances created
+- Router debug-build test threshold (0.1ms -> 1.0ms) so `cargo test` passes in debug
+- pyproject.toml `license` deprecation warning (SPDX string format)
+
+---
+
 ## [0.3.0] - 2026-06-02
 
 ### Added
 - **Native Rust backend (`hive-cpp/`)**: High-performance optional Rust implementation of core Hive components
-  - **Router** (`src/router.rs`): Decision tree implementation with 0.001ms native latency (269× faster than Python via PyO3)
-  - **Compressor** (`src/compressor.rs`): Context compression with importance scoring, 6.3× faster than Python baseline
+  - **Router** (`src/router.rs`): Decision tree implementation with 0.001ms native latency (269x faster than Python via PyO3)
+  - **Compressor** (`src/compressor.rs`): Context compression with importance scoring, 6.3x faster than Python baseline
   - **Memory** (`src/memory.rs`): Lock-free concurrent hash map for agent memory with O(1) operations
   - **PyO3 bindings** (`src/lib.rs`): Python FFI layer with automatic JSON serialization
   - **Maturin build system**: Easy wheel distribution via `pip install hive-cpp`
@@ -32,10 +63,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Performance (when `hive-cpp` is installed)
 | Component | Python | Rust (via PyO3) | Speedup |
 |-----------|--------|-----------------|---------|
-| Router | ~100ms | 0.372ms | 269× |
-| Compressor | ~0.1ms | 0.656ms | ~0.15× (FFI overhead) |
-| Memory Store | ~0.01ms | 0.020ms | ~0.5× (comparable) |
-| Memory Retrieve | ~0.01ms | 0.012ms | ~0.83× (comparable) |
+| Router | ~100ms | 0.372ms | 269x |
+| Compressor | ~0.1ms | 0.656ms | ~0.15x (FFI overhead) |
+| Memory Store | ~0.01ms | 0.020ms | ~0.5x (comparable) |
+| Memory Retrieve | ~0.01ms | 0.012ms | ~0.83x (comparable) |
 
 **Note**: PyO3 FFI overhead includes JSON serialization and boundary crossing. Native Rust performance significantly exceeds these numbers (e.g., Router: 0.001ms native).
 
@@ -53,12 +84,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   integration; graceful degradation when pynvml is absent.
 - `hive.llm`: unified LLM client (vLLM / llama.cpp / echo) with
   `/v1/models` endpoint probing.
-- `hive_benchmark_micro.py`: per-component micro-benchmarks with mean ± stdev.
+- `hive_benchmark_micro.py`: per-component micro-benchmarks with mean +/- stdev.
 - Statistical envelope on the macro benchmark (`--runs N`).
 - `tests/` suite: 37 tests covering rust_brain, stack, hardware, llm, and
   the benchmark CLI.
 - `Dockerfile.aarch64` for Jetson Thor / Grace.
-- GitHub Actions CI matrix: x86 CPU × 3 Python versions, self-hosted GPU,
+- GitHub Actions CI matrix: x86 CPU x 3 Python versions, self-hosted GPU,
   self-hosted Jetson.
 - CI badges in the README.
 
