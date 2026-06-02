@@ -12,6 +12,9 @@ SCRIPT = os.path.join(ROOT, "scripts", "hive_benchmark.py")
 
 def _run(args, env=None, cwd=None):
     full_env = os.environ.copy()
+    # Ensure the subprocess can find the hive package at the project root
+    ppath = full_env.get("PYTHONPATH", "")
+    full_env["PYTHONPATH"] = ROOT + os.pathsep + ppath if ppath else ROOT
     if env:
         full_env.update(env)
     return subprocess.run(
