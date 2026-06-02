@@ -35,19 +35,19 @@ from typing import Any
 class RoutingEvent:
     """One routing decision."""
 
-    source: str              # "busybee" | "fallback"
-    action: str              # tool name or "escalate"
-    confidence: float        # 0.0 – 1.0
-    latency_ms: float        # ms to decide
-    escalated: bool          # True if action == "escalate" or source == "fallback"
+    source: str  # "busybee" | "fallback"
+    action: str  # tool name or "escalate"
+    confidence: float  # 0.0 – 1.0
+    latency_ms: float  # ms to decide
+    escalated: bool  # True if action == "escalate" or source == "fallback"
 
 
 @dataclass(slots=True)
 class CompressionEvent:
     """One compression pass."""
 
-    role: str                # "user" | "assistant" | "system" | "tool"
-    label: str               # "core" | "drop" | "compact" | "distill" | ...
+    role: str  # "user" | "assistant" | "system" | "tool"
+    label: str  # "core" | "drop" | "compact" | "distill" | ...
     original_tokens: int
     compressed_tokens: int
     latency_ms: float
@@ -69,7 +69,7 @@ class MemoryReadEvent:
     """One memory recall."""
 
     key: str
-    hit: bool                # True if the key existed
+    hit: bool  # True if the key existed
     latency_ms: float
 
 
@@ -209,9 +209,7 @@ class Telemetry:
                     2,
                 ),
                 "escalated_count": escalated,
-                "escalated_pct": round(
-                    escalated / max(routing_count, 1) * 100, 2
-                ),
+                "escalated_pct": round(escalated / max(routing_count, 1) * 100, 2),
             },
             "compression": {
                 **latency_stats(self.compression),
@@ -227,9 +225,7 @@ class Telemetry:
             },
             "memory_reads": {
                 **latency_stats(self.memory_reads),
-                "hit_rate_pct": round(
-                    read_hits / max(read_count, 1) * 100, 2
-                ),
+                "hit_rate_pct": round(read_hits / max(read_count, 1) * 100, 2),
             },
         }
 

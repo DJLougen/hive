@@ -101,8 +101,7 @@ def test_neighbours_walks_edge_kind():
 def test_bulk_write_is_atomic_per_call():
     brain = RustBrain()
     rows = [
-        {"key": f"k{i}", "value": i, "ts_ns": 1000 + i, "trust": 0.5}
-        for i in range(10)
+        {"key": f"k{i}", "value": i, "ts_ns": 1000 + i, "trust": 0.5} for i in range(10)
     ]
     n = brain.bulk_write(rows)
     assert n == 10
@@ -113,7 +112,9 @@ def test_hive_hermes_backend_roundtrip():
     from hive.rust_brain import HermesBackend
 
     backend = HermesBackend()
-    backend.publish({"key": "endpoint", "value": "/v1/x", "trust": 0.7, "caused_by": ["init"]})
+    backend.publish(
+        {"key": "endpoint", "value": "/v1/x", "trust": 0.7, "caused_by": ["init"]}
+    )
     dump = backend.pull(max_keys=10, min_trust=0.0)
     assert any(d["key"] == "endpoint" for d in dump)
     # JSON-roundtrip safe.

@@ -8,7 +8,7 @@ This module provides:
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from typing import Any
 
@@ -40,7 +40,10 @@ class RoutingOutcome:
     outcome_type: OutcomeType
 
     def is_correct(self) -> bool:
-        return self.outcome_type in (OutcomeType.CORRECT, OutcomeType.ESCALATED_CORRECTLY)
+        return self.outcome_type in (
+            OutcomeType.CORRECT,
+            OutcomeType.ESCALATED_CORRECTLY,
+        )
 
     def is_wrong_action(self) -> bool:
         return self.outcome_type == OutcomeType.WRONG_ACTION

@@ -5,7 +5,6 @@ Outputs a clean table for README inclusion.
 """
 
 import json
-from pathlib import Path
 
 # Load measured data
 with open('results/energy_real.json', 'r') as f:

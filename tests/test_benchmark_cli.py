@@ -1,4 +1,5 @@
 """Test the CLI surface of :mod:`hive_benchmark` without touching a GPU."""
+
 from __future__ import annotations
 
 import json
@@ -32,12 +33,17 @@ def test_benchmark_echo_smoke(tmp_path):
     out = tmp_path / "report.json"
     cp = _run(
         [
-            "--transcript-turns", "20",
-            "--brain-writes", "200",
-            "--honey-comb-mode", "fast",
-            "--inference-backend", "echo",
+            "--transcript-turns",
+            "20",
+            "--brain-writes",
+            "200",
+            "--honey-comb-mode",
+            "fast",
+            "--inference-backend",
+            "echo",
             "--quiet",
-            "--output", str(out),
+            "--output",
+            str(out),
         ],
         env={"HIVE_NO_NVML": "1"},
     )
@@ -58,14 +64,19 @@ def test_benchmark_unknown_honeycomb_mode_fails():
 def test_benchmark_with_real_honeycomb(tmp_path):
     pytest.importorskip("honeycomb")
     out = tmp_path / "report.json"
-    cp = _run(
+    _run(
         [
-            "--transcript-turns", "20",
-            "--brain-writes", "200",
-            "--honey-comb-mode", "honeycomb",
-            "--inference-backend", "echo",
+            "--transcript-turns",
+            "20",
+            "--brain-writes",
+            "200",
+            "--honey-comb-mode",
+            "honeycomb",
+            "--inference-backend",
+            "echo",
             "--quiet",
-            "--output", str(out),
+            "--output",
+            str(out),
         ],
         env={"HIVE_NO_NVML": "1"},
     )

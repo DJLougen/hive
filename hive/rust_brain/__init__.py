@@ -194,6 +194,7 @@ class RustBrain:
         if previous is not None and previous.node_id != node.node_id:
             previous.attach(EdgeKind.SUPERSEDES, key)
         return node
+
     def forget(self, key: str) -> None:
         with self._lock:
             self._nodes.pop(key, None)
@@ -223,7 +224,9 @@ class RustBrain:
             return sorted(out)
         return sorted(node.edges.get(kind, ()))
 
-    def search(self, *, tag: str | None = None, min_trust: float = 0.0) -> list[MemoryNode]:
+    def search(
+        self, *, tag: str | None = None, min_trust: float = 0.0
+    ) -> list[MemoryNode]:
         """Linear scan over the store. Fine up to ~10k nodes; the Rust core
         will use a roaring bitmap index for the same query."""
         with self._lock:
@@ -281,7 +284,9 @@ class RustBrain:
         return isinstance(key, str) and key in self._nodes
 
     def __repr__(self) -> str:
-        return f"RustBrain(nodes={len(self._nodes)}, monotonic={self._enforce_monotonic})"
+        return (
+            f"RustBrain(nodes={len(self._nodes)}, monotonic={self._enforce_monotonic})"
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -320,7 +325,9 @@ class HermesBackend:
             edges=edges or None,
         )
 
-    def pull(self, *, max_keys: int = 32, min_trust: float = 0.5) -> list[dict[str, Any]]:
+    def pull(
+        self, *, max_keys: int = 32, min_trust: float = 0.5
+    ) -> list[dict[str, Any]]:
         """Return a Hermes-formatted context dump.
 
         The output is exactly the list of dicts that should be appended to

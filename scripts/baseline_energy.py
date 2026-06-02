@@ -76,7 +76,7 @@ def main():
     # Initialize NVML monitor
     monitor = NVMLMonitor()
     
-    print(f"Baseline energy measurement (no Hive)")
+    print("Baseline energy measurement (no Hive)")
     print(f"  Sessions: {args.sessions}")
     print(f"  Tokens/session: {args.tokens:,}")
     print(f"  Endpoint: {args.endpoint}")

@@ -22,9 +22,8 @@ import os
 import random
 import statistics
 import string
-import sys
 import time
-from typing import Any, Callable
+from typing import Any
 
 # We import the meta-package + benchmarks lazily.
 import hive  # noqa: F401

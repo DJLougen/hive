@@ -196,7 +196,7 @@ if __name__ == "__main__":
         import time
         time.sleep(0.5)
     
-    print(f"\nMeasurement results:")
+    print("\nMeasurement results:")
     print(f"  Duration: {m.result.duration_seconds:.3f} s")
     print(f"  GPU energy: {m.result.gpu_energy_joules:.2f} J")
     print(f"  CPU energy: {m.result.cpu_energy_joules:.2f} J")

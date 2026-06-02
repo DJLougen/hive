@@ -75,12 +75,16 @@ class ContentType:
 # ---------------------------------------------------------------------------
 
 _RE_PATCH = re.compile(r"^[-+]{3} |^diff --git|^@@ ", re.M)
-_RE_TOOL_CALL = re.compile(r'"name"\s*:\s*"(?:read_file|run_tests|apply_patch|search|run_command)"')
+_RE_TOOL_CALL = re.compile(
+    r'"name"\s*:\s*"(?:read_file|run_tests|apply_patch|search|run_command)"'
+)
 _RE_TEST_LINE = re.compile(r"\b\d+\s*(?:passed|failed|errors?)\b", re.I)
 _RE_CODE = re.compile(
     r"^(class|def|import|from|export|function|pub |fn |struct |enum |impl )", re.M
 )
-_RE_TRACEBACK = re.compile(r"Traceback \(most recent call last\)|^\w+(?:Error|Exception): ", re.M)
+_RE_TRACEBACK = re.compile(
+    r"Traceback \(most recent call last\)|^\w+(?:Error|Exception): ", re.M
+)
 _RE_FILE_LINE = re.compile(r"^[^\s:]+:\d+:", re.M)
 _RE_EXIT = re.compile(r"exit[= ]+\d+", re.M)
 
@@ -165,11 +169,8 @@ def _compress_test_output(content: str) -> str:
 
 
 def _compress_search(content: str) -> str:
-    lines = [l for l in content.splitlines() if l.strip()][:8]
-    return (
-        f"[search] {len(content.splitlines())} hits; sample: "
-        + " | ".join(lines)
-    )
+    lines = [line for line in content.splitlines() if line.strip()][:8]
+    return f"[search] {len(content.splitlines())} hits; sample: " + " | ".join(lines)
 
 
 def _compress_command(content: str) -> str:
@@ -287,9 +288,8 @@ class RuleFastHoneyComb:
     def process(self, message: Message) -> CompressedMessage:  # noqa: D401
         """Process a single message through the rule-based hot loop."""
         self._turn += 1
-        content_type = (
-            message.content_type
-            or _infer_content_type(message.role, message.content)
+        content_type = message.content_type or _infer_content_type(
+            message.role, message.content
         )
         label = _classify(message.role, content_type, message.content)
         compressed = _compress(message.content, content_type, label)

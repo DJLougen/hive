@@ -18,14 +18,19 @@ from __future__ import annotations
 
 import json
 import logging
-import os
 import time
 import urllib.error
 import urllib.request
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
 _log = logging.getLogger("hive.llm")
+
+
+def _validate_url(url: str) -> None:
+    """Ensure URL uses http or https scheme (bandit B310)."""
+    if not url.startswith(("http://", "https://")):
+        raise ValueError(f"URL must use http or https scheme, got: {url!r}")
 
 
 @dataclass(slots=True)
@@ -52,7 +57,7 @@ def probe_endpoint(endpoint: str, *, timeout: float = 2.0) -> dict[str, Any]:
     url = f"{endpoint.rstrip('/')}/v1/models"
     req = urllib.request.Request(url=url, method="GET")
     try:
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:  # nosec B310 — validated by _validate_url
             return json.loads(resp.read().decode("utf-8"))
     except (urllib.error.URLError, TimeoutError, OSError) as exc:
         raise RuntimeError(
@@ -69,7 +74,10 @@ def discover_local_endpoints() -> list[tuple[str, str]]:
     llama.cpp (8080) in that order.
     """
     found: list[tuple[str, str]] = []
-    for backend, url in (("vllm", "http://127.0.0.1:8000"), ("llama.cpp", "http://127.0.0.1:8080")):
+    for backend, url in (
+        ("vllm", "http://127.0.0.1:8000"),
+        ("llama.cpp", "http://127.0.0.1:8080"),
+    ):
         try:
             probe_endpoint(url, timeout=0.5)
             found.append((backend, url))
@@ -86,12 +94,21 @@ def discover_local_endpoints() -> list[tuple[str, str]]:
 class _OpenAICompatBackend:
     """Backend for any server speaking the OpenAI /v1/chat/completions API."""
 
-    def __init__(self, endpoint: str, model_name: str, *, timeout: float = 60.0) -> None:
+    def __init__(
+        self, endpoint: str, model_name: str, *, timeout: float = 60.0
+    ) -> None:
+        _validate_url(endpoint)
         self.endpoint = endpoint.rstrip("/")
         self.model_name = model_name
         self.timeout = timeout
 
-    def chat(self, messages: Sequence[Mapping[str, str]], *, max_tokens: int = 256, temperature: float = 0.0) -> ModelResponse:
+    def chat(
+        self,
+        messages: Sequence[Mapping[str, str]],
+        *,
+        max_tokens: int = 256,
+        temperature: float = 0.0,
+    ) -> ModelResponse:
         payload = {
             "model": self.model_name,
             "messages": [dict(m) for m in messages],
@@ -108,7 +125,7 @@ class _OpenAICompatBackend:
         )
         t0 = time.perf_counter()
         try:
-            with urllib.request.urlopen(req, timeout=self.timeout) as resp:
+            with urllib.request.urlopen(req, timeout=self.timeout) as resp:  # nosec B310 — validated by _validate_url
                 body = json.loads(resp.read().decode("utf-8"))
         except (urllib.error.URLError, TimeoutError, OSError) as exc:
             raise RuntimeError(f"chat failed against {self.endpoint}: {exc}") from exc
@@ -128,7 +145,13 @@ class _OpenAICompatBackend:
 class EchoBackend:
     """Deterministic stub. Returns a small echo of the last user message."""
 
-    def chat(self, messages: Sequence[Mapping[str, str]], *, max_tokens: int = 256, temperature: float = 0.0) -> ModelResponse:
+    def chat(
+        self,
+        messages: Sequence[Mapping[str, str]],
+        *,
+        max_tokens: int = 256,
+        temperature: float = 0.0,
+    ) -> ModelResponse:
         last = messages[-1]["content"] if messages else ""
         return ModelResponse(
             text="[echo] " + last[:200],
