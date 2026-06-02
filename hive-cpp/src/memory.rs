@@ -9,7 +9,7 @@
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 use std::time::{Duration, Instant};
-use xxhash_rust::xxh3::xxh3_64;
+
 
 /// Unique identifier for memory nodes.
 pub type MemoryKey = u64;

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 
 import pytest
 
@@ -20,7 +19,9 @@ def test_stack_with_fallback_compress():
     """HiveStack defaults to honey-comb when installed, but the rule_fast
     fallback must work end-to-end when explicitly passed in."""
     stack = HiveStack(honey_comb=RuleFastHoneyComb())
-    out = stack.compress("tool", "tests: 12 passed, 2 failed (test_session_invalidation)")
+    out = stack.compress(
+        "tool", "tests: 12 passed, 2 failed (test_session_invalidation)"
+    )
     assert out.label == "distill"
     assert out.compressed_tokens <= out.original_tokens
 
@@ -36,7 +37,9 @@ def test_infer_content_type_search_results():
 
 
 def test_infer_content_type_file():
-    content = "import os\nclass Foo:\n    def bar(self):\n        return 1\n" + "x" * 1000
+    content = (
+        "import os\nclass Foo:\n    def bar(self):\n        return 1\n" + "x" * 1000
+    )
     assert _infer_content_type("tool", content) == "tool_result_file"
 
 
@@ -119,7 +122,9 @@ def test_rule_fast_throughput_smoke():
     rng = random.Random(0)
 
     def synth() -> str:
-        return " ".join("".join(rng.choices(string.ascii_letters, k=6)) for _ in range(120))
+        return " ".join(
+            "".join(rng.choices(string.ascii_letters, k=6)) for _ in range(120)
+        )
 
     for _ in range(50):  # warmup
         hc.process(Message(role="tool", content=synth()))

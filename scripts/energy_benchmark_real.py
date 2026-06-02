@@ -140,7 +140,7 @@ def run_one_inference(
 def measure_baseline(
     model, tokenizer, prompts: List[str], sample_count: int
 ) -> List[PathMeasurement]:
-    print(f"\nBASELINE (raw tokens, no Hive preprocessing)")
+    print("\nBASELINE (raw tokens, no Hive preprocessing)")
     print("=" * 60)
     measurements = []
     
@@ -171,7 +171,7 @@ def measure_hive(
     model, tokenizer, prompts: List[str], sample_count: int,
     baseline_measurements: List[PathMeasurement],
 ) -> List[PathMeasurement]:
-    print(f"\nHIVE (with rule_fast preprocessing)")
+    print("\nHIVE (with rule_fast preprocessing)")
     print("=" * 60)
     
     stack = hive.HiveStack()  # uses rule_fast by default for compression
@@ -305,7 +305,7 @@ def main():
     print("\n" + "=" * 60)
     print("RESULTS (gpt2, 117M params, RTX 3090)")
     print("=" * 60)
-    print(f"\nPer-prompt average:")
+    print("\nPer-prompt average:")
     print(f"  Baseline: {total_baseline_energy/args.prompts:.3f} J  ({avg_jtok_baseline:.4f} J/tok)")
     print(f"  Hive:     {total_hive_energy/args.prompts:.3f} J  ({avg_jtok_hive:.4f} J/tok)")
     print(f"  Savings:  {energy_saved_j/args.prompts:.3f} J  ({energy_saved_pct:.1f}%)")
@@ -314,7 +314,7 @@ def main():
     print("\n" + "=" * 60)
     print("SCALED TO REAL MODEL SIZES (FLOPs-linear projection)")
     print("=" * 60)
-    print(f"Transformer FLOPs/token = 2 × params -> energy scales linearly.\n")
+    print("Transformer FLOPs/token = 2 × params -> energy scales linearly.\n")
     print(f"{'Model':<20} {'Baseline J/tok':>14} {'Hive J/tok':>14} {'Savings %':>10}")
     print("-" * 60)
     

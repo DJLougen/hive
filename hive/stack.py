@@ -26,8 +26,14 @@ from hive.feedback import FeedbackBuffer, RoutingOutcome, OutcomeType
 from hive.policy_updater import PolicyUpdater
 
 __all__ = [
-    "HiveStack", "RouteDecision", "CompressedTurn", "HiveUnavailable",
-    "Telemetry", "FeedbackBuffer", "RoutingOutcome", "OutcomeType"
+    "HiveStack",
+    "RouteDecision",
+    "CompressedTurn",
+    "HiveUnavailable",
+    "Telemetry",
+    "FeedbackBuffer",
+    "RoutingOutcome",
+    "OutcomeType",
 ]
 
 _log = logging.getLogger("hive.stack")
@@ -140,7 +146,7 @@ class HiveStack:
         self.telemetry = telemetry
         self.feedback = feedback_buffer
         self._policy_updater = PolicyUpdater() if feedback_buffer is not None else None
-        
+
         # Track last routing decision for feedback
         self._last_state: dict[str, Any] | None = None
         self._last_decision: RouteDecision | None = None
@@ -156,7 +162,7 @@ class HiveStack:
         """Decide which tool to invoke next. CPU-only."""
         # Store state for later feedback
         self._last_state = dict(state)
-        
+
         if self.busybee is None:
             decision = RouteDecision(
                 tool="escalate",
@@ -199,7 +205,9 @@ class HiveStack:
 
     # -- honey-comb ---------------------------------------------------------
 
-    def compress(self, role: str, content: str, *, content_type: str | None = None) -> CompressedTurn:
+    def compress(
+        self, role: str, content: str, *, content_type: str | None = None
+    ) -> CompressedTurn:
         """Run a single message through the inline compression hot loop.
 
         ``content_type`` is optional; the compressor will infer it from the
@@ -363,13 +371,13 @@ class HiveStack:
             len(self.feedback),
             self.feedback.capacity,
         )
-    
+
     def should_update_policy(self) -> bool:
         """Check if feedback buffer has enough outcomes to update policy."""
         if self.feedback is None:
             return False
         return self.feedback.is_full()
-    
+
     def update_policy(self) -> bool:
         """Update busybee policy from collected feedback.
 
@@ -378,28 +386,34 @@ class HiveStack:
         if not self.should_update_policy():
             _log.warning("Cannot update policy: not enough feedback")
             return False
-        
+
         if self.busybee is None:
             _log.warning("Cannot update policy: no busybee policy loaded")
             return False
-        
+
         if self._policy_updater is None:
             _log.warning("Cannot update policy: no policy updater configured")
             return False
-        
+        if self.feedback is None:
+            _log.warning("Cannot update policy: no feedback buffer")
+            return False
         batch = self.feedback.get_batch()
         success = self._policy_updater.update(self.busybee, batch)
-        
+
         if success:
-            _log.info("Successfully updated busybee policy from %d outcomes", len(batch))
+            _log.info(
+                "Successfully updated busybee policy from %d outcomes", len(batch)
+            )
         else:
             _log.warning("Failed to update busybee policy")
-        
+
         return success
 
     # -- composition --------------------------------------------------------
 
-    def step(self, state: Mapping[str, Any], transcript: Sequence[tuple[str, str]]) -> dict[str, Any]:
+    def step(
+        self, state: Mapping[str, Any], transcript: Sequence[tuple[str, str]]
+    ) -> dict[str, Any]:
         """End-to-end Hive step: route → compress → write the decision to brain.
 
         Returns a dict with the routing decision, the compressed last turn

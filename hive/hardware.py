@@ -18,7 +18,7 @@ import logging
 import os
 import time
 from contextlib import contextmanager
-from typing import Iterator, Sequence
+from typing import Iterator
 
 _log = logging.getLogger("hive.hardware")
 
@@ -49,7 +49,9 @@ def init() -> str:
             _DEVICE_HANDLE = pynvml.nvmlDeviceGetHandleByIndex(0)
             name = pynvml.nvmlDeviceGetName(_DEVICE_HANDLE)
             # Newer pynvml returns a str; older returns bytes.
-            _DEVICE_NAME = name.decode() if isinstance(name, (bytes, bytearray)) else str(name)
+            _DEVICE_NAME = (
+                name.decode() if isinstance(name, (bytes, bytearray)) else str(name)
+            )
             _HAS_NVML = True
         return f"pynvml ({_DEVICE_COUNT} GPU(s); gpu0={_DEVICE_NAME})"
     except Exception as exc:  # pragma: no cover - optional
@@ -61,7 +63,7 @@ def shutdown() -> None:
     if _HAS_NVML and _NVML is not None:
         try:
             _NVML.nvmlShutdown()
-        except Exception:  # pragma: no cover
+        except Exception:  # pragma: no cover  # nosec B110 — shutdown cleanup
             pass
 
 
@@ -75,7 +77,7 @@ def device_count() -> int:
 
 def read_power_mw() -> int:
     """Current GPU power draw in milliwatts. 0 if NVML is unavailable."""
-    if not _HAS_NVML or _DEVICE_HANDLE is None:
+    if not _HAS_NVML or _NVML is None or _DEVICE_HANDLE is None:
         return 0
     try:
         return int(_NVML.nvmlDeviceGetPowerUsage(_DEVICE_HANDLE))
@@ -85,7 +87,7 @@ def read_power_mw() -> int:
 
 def read_memory_used_mb() -> float:
     """Current GPU memory used in MiB. 0 if NVML is unavailable."""
-    if not _HAS_NVML or _DEVICE_HANDLE is None:
+    if not _HAS_NVML or _NVML is None or _DEVICE_HANDLE is None:
         return 0.0
     try:
         return _NVML.nvmlDeviceGetMemoryInfo(_DEVICE_HANDLE).used / (1024 * 1024)
@@ -95,7 +97,7 @@ def read_memory_used_mb() -> float:
 
 def read_util_pct() -> float:
     """Current SM utilisation %. 0 if NVML is unavailable."""
-    if not _HAS_NVML or _DEVICE_HANDLE is None:
+    if not _HAS_NVML or _NVML is None or _DEVICE_HANDLE is None:
         return 0.0
     try:
         return float(_NVML.nvmlDeviceGetUtilizationRates(_DEVICE_HANDLE).gpu)
@@ -122,7 +124,9 @@ class PowerSampler:
         self.samples: list[tuple[float, int, float]] = []  # (t, power_mw, mem_mb)
 
     def sample(self) -> None:
-        self.samples.append((time.perf_counter(), read_power_mw(), read_memory_used_mb()))
+        self.samples.append(
+            (time.perf_counter(), read_power_mw(), read_memory_used_mb())
+        )
 
     def energy_joules(self) -> float:
         """Trapezoidal integration of the power samples."""

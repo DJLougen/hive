@@ -7,7 +7,7 @@ installed.
 
 from __future__ import annotations
 
-from hive.rust_brain import EdgeKind, MemoryNode, RustBrain
+from hive.rust_brain import EdgeKind, RustBrain
 
 
 def smoke() -> dict[str, object]:

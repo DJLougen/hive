@@ -16,12 +16,11 @@ import sys
 import json
 import argparse
 from pathlib import Path
-from pathlib import Path as PathLib
 
 # Add parent to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from energy_tracker import measure_energy, EnergyMeasurement
+from energy_tracker import measure_energy
 from hive import Hive
 from hive.busybee import busybee_cpu
 from hive.honeycomb import honeycomb
@@ -58,7 +57,7 @@ def count_tokens_approx(text: str) -> int:
 def measure_baseline(prompts: list, sample_count: int):
     """Baseline: Send raw prompts without preprocessing."""
     print(f"\n{'='*60}")
-    print(f"BASELINE: No preprocessing (raw tokens)")
+    print("BASELINE: No preprocessing (raw tokens)")
     print(f"{'='*60}")
     
     total_tokens = 0
@@ -110,7 +109,7 @@ def measure_baseline(prompts: list, sample_count: int):
 def measure_hive(prompts: list, sample_count: int):
     """Hive: Preprocess prompts, then send compressed tokens."""
     print(f"\n{'='*60}")
-    print(f"HIVE: With preprocessing (compressed tokens)")
+    print("HIVE: With preprocessing (compressed tokens)")
     print(f"{'='*60}")
     
     # Initialize Hive
@@ -207,12 +206,12 @@ def main():
     print(f"\n{'='*60}")
     print("RESULTS")
     print(f"{'='*60}")
-    print(f"\nBaseline (no preprocessing):")
+    print("\nBaseline (no preprocessing):")
     print(f"  Total tokens:  {baseline_tokens:,}")
     print(f"  Total energy:  {baseline_energy:.2f} J")
     print(f"  Avg/prompt:    {baseline_avg:.2f} J")
     
-    print(f"\nHive (with preprocessing):")
+    print("\nHive (with preprocessing):")
     print(f"  Total tokens:  {hive_tokens:,} ({((baseline_tokens-hive_tokens)/baseline_tokens*100):.1f}% reduction)")
     print(f"  Total energy:  {hive_energy:.2f} J")
     print(f"  Avg/prompt:    {hive_avg:.2f} J")
@@ -224,7 +223,7 @@ def main():
     
     # Project to scale
     if args.prompts >= 5:
-        print(f"\nAt scale (1000 prompts):")
+        print("\nAt scale (1000 prompts):")
         print(f"  Baseline: {baseline_avg * 1000:.0f} J = {baseline_avg * 1000 / 3600:.2f} kWh")
         print(f"  Hive:     {hive_avg * 1000:.0f} J = {hive_avg * 1000 / 3600:.2f} kWh")
         print(f"  Saved:    {(baseline_avg - hive_avg) * 1000:.0f} J = {(baseline_avg - hive_avg) * 1000 / 3600:.2f} kWh")

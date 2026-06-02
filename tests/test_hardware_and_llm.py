@@ -6,7 +6,6 @@ behaviour we test is the graceful-degradation contract.
 
 from __future__ import annotations
 
-import json
 
 import pytest
 
