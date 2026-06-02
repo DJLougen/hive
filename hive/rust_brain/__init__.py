@@ -129,12 +129,13 @@ class RustBrain:
     implementation lands.
     """
 
-    def __init__(self, *, tenant_id: str = "default", tenant_isolation: bool = True, enforce_monotonic: bool = True) -> None:
+    def __init__(self, *, tenant_id: str = "default", tenant_isolation: bool = True, enforce_monotonic: bool = True, default_ttl_s: float | None = None) -> None:
         self._tenant_id = tenant_id
         self._tenant_isolation = tenant_isolation
         self._nodes: dict[str, MemoryNode] = {}
         self._lock = threading.RLock()
         self._enforce_monotonic = enforce_monotonic
+        self._default_ttl_s = default_ttl_s
         # Simple per-key counter so we can show "newest first" ordering
         # without re-sorting the whole store on every read.
         self._order: list[str] = []
@@ -295,6 +296,37 @@ class RustBrain:
 
     def __contains__(self, key: object) -> bool:
         return isinstance(key, str) and self._prefix(key) in self._nodes
+
+    def expire(self, key: str, *, ttl_s: float | None = None) -> bool:
+        """Remove a key if it has exceeded its TTL. Returns True if removed."""
+        ttl = ttl_s if ttl_s is not None else self._default_ttl_s
+        if ttl is None:
+            return False
+        storage_key = self._prefix(key)
+        node = self._nodes.get(storage_key)
+        if node is None:
+            return False
+        age_s = (_now_ns() - node.ts_ns) / 1e9
+        if age_s > ttl:
+            self.forget(key)
+            return True
+        return False
+
+    def gc_expired(self) -> int:
+        """Remove all expired entries. Returns count removed."""
+        if self._default_ttl_s is None:
+            return 0
+        removed = 0
+        for storage_key in list(self._nodes):
+            node = self._nodes[storage_key]
+            age_s = (_now_ns() - node.ts_ns) / 1e9
+            if age_s > self._default_ttl_s:
+                self._nodes.pop(storage_key, None)
+                idx = self._order_index.pop(storage_key, None)
+                if idx is not None:
+                    self._order[idx] = ""
+                removed += 1
+        return removed
 
     def __repr__(self) -> str:
         return (

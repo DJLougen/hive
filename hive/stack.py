@@ -25,6 +25,8 @@ from hive.telemetry import Telemetry
 from hive.feedback import FeedbackBuffer, RoutingOutcome, OutcomeType
 from hive.policy_updater import PolicyUpdater
 from hive.schemas import validate_state
+from hive.config import HiveConfig
+from hive.ratelimit import RateLimiter
 
 __all__ = [
     "HiveStack",
@@ -142,12 +144,20 @@ class HiveStack:
         feedback_buffer: FeedbackBuffer | None = None,
         tenant_id: str = "default",
         validate: bool = False,
+        config: HiveConfig | None = None,
+        rate_limiter: RateLimiter | None = None,
     ) -> None:
+        self.config = config or HiveConfig()
         self.busybee = busybee_policy
         self.comb = honey_comb if honey_comb is not None else _default_honey_comb()
-        self.brain = rust_brain or RustBrain(tenant_id=tenant_id)
+        self.brain = rust_brain or RustBrain(
+            tenant_id=tenant_id,
+            tenant_isolation=self.config.tenant_isolation,
+            default_ttl_s=self.config.default_ttl_s,
+        )
         self._tenant_id = tenant_id
-        self._validate = validate
+        self._validate = validate or self.config.validate_inputs
+        self.rate_limiter = rate_limiter
         self.telemetry = telemetry
         self.feedback = feedback_buffer
         self._policy_updater = PolicyUpdater() if feedback_buffer is not None else None
@@ -165,6 +175,14 @@ class HiveStack:
 
     def route(self, state: Mapping[str, Any]) -> RouteDecision:
         """Decide which tool to invoke next. CPU-only."""
+        if self.rate_limiter is not None and not self.rate_limiter.check(self._tenant_id, "route"):
+            return RouteDecision(
+                tool="escalate",
+                args={"reason": "rate limited"},
+                confidence=0.0,
+                escalated=True,
+                source="ratelimit",
+            )
         if self._validate:
             validate_state(state)
         # Store state for later feedback
