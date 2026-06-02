@@ -40,3 +40,6 @@ desktop.ini
 runs/
 *.json.bak
 .cache/
+
+# Rust build artifacts
+hive-cpp/target/
