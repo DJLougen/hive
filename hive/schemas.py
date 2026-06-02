@@ -18,6 +18,9 @@ except Exception:  # pragma: no cover
     ValidationError = Exception  # type: ignore[misc,assignment]
     _HAS_PYDANTIC = False
 
+    def Field(*args, **kwargs):  # type: ignore[no-redef]
+        return None
+
 
 class AgentState(BaseModel if _HAS_PYDANTIC else object):  # type: ignore[valid-type,misc]
     """Validated agent state passed to :meth:`HiveStack.route`."""
