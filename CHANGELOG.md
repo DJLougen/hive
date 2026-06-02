@@ -5,6 +5,56 @@ All notable changes to Hive are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-06-02
+
+### Added — Enterprise-Grade Infrastructure (Critical → High → Medium → Low)
+
+#### Critical Tier
+- **Schema validation** (`hive.schemas`): Pydantic models for `AgentState`,
+  `RouteDecisionOut`, `MemoryNodeIn` with `validate_state()` / `validate_memory()`.
+  Enabled via `HiveStack(validate=True)`; backward-compatible default `validate=False`.
+- **Multi-tenancy** (`hive.rust_brain`): `RustBrain(tenant_id=..., tenant_isolation=True)`
+  prefixes internal storage keys per tenant. Cross-tenant reads return `None`.
+- **Health / readiness probes** (`hive.health`): `HealthServer` with `/health`
+  (liveness, always 200) and `/ready` (readiness, 200/503). `is_healthy()` synchronous
+  check for load balancer integration.
+
+#### High Tier
+- **Rate limiting** (`hive.ratelimit`): Token-bucket per `(tenant_id, operation)`.
+  `HiveStack(rate_limiter=...)` returns `source="ratelimit"` escalation when bucket
+  empty. Backward-compatible default `rate_limiter=None`.
+- **Config management** (`hive.config`): `HiveConfig.from_env()` reads `HIVE_*`
+  environment variables. `validate()` enforces constraints (`rate_limit >= 0`).
+  Auto-wires `tenant_isolation` and `default_ttl_s` into `RustBrain`.
+- **Data retention / TTL** (`hive.rust_brain`): `expire(key)` removes stale entries;
+  `gc_expired()` bulk-scans expired memories. GDPR Article 17 ready.
+
+#### Medium Tier
+- **Load testing** (`scripts/hive_load_test.py`): Sustained-load validation with
+  p50/p95/p99 latency reporting, error-rate tracking, and JSON output.
+- **Blue-green deployment markers** (`hive.deployment`): `DeploymentMarker` with
+  traffic-weight control, error-rate-based promotion gates, and `to_dict()` for dashboards.
+- **Chaos engineering** (`scripts/hive_chaos.py`): Latency injection, state corruption,
+  and request-drop simulation for resilience testing.
+- **SBOM generation** (`scripts/generate_sbom.py`): CycloneDX-compatible JSON output
+  for supply-chain auditing.
+
+#### Low Tier
+- **Compliance checklist** (`docs/compliance-checklist.md`): SOC 2, GDPR, ISO 27001
+  control mapping with implementation status per control.
+- **SOC 2 evidence stubs** (`docs/soc2-evidence.md`): Evidence templates for
+  logical-access controls, system monitoring, change management, and availability.
+
+### Changed
+- `HiveStack` constructor now accepts `config` and `rate_limiter` kwargs.
+- `RustBrain.__repr__` includes `tenant=...` for observability.
+
+### Fixed
+- Health probes accept `"degraded"` (optional missing policy) as non-failing
+  for readiness, preventing false-negative readiness checks.
+- Tenant prefixing is internal-only (`storage_key`); external `MemoryNode.key`
+  is preserved unchanged for backward compatibility.
+
 ## [0.4.0] - 2026-06-02
 
 ### Added
