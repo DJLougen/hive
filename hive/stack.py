@@ -311,12 +311,13 @@ class HiveStack:
 
     def recall(self, key: str, default: Any = None) -> Any:
         t0 = time.perf_counter()
+        hit = key in self.brain
         result = self.brain.recall(key, default)
         elapsed_ms = (time.perf_counter() - t0) * 1000.0
         if self.telemetry is not None:
             self.telemetry.record_memory_read(
                 key=key,
-                hit=result is not None,
+                hit=hit,
                 latency_ms=elapsed_ms,
             )
         return result
@@ -356,8 +357,23 @@ class HiveStack:
             except ValueError:
                 outcome_type = OutcomeType.UNKNOWN
 
+        if self._last_decision is not None and (
+            decision.tool == self._last_decision.tool
+            and decision.args == self._last_decision.args
+            and decision.source == self._last_decision.source
+            and decision.confidence == self._last_decision.confidence
+            and decision.escalated == self._last_decision.escalated
+        ):
+            state = dict(self._last_state) if self._last_state else {}
+        else:
+            _log.warning(
+                "record_outcome decision does not match the most recent route(); "
+                "recording with empty state"
+            )
+            state = {}
+
         outcome = RoutingOutcome(
-            state=dict(self._last_state) if self._last_state else {},
+            state=state,
             routed_action=decision.tool if decision else None,
             actual_action=actual_action,
             outcome_type=outcome_type,

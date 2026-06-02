@@ -167,8 +167,13 @@ impl Compressor {
         let total_compressed: usize = results.iter().map(|r| r.compressed_tokens).sum();
         let total_latency: f64 = results.iter().map(|r| r.latency_ms).sum();
         
-        let avg_ratio = total_original as f64 / total_compressed as f64;
-        let avg_latency = total_latency / results.len() as f64;
+        let count = results.len();
+        let avg_ratio = if total_compressed == 0 {
+            0.0
+        } else {
+            total_original as f64 / total_compressed as f64
+        };
+        let avg_latency = if count == 0 { 0.0 } else { total_latency / count as f64 };
         
         CompressionStats {
             total_messages: results.len(),

@@ -7,13 +7,14 @@ import os
 import subprocess
 import sys
 
+import pytest
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SCRIPT = os.path.join(ROOT, "scripts", "hive_benchmark.py")
 
 
 def _run(args, env=None, cwd=None):
     full_env = os.environ.copy()
-    # Ensure the subprocess can find the hive package at the project root
     ppath = full_env.get("PYTHONPATH", "")
     full_env["PYTHONPATH"] = ROOT + os.pathsep + ppath if ppath else ROOT
     if env:
@@ -56,13 +57,12 @@ def test_benchmark_echo_smoke(tmp_path):
 
 
 def test_benchmark_unknown_honeycomb_mode_fails():
-    import pytest
-
     with pytest.raises(subprocess.CalledProcessError):
         _run(["--honey-comb-mode", "wat", "--quiet"], env={"HIVE_NO_NVML": "1"})
 
 
 def test_benchmark_with_real_honeycomb(tmp_path):
+    pytest.importorskip("honeycomb")
     out = tmp_path / "report.json"
     _run(
         [

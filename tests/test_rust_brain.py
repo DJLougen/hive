@@ -21,6 +21,18 @@ def test_remember_then_recall():
     assert brain.get("endpoint").trust == pytest.approx(0.9)
 
 
+def test_recall_returns_default_for_missing_key():
+    brain = RustBrain()
+    assert brain.recall("missing", default="fallback") == "fallback"
+
+
+def test_recall_returns_stored_none():
+    brain = RustBrain()
+    brain.remember("nullable", None)
+    assert brain.recall("nullable") is None
+    assert brain.recall("nullable", default="fallback") is None
+
+
 def test_monotonic_timestamp_regression_raises():
     brain = RustBrain()
     brain.remember("a", 1, ts_ns=1000)

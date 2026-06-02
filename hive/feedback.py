@@ -59,12 +59,17 @@ class FeedbackBuffer:
         self.capacity = capacity
         self.buffer: list[RoutingOutcome] = []
 
-    def record(self, outcome: RoutingOutcome) -> bool:
+    def _append(self, outcome: RoutingOutcome) -> None:
+        if len(self.buffer) >= self.capacity:
+            self.buffer.pop(0)
         self.buffer.append(outcome)
+
+    def record(self, outcome: RoutingOutcome) -> bool:
+        self._append(outcome)
         return self.is_full()
 
     def add(self, outcome: RoutingOutcome) -> None:
-        self.buffer.append(outcome)
+        self._append(outcome)
 
     def is_full(self) -> bool:
         return len(self.buffer) >= self.capacity
