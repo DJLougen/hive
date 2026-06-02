@@ -56,6 +56,22 @@ def test_feedback_buffer_record_outcome():
     assert fb.is_full()
 
 
+def test_feedback_buffer_drops_oldest_when_over_capacity():
+    fb = FeedbackBuffer(capacity=2)
+    for i in range(5):
+        fb.add(
+            RoutingOutcome(
+                state={"goal": f"goal-{i}"},
+                routed_action="read_file",
+                actual_action="read_file",
+                outcome_type=OutcomeType.CORRECT,
+            )
+        )
+    assert len(fb) == 2
+    assert fb.get_outcomes()[0].state["goal"] == "goal-3"
+    assert fb.get_outcomes()[1].state["goal"] == "goal-4"
+
+
 def test_feedback_buffer_clear():
     """Test clearing the buffer."""
     fb = FeedbackBuffer(capacity=3)
@@ -182,6 +198,27 @@ def test_record_outcome_no_decision():
     
     # Should not record
     assert len(fb) == 0
+
+
+def test_record_outcome_ignores_stale_state_for_mismatched_decision():
+    from hive.stack import HiveStack, RouteDecision
+
+    fb = FeedbackBuffer(capacity=5)
+    policy = MockPolicy()
+    stack = HiveStack(busybee_policy=policy, feedback_buffer=fb)
+
+    stack.route({"goal": "first"})
+    other = RouteDecision(
+        tool="apply_patch",
+        args={},
+        confidence=0.5,
+        escalated=False,
+        source="busybee",
+    )
+    stack.record_outcome(other, "apply_patch", OutcomeType.CORRECT)
+
+    assert len(fb) == 1
+    assert fb.get_outcomes()[0].state == {}
 
 
 def test_record_outcome_no_buffer():

@@ -205,7 +205,7 @@ class RustBrain:
 
     def recall(self, key: str, default: Any = None) -> Any:
         node = self._nodes.get(key)
-        return None if node is None else node.value
+        return default if node is None else node.value
 
     def get(self, key: str) -> MemoryNode | None:
         return self._nodes.get(key)

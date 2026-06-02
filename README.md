@@ -372,9 +372,8 @@ stack.remember("bug_A", {"type": "race condition"})
 stack.remember("fix_B", {"type": "mutex"}, caused_by=["bug_A"])
 stack.remember("test_C", {"type": "concurrency test"}, caused_by=["fix_B"])
 
-# Query causal chain
-memories = stack.recall("bug")
-# Returns all related nodes with causal links
+# Query causal chain via graph edges on the brain store
+stack.brain.neighbours("bug_A", "caused_by")
 ```
 
 ### Compression Labels

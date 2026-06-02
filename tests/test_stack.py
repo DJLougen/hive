@@ -65,6 +65,16 @@ def test_remember_recall_roundtrip():
     assert stack.recall("ep") == "/v1/chat"
 
 
+def test_recall_telemetry_counts_none_value_as_hit():
+    from hive.telemetry import Telemetry
+
+    telemetry = Telemetry()
+    stack = HiveStack(honey_comb=RuleFastHoneyComb(), telemetry=telemetry)
+    stack.remember("nullable", None)
+    stack.recall("nullable")
+    assert telemetry.memory_reads[-1].hit is True
+
+
 def test_step_writes_decision_to_brain():
     stack = HiveStack(honey_comb=RuleFastHoneyComb())
     result = stack.step(

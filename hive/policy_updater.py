@@ -21,7 +21,10 @@ Example:
 
 from __future__ import annotations
 
+import logging
 from typing import Any
+
+_log = logging.getLogger("hive.policy_updater")
 
 from hive.feedback import FeedbackBuffer, RoutingOutcome, OutcomeType
 
@@ -67,7 +70,7 @@ class PolicyUpdater:
             policy.train(training_samples)
             return True
         except Exception as e:
-            print(f"Policy update failed: {e}")
+            _log.warning("Policy update failed: %s", e)
             return False
     
     def _convert_to_training_format(

@@ -63,7 +63,6 @@ dev = [
     "pytest>=8.0",
     "pytest-cov>=4.1",
     "ruff>=0.5",
-    "hive-cpp>=0.1.0",  # Include in dev for testing
 ]
 
 [project.urls]

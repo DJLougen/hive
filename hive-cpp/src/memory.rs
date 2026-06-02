@@ -158,10 +158,17 @@ impl MemoryGraph {
     pub fn statistics(&self) -> MemoryStats {
         let nodes = self.nodes.read().unwrap();
         
+        let total_nodes = nodes.len();
+        let avg_importance = if total_nodes == 0 {
+            0.0
+        } else {
+            nodes.values().map(|n| n.importance).sum::<f64>() / total_nodes as f64
+        };
+
         MemoryStats {
-            total_nodes: nodes.len(),
+            total_nodes,
             max_capacity: self.max_capacity,
-            avg_importance: nodes.values().map(|n| n.importance).sum::<f64>() / nodes.len() as f64,
+            avg_importance,
             causal_relations: nodes.values().map(|n| n.causal_relations.len()).sum(),
         }
     }
