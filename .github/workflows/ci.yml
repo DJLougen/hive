@@ -42,11 +42,31 @@ jobs:
         run: |
           python -m ruff check hive/ tests/
           python -m mypy hive/ --ignore-missing-imports
-      - name: Security scan
+      - name: Security scan (hive only)
         run: |
           pip install bandit
           python -m bandit -r hive/ -ll -q
-          python scripts/hive_pentest.py
+          python scripts/hive_pentest.py --module hive
+
+  # Full-stack pentest: hive + busybee-cpu + honey-comb
+  pentest:
+    name: Pentest / full stack
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Clone sibling packages
+        run: |
+          git clone --depth 1 https://github.com/DJLougen/busyBee-cpu.git /tmp/busyBee-cpu
+          git clone --depth 1 https://github.com/DJLougen/honey-comb.git /tmp/honey-comb
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e /tmp/busyBee-cpu /tmp/honey-comb -e ".[dev]"
+      - name: Modular pentest
+        env:
+          HIVE_NO_NVML: "1"
+        run: |
+          python scripts/hive_pentest.py --fail-on-skip
 
   # x86_64 + CUDA. Requires self-hosted runner with GPU label.
   # Disabled until self-hosted runner is registered.

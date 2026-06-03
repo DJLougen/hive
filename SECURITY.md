@@ -39,20 +39,38 @@ surfaces are:
   treat high-trust nodes as authoritative in a multi-tenant setting.
 * `hive.hardware` — pynvml is read-only; no attack surface.
 
-Vulnerabilities in the sibling packages (`busybee-cpu`, `honeycomb`) are
-out of scope; please report them upstream.
+Report issues in **busybee-cpu** or **honey-comb** to the same security
+contact; fixes may land in the sibling repo and be pulled into Hive releases.
 
 ## Self-service penetration testing
 
-Run the automated check suite before releases or after security-sensitive
-changes:
+Modular checks cover each installable component. Siblings are optional;
+skipped modules print install instructions.
 
 ```bash
+# Hive core only (matches default CI on PRs)
 pip install -e ".[dev]"
-python scripts/hive_pentest.py
+python scripts/hive_pentest.py --module hive
+
+# Full stack (busyBee-cpu + honey-comb side-by-side)
+git clone https://github.com/DJLougen/busyBee-cpu ../busyBee-cpu
+git clone https://github.com/DJLougen/honey-comb ../honey-comb
+pip install -e ../busyBee-cpu ../honey-comb -e ".[dev]"
+python scripts/hive_pentest.py --fail-on-skip
+
 python -m bandit -r hive/ -ll
 ```
+
+| Module | Package | Focus |
+|--------|---------|--------|
+| `hive` | `hive` | JWT, tenancy, health bind, feedback poisoning, LLM URLs |
+| `busybee` | `busybee_cpu` | joblib trust, `/v1/learn`, CORS, body limits, predict DoS |
+| `honeycomb` | `honeycomb` | model fallback, CORE system prompts, tee paths, large inputs |
+| `integration` | all three | `HiveStack` wired to real busybee + honeycomb |
 
 For Kubernetes deployments, set `HIVE_HEALTH_BIND=0.0.0.0` only inside the
 pod network; the default is loopback (`127.0.0.1`). Always configure
 `HIVE_JWKS_URL` or `HIVE_JWT_PUBLIC_KEY` before calling `JWTValidator.validate()`.
+
+Never expose **bee-serve** (`busybee_cpu.server`) to untrusted networks without
+authentication — `/v1/learn` mutates the routing policy.
