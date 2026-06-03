@@ -143,6 +143,31 @@ class RustBrain:
         self._order: list[str] = []
         self._order_index: dict[str, int] = {}
 
+    def _remove_order_slot(self, idx: int) -> None:
+        """Remove ``_order[idx]`` and shift down indices above ``idx``."""
+        del self._order[idx]
+        for k, i in list(self._order_index.items()):
+            if i > idx:
+                self._order_index[k] = i - 1
+
+    def _remove_from_order(self, storage_key: str) -> None:
+        """Drop a key from the insertion-order list without leaving tombstones."""
+        idx = self._order_index.pop(storage_key, None)
+        if idx is not None:
+            self._remove_order_slot(idx)
+
+    def _evict_oldest(self) -> None:
+        """Evict the oldest entry from the store and keep order indices aligned."""
+        if not self._order:
+            return
+        oldest_key = self._order[0]
+        if oldest_key:
+            self._nodes.pop(oldest_key, None)
+            self._order_index.pop(oldest_key, None)
+        self._order.pop(0)
+        for k in list(self._order_index):
+            self._order_index[k] -= 1
+
     def _prefix(self, key: str) -> str:
         """Return the internal storage key with tenant prefix when isolation is on."""
         if not self._tenant_isolation or key.startswith(f"{self._tenant_id}:"):
@@ -192,11 +217,7 @@ class RustBrain:
                 self._order.append(storage_key)
             # Evict oldest entries if over capacity
             while len(self._nodes) > self._max_nodes:
-                oldest_key = self._order[0]
-                if oldest_key:
-                    self._nodes.pop(oldest_key, None)
-                    self._order_index.pop(oldest_key, None)
-                self._order.pop(0)
+                self._evict_oldest()
             return node
 
     def supersede(self, key: str, new_value: Any, **kwargs: Any) -> MemoryNode:
@@ -219,9 +240,7 @@ class RustBrain:
         key = self._prefix(key)
         with self._lock:
             self._nodes.pop(key, None)
-            idx = self._order_index.pop(key, None)
-            if idx is not None:
-                self._order[idx] = ""
+            self._remove_from_order(key)
 
     # -- read path ----------------------------------------------------------
 
@@ -331,9 +350,7 @@ class RustBrain:
             age_s = (_now_ns() - node.ts_ns) / 1e9
             if age_s > self._default_ttl_s:
                 self._nodes.pop(storage_key, None)
-                idx = self._order_index.pop(storage_key, None)
-                if idx is not None:
-                    self._order[idx] = ""
+                self._remove_from_order(storage_key)
                 removed += 1
         return removed
 
@@ -349,9 +366,7 @@ class RustBrain:
             to_remove = [k for k in self._nodes if k.startswith(prefix)]
             for k in to_remove:
                 self._nodes.pop(k, None)
-                idx = self._order_index.pop(k, None)
-                if idx is not None:
-                    self._order[idx] = ""
+                self._remove_from_order(k)
             return len(to_remove)
 
     def snapshot_to_file(self, path: str) -> dict[str, Any]:
