@@ -92,6 +92,33 @@ def test_rustbrain_evicts_oldest_when_over_capacity():
     assert brain.recall("d") == 4
 
 
+def test_rustbrain_evicts_oldest_after_forget_and_overflow():
+    """Regression: stale _order_index must not evict the wrong live key."""
+    brain = RustBrain(max_nodes=2)
+    brain.remember("a", 1)
+    brain.remember("b", 2)
+    brain.remember("c", 3)  # evicts "a"; leaves stale order indices
+    brain.forget("b")
+
+    brain.remember("d", 4)
+    brain.remember("e", 5)  # must evict "c" (oldest survivor), not "d"
+
+    assert len(brain) == 2
+    assert brain.recall("c") is None
+    assert brain.recall("d") == 4
+    assert brain.recall("e") == 5
+
+
+def test_rustbrain_forget_keeps_order_index_aligned():
+    brain = RustBrain(max_nodes=3)
+    for label in ("a", "b", "c", "d"):
+        brain.remember(label, label)
+    brain.forget("b")
+
+    assert brain._order == ["default:c", "default:d"]
+    assert brain._order_index == {"default:c": 0, "default:d": 1}
+
+
 def test_rustbrain_max_nodes_default_is_10000():
     brain = RustBrain()
     assert brain._max_nodes == 10_000
