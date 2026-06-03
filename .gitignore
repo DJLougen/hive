@@ -43,3 +43,6 @@ runs/
 
 # Rust build artifacts
 hive-cpp/target/
+
+# Local sibling clones for pentest/dev (not vendored)
+siblings/
