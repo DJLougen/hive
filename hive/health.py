@@ -18,6 +18,7 @@ Usage::
 from __future__ import annotations
 
 import json
+import os
 import threading
 import time
 from dataclasses import dataclass, field
@@ -107,9 +108,18 @@ class HealthServer:
         TCP port to listen on.
     """
 
-    def __init__(self, stack: Any, *, port: int = 8080) -> None:
+    def __init__(
+        self,
+        stack: Any,
+        *,
+        port: int = 8080,
+        bind_address: str | None = None,
+    ) -> None:
         self.stack = stack
         self.port = port
+        self.bind_address = bind_address or os.environ.get(
+            "HIVE_HEALTH_BIND", "127.0.0.1"
+        )
         self._server: HTTPServer | None = None
         self._thread: threading.Thread | None = None
 
@@ -118,7 +128,7 @@ class HealthServer:
         _HealthHandler.stack_ref = self.stack
         _HealthHandler.start_time = time.perf_counter()
 
-        self._server = HTTPServer(("0.0.0.0", self.port), _HealthHandler)
+        self._server = HTTPServer((self.bind_address, self.port), _HealthHandler)
         self._thread = threading.Thread(target=self._server.serve_forever, daemon=True)
         self._thread.start()
 

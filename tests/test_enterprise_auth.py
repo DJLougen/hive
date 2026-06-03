@@ -14,6 +14,22 @@ def test_disabled_validator():
     assert not v.is_configured()
 
 
+def test_unconfigured_validator_rejects_token():
+    try:
+        import jwt
+    except ImportError:
+        pytest.skip("PyJWT not installed")
+
+    v = JWTValidator()
+    token = jwt.encode(
+        {"exp": time.time() + 3600, "roles": ["hive:admin"]},
+        "secret",
+        algorithm="HS256",
+    )
+    with pytest.raises(AuthError, match="not configured"):
+        v.validate(token, required_roles=["hive:admin"])
+
+
 def test_validator_with_public_key_rejects_expired():
     # Create a validator with no key — signature verification disabled
     v = JWTValidator(public_key=None, algorithm="HS256")

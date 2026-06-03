@@ -41,3 +41,18 @@ surfaces are:
 
 Vulnerabilities in the sibling packages (`busybee-cpu`, `honeycomb`) are
 out of scope; please report them upstream.
+
+## Self-service penetration testing
+
+Run the automated check suite before releases or after security-sensitive
+changes:
+
+```bash
+pip install -e ".[dev]"
+python scripts/hive_pentest.py
+python -m bandit -r hive/ -ll
+```
+
+For Kubernetes deployments, set `HIVE_HEALTH_BIND=0.0.0.0` only inside the
+pod network; the default is loopback (`127.0.0.1`). Always configure
+`HIVE_JWKS_URL` or `HIVE_JWT_PUBLIC_KEY` before calling `JWTValidator.validate()`.

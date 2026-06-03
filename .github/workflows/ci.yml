@@ -42,6 +42,11 @@ jobs:
         run: |
           python -m ruff check hive/ tests/
           python -m mypy hive/ --ignore-missing-imports
+      - name: Security scan
+        run: |
+          pip install bandit
+          python -m bandit -r hive/ -ll -q
+          python scripts/hive_pentest.py
 
   # x86_64 + CUDA. Requires self-hosted runner with GPU label.
   # Disabled until self-hosted runner is registered.

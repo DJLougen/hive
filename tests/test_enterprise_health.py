@@ -23,7 +23,7 @@ def test_is_healthy_returns_ready_with_stack():
 
 def test_health_server_returns_200():
     stack = HiveStack(honey_comb=RuleFastHoneyComb())
-    with HealthServer(stack, port=18080):
+    with HealthServer(stack, port=18080, bind_address="127.0.0.1"):
         time.sleep(0.3)
         req = urllib.request.Request("http://127.0.0.1:18080/health")
         with urllib.request.urlopen(req, timeout=2.0) as resp:
@@ -35,7 +35,7 @@ def test_health_server_returns_200():
 
 def test_ready_endpoint_with_all_backends():
     stack = HiveStack(honey_comb=RuleFastHoneyComb())
-    with HealthServer(stack, port=18081):
+    with HealthServer(stack, port=18081, bind_address="127.0.0.1"):
         time.sleep(0.3)
         req = urllib.request.Request("http://127.0.0.1:18081/ready")
         with urllib.request.urlopen(req, timeout=2.0) as resp:
@@ -49,7 +49,7 @@ def test_ready_endpoint_returns_503_without_compressor():
     stack = HiveStack(honey_comb=RuleFastHoneyComb())
     # Manually break compressor to simulate failure
     stack.comb = None
-    with HealthServer(stack, port=18082):
+    with HealthServer(stack, port=18082, bind_address="127.0.0.1"):
         time.sleep(0.3)
         req = urllib.request.Request("http://127.0.0.1:18082/ready")
         with pytest.raises(urllib.error.HTTPError) as exc_info:
