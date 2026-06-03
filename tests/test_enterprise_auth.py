@@ -66,6 +66,63 @@ def test_role_check_logic():
         v.validate(token, required_roles=["hive:admin"])
 
 
+def test_jwks_url_lookup_failure_raises_auth_error():
+    """PyJWKClient errors must surface as AuthError, not uncaught PyJWKClientError."""
+    try:
+        import jwt
+        from jwt.exceptions import PyJWKClientError
+    except ImportError:
+        pytest.skip("PyJWT not installed")
+    from unittest.mock import patch
+
+    v = JWTValidator(jwks={"keys": []}, jwks_url="https://idp.example.com/jwks.json")
+    token = jwt.encode({"exp": time.time() + 3600}, "x", algorithm="HS256")
+    with patch("jwt.PyJWKClient") as client_cls:
+        client_cls.return_value.get_signing_key_from_jwt.side_effect = PyJWKClientError(
+            "Unable to find a signing key"
+        )
+        with pytest.raises(AuthError, match="Invalid token"):
+            v.validate(token)
+
+
+def test_inline_jwks_wrong_kid_raises_auth_error():
+    try:
+        import jwt
+    except ImportError:
+        pytest.skip("PyJWT not installed")
+
+    jwks = {
+        "keys": [
+            {
+                "kty": "oct",
+                "kid": "expected",
+                "k": "c2VjcmV0",  # "secret"
+            }
+        ]
+    }
+    v = JWTValidator(jwks=jwks, algorithm="HS256")
+    token = jwt.encode(
+        {"exp": time.time() + 3600},
+        "secret",
+        algorithm="HS256",
+        headers={"kid": "wrong"},
+    )
+    with pytest.raises(AuthError, match="Invalid token"):
+        v.validate(token)
+
+
+def test_empty_inline_jwks_raises_auth_error():
+    try:
+        import jwt
+    except ImportError:
+        pytest.skip("PyJWT not installed")
+
+    v = JWTValidator(jwks={"keys": []})
+    token = jwt.encode({"exp": time.time() + 3600}, "x", algorithm="HS256")
+    with pytest.raises(AuthError, match="Invalid token"):
+        v.validate(token)
+
+
 def test_expired_token():
     try:
         import jwt
