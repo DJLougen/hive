@@ -146,6 +146,7 @@ class HiveStack:
         validate: bool = False,
         config: HiveConfig | None = None,
         rate_limiter: RateLimiter | None = None,
+        max_content_bytes: int = 1_048_576,
     ) -> None:
         self.config = config or HiveConfig()
         self.busybee = busybee_policy
@@ -158,6 +159,7 @@ class HiveStack:
         self._tenant_id = tenant_id
         self._validate = validate or self.config.validate_inputs
         self.rate_limiter = rate_limiter
+        self._max_content_bytes = max_content_bytes
         self.telemetry = telemetry
         self.feedback = feedback_buffer
         self._policy_updater = PolicyUpdater() if feedback_buffer is not None else None
@@ -239,6 +241,11 @@ class HiveStack:
         content if you do not provide one. Pass a value from
         ``honeycomb.labels.ContentType`` to skip inference.
         """
+        if len(content.encode("utf-8")) > self._max_content_bytes:
+            raise ValueError(
+                f"compress() content exceeds max_content_bytes ({self._max_content_bytes})"
+            )
+
         # The Message type lives in either honey-comb or rule_fast; we
         # use whichever the active compressor expects. Both have the
         # same constructor signature.
@@ -276,6 +283,11 @@ class HiveStack:
 
     def compress_many(self, turns: Sequence[tuple[str, str]]) -> list[CompressedTurn]:
         """Compress a full transcript in order."""
+        total = sum(len(content.encode("utf-8")) for _, content in turns)
+        if total > self._max_content_bytes:
+            raise ValueError(
+                f"compress_many() total content ({total} bytes) exceeds max_content_bytes ({self._max_content_bytes})"
+            )
         return [self.compress(role, content) for role, content in turns]
 
     def _message_cls(self) -> type:
@@ -382,20 +394,20 @@ class HiveStack:
             except ValueError:
                 outcome_type = OutcomeType.UNKNOWN
 
-        if self._last_decision is not None and (
+        if self._last_decision is None or not (
             decision.tool == self._last_decision.tool
             and decision.args == self._last_decision.args
             and decision.source == self._last_decision.source
             and decision.confidence == self._last_decision.confidence
             and decision.escalated == self._last_decision.escalated
         ):
-            state = dict(self._last_state) if self._last_state else {}
-        else:
             _log.warning(
                 "record_outcome decision does not match the most recent route(); "
-                "recording with empty state"
+                "rejected — possible policy poisoning attempt"
             )
-            state = {}
+            return  # Reject forged feedback to prevent policy poisoning
+
+        state = dict(self._last_state) if self._last_state else {}
 
         outcome = RoutingOutcome(
             state=state,

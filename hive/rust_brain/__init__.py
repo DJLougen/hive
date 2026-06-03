@@ -130,13 +130,14 @@ class RustBrain:
     implementation lands.
     """
 
-    def __init__(self, *, tenant_id: str = "default", tenant_isolation: bool = True, enforce_monotonic: bool = True, default_ttl_s: float | None = None) -> None:
+    def __init__(self, *, tenant_id: str = "default", tenant_isolation: bool = True, enforce_monotonic: bool = True, default_ttl_s: float | None = None, max_nodes: int = 10_000) -> None:
         self._tenant_id = tenant_id
         self._tenant_isolation = tenant_isolation
         self._nodes: dict[str, MemoryNode] = {}
         self._lock = threading.RLock()
         self._enforce_monotonic = enforce_monotonic
         self._default_ttl_s = default_ttl_s
+        self._max_nodes = max_nodes
         # Simple per-key counter so we can show "newest first" ordering
         # without re-sorting the whole store on every read.
         self._order: list[str] = []
@@ -189,6 +190,13 @@ class RustBrain:
             if storage_key not in self._order_index:
                 self._order_index[storage_key] = len(self._order)
                 self._order.append(storage_key)
+            # Evict oldest entries if over capacity
+            while len(self._nodes) > self._max_nodes:
+                oldest_key = self._order[0]
+                if oldest_key:
+                    self._nodes.pop(oldest_key, None)
+                    self._order_index.pop(oldest_key, None)
+                self._order.pop(0)
             return node
 
     def supersede(self, key: str, new_value: Any, **kwargs: Any) -> MemoryNode:

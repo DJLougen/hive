@@ -8,6 +8,7 @@ This module provides:
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any
@@ -55,13 +56,23 @@ class RoutingOutcome:
 class FeedbackBuffer:
     """Buffer to collect routing outcomes before updating policy."""
 
-    def __init__(self, capacity: int = 1000):
+    def __init__(self, capacity: int = 1000, max_state_bytes: int = 65_536):
         self.capacity = capacity
+        self.max_state_bytes = max_state_bytes
         self.buffer: list[RoutingOutcome] = []
 
     def _append(self, outcome: RoutingOutcome) -> None:
         if len(self.buffer) >= self.capacity:
             self.buffer.pop(0)
+        # Truncate oversized state to prevent memory exhaustion DoS
+        state_size = len(json.dumps(outcome.state))
+        if state_size > self.max_state_bytes:
+            outcome = RoutingOutcome(
+                state={},
+                routed_action=outcome.routed_action,
+                actual_action=outcome.actual_action,
+                outcome_type=outcome.outcome_type,
+            )
         self.buffer.append(outcome)
 
     def record(self, outcome: RoutingOutcome) -> bool:

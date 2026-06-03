@@ -217,8 +217,8 @@ def test_record_outcome_ignores_stale_state_for_mismatched_decision():
     )
     stack.record_outcome(other, "apply_patch", OutcomeType.CORRECT)
 
-    assert len(fb) == 1
-    assert fb.get_outcomes()[0].state == {}
+    # Mismatched decisions are now REJECTED to prevent policy poisoning
+    assert len(fb) == 0
 
 
 def test_record_outcome_no_buffer():

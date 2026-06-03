@@ -324,9 +324,9 @@ class Telemetry:
                 "memory_reads_total": Counter("hive_memory_reads_total", "Memory reads", ["hit"], registry=registry),  # type: ignore[no-untyped-call]
                 "memory_read_latency": Histogram("hive_memory_read_latency_ms", "Memory read latency", registry=registry),  # type: ignore[no-untyped-call]
             }
-            start_http_server(port, registry=registry)
+            start_http_server(port, addr="127.0.0.1", registry=registry)
             self._prom_enabled = True
-            _log.info("Prometheus metrics on http://localhost:%d/metrics", port)
+            _log.info("Prometheus metrics on http://127.0.0.1:%d/metrics (localhost only)", port)
         except ImportError:
             _log.warning("prometheus-client not installed; run: pip install prometheus-client")
 
