@@ -9,7 +9,7 @@
  import time
  from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
  from typing import Any
-@@ -22,6 +24,32 @@ log = logging.getLogger("busybee_cpu.server")
+@@ -23,6 +25,26 @@ log = logging.getLogger("busybee_cpu.server")
  
  MAX_BODY = 2 * 1024 * 1024  # 2 MiB request body limit
  CORS_ORIGINS = "*"
@@ -36,8 +36,7 @@
  
  
  # ---------------------------------------------------------------------------
- # session tracking
-@@ -259,6 +287,15 @@ class Handler(BaseHTTPRequestHandler):
+@@ -260,6 +282,15 @@ class Handler(BaseHTTPRequestHandler):
          })
  
      def _handle_learn(self) -> None:
