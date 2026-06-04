@@ -1,0 +1,39 @@
+replicaCount: 2
+
+image:
+  repository: ghcr.io/djlougen/hive
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8080
+  metricsPort: 9090
+
+resources:
+  requests:
+    memory: 256Mi
+    cpu: 250m
+  limits:
+    memory: 512Mi
+    cpu: 500m
+
+env:
+  HIVE_RATE_LIMIT: "1000"
+  HIVE_TENANT_ISOLATION: "true"
+  HIVE_VALIDATE_INPUTS: "true"
+  HIVE_DEFAULT_TTL_S: "86400"
+  HIVE_MAX_NODES: "10000"
+  HIVE_MAX_CONTENT_BYTES: "1048576"
+
+livenessProbe:
+  path: /health
+  port: 8080
+  initialDelaySeconds: 5
+  periodSeconds: 10
+
+readinessProbe:
+  path: /ready
+  port: 8080
+  initialDelaySeconds: 5
+  periodSeconds: 10

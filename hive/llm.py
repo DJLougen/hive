@@ -24,6 +24,8 @@ import urllib.request
 from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
+from hive.circuitbreaker import CircuitBreaker
+
 _log = logging.getLogger("hive.llm")
 
 
@@ -95,12 +97,14 @@ class _OpenAICompatBackend:
     """Backend for any server speaking the OpenAI /v1/chat/completions API."""
 
     def __init__(
-        self, endpoint: str, model_name: str, *, timeout: float = 60.0
+        self, endpoint: str, model_name: str, *, timeout: float = 60.0,
+        circuit_breaker: CircuitBreaker | None = None,
     ) -> None:
         _validate_url(endpoint)
         self.endpoint = endpoint.rstrip("/")
         self.model_name = model_name
         self.timeout = timeout
+        self.circuit_breaker = circuit_breaker
 
     def chat(
         self,
@@ -125,9 +129,15 @@ class _OpenAICompatBackend:
         )
         t0 = time.perf_counter()
         try:
+            if self.circuit_breaker is not None:
+                self.circuit_breaker._before_call()
             with urllib.request.urlopen(req, timeout=self.timeout) as resp:  # nosec B310 — validated by _validate_url
                 body = json.loads(resp.read().decode("utf-8"))
+                if self.circuit_breaker is not None:
+                    self.circuit_breaker._on_success()
         except (urllib.error.URLError, TimeoutError, OSError) as exc:
+            if self.circuit_breaker is not None:
+                self.circuit_breaker._on_failure()
             raise RuntimeError(f"chat failed against {self.endpoint}: {exc}") from exc
         elapsed = time.perf_counter() - t0
         choice = body["choices"][0]
@@ -173,6 +183,7 @@ def make_backend(
     *,
     endpoint: str | None = None,
     model: str = "hive-default",
+    circuit_breaker: CircuitBreaker | None = None,
 ) -> Any:
     """Return a backend by name.
 
@@ -184,5 +195,7 @@ def make_backend(
     if name in ("vllm", "llama.cpp"):
         if not endpoint:
             raise ValueError(f"backend {name!r} requires --inference-endpoint")
-        return _OpenAICompatBackend(endpoint=endpoint, model_name=model)
+        return _OpenAICompatBackend(
+            endpoint=endpoint, model_name=model, circuit_breaker=circuit_breaker
+        )
     raise ValueError(f"unknown backend {name!r}; choose vllm, llama.cpp, or echo")

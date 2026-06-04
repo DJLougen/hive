@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hive-config
+data:
+  HIVE_RATE_LIMIT: "1000"
+  HIVE_TENANT_ISOLATION: "true"
+  HIVE_VALIDATE_INPUTS: "true"
+  HIVE_DEFAULT_TTL_S: "86400"
+  HIVE_MAX_NODES: "10000"
+  HIVE_MAX_CONTENT_BYTES: "1048576"

@@ -27,6 +27,7 @@ from hive.policy_updater import PolicyUpdater
 from hive.schemas import validate_state
 from hive.config import HiveConfig
 from hive.ratelimit import RateLimiter
+from hive.circuitbreaker import CircuitBreaker
 
 __all__ = [
     "HiveStack",
@@ -147,10 +148,17 @@ class HiveStack:
         config: HiveConfig | None = None,
         rate_limiter: RateLimiter | None = None,
         max_content_bytes: int = 1_048_576,
+        circuit_breaker: CircuitBreaker | None = None,
     ) -> None:
         self.config = config or HiveConfig()
         self.busybee = busybee_policy
         self.comb = honey_comb if honey_comb is not None else _default_honey_comb()
+        # Auto-detect native Rust backend (hive-cpp)
+        self._native = False
+        if rust_brain is None:
+            import importlib.util
+            if importlib.util.find_spec("hive_cpp") is not None:
+                self._native = True
         self.brain = rust_brain or RustBrain(
             tenant_id=tenant_id,
             tenant_isolation=self.config.tenant_isolation,
@@ -159,6 +167,7 @@ class HiveStack:
         self._tenant_id = tenant_id
         self._validate = validate or self.config.validate_inputs
         self.rate_limiter = rate_limiter
+        self.circuit_breaker = circuit_breaker
         self._max_content_bytes = max_content_bytes
         self.telemetry = telemetry
         self.feedback = feedback_buffer
