@@ -63,10 +63,14 @@ monitor = ["pynvml>=2.0"]
 performance = ["hive-cpp>=0.1.0"]
 dev = [
     "pytest>=8.0",
+    "pytest-asyncio>=0.24",
     "pytest-cov>=4.1",
     "ruff>=0.5",
     "mypy>=1.8",
 ]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
 # Real-time observability: Prometheus, OpenTelemetry, JSONL export
 observability = [
     "prometheus-client>=0.20",
