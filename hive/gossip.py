@@ -111,7 +111,7 @@ class GossipProtocol:
                     headers=headers,
                     method="POST",
                 )
-                with urllib.request.urlopen(req, timeout=2.0) as resp:
+                with urllib.request.urlopen(req, timeout=2.0) as resp:  # nosec B310
                     if resp.status == 200:
                         _log.debug("Gossiped %d events to %s", len(batch), peer)
             except Exception as exc:

@@ -73,4 +73,14 @@ pod network; the default is loopback (`127.0.0.1`). Always configure
 `HIVE_JWKS_URL` or `HIVE_JWT_PUBLIC_KEY` before calling `JWTValidator.validate()`.
 
 Never expose **bee-serve** (`busybee_cpu.server`) to untrusted networks without
-authentication — `/v1/learn` mutates the routing policy.
+authentication. Apply `patches/busybee-secure-learn.patch` upstream (or set
+`BUSYBEE_LEARN_API_KEY`); `/v1/learn` mutates the routing policy.
+
+**Active pentest** (exploit probes):
+
+```bash
+python scripts/hive_pentest.py --active --fail-on-skip
+```
+
+Known residual risk: **joblib/pickle** model files are executable if tampered —
+only load `.joblib` from trusted, signed distribution paths.
