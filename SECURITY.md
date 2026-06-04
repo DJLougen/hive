@@ -8,9 +8,9 @@ one. Earlier versions are best-effort.
 
 | Version | Supported           |
 |---------|---------------------|
-| 0.2.x   | :white_check_mark:  |
-| 0.1.x   | :white_check_mark:  |
-| < 0.1   | :x:                 |
+| 0.5.x   | :white_check_mark:  |
+| 0.4.x   | :white_check_mark:  |
+| < 0.4   | :x:                 |
 
 ## Reporting a Vulnerability
 
@@ -38,6 +38,10 @@ surfaces are:
   older writes. The trust score is the user-controlled input; do not
   treat high-trust nodes as authoritative in a multi-tenant setting.
 * `hive.hardware` — pynvml is read-only; no attack surface.
+* `scripts/hive_api_server.py` — REST API; set `HIVE_REQUIRE_AUTH=true` and
+  configure JWT before exposing beyond localhost.
+* `scripts/hive_mcp_server.py` — MCP tools (stdio = local trust; SSE needs auth).
+* `hive.gossip` — cross-node memory sync; set `HIVE_GOSSIP_SECRET` on receivers.
 
 Report issues in **busybee-cpu** or **honey-comb** to the same security
 contact; fixes may land in the sibling repo and be pulled into Hive releases.
@@ -48,25 +52,43 @@ Modular checks cover each installable component. Siblings are optional;
 skipped modules print install instructions.
 
 ```bash
-# Hive core only (matches default CI on PRs)
+# Hive core + HTTP/MCP/gossip (matches default CI on PRs)
 pip install -e ".[dev]"
-python scripts/hive_pentest.py --module hive
+python scripts/hive_pentest.py --module hive --module api --module mcp --module gossip
+
+# Production profile (validates auth hooks exist)
+python scripts/hive_pentest.py --profile prod --module api --module mcp --module gossip
+
+# Active HTTP checks (FastAPI TestClient)
+python scripts/hive_pentest.py --active --module api
 
 # Full stack (busyBee-cpu + honey-comb side-by-side)
 git clone https://github.com/DJLougen/busyBee-cpu ../busyBee-cpu
 git clone https://github.com/DJLougen/honey-comb ../honey-comb
 pip install -e ../busyBee-cpu ../honey-comb -e ".[dev]"
-python scripts/hive_pentest.py --fail-on-skip
+python scripts/hive_pentest.py --profile prod --fail-on-skip
 
-python -m bandit -r hive/ -ll
+python -m bandit -r hive/ scripts/hive_api_server.py scripts/hive_mcp_server.py -ll
+pip-audit
 ```
 
 | Module | Package | Focus |
 |--------|---------|--------|
 | `hive` | `hive` | JWT, tenancy, health bind, feedback poisoning, LLM URLs |
+| `api` | `scripts/hive_api_server.py` | localhost bind, JWT middleware, 413 on oversized compress |
+| `mcp` | `scripts/hive_mcp_server.py` | SSE bind, JWT middleware, tool surface, stdio trust |
+| `gossip` | `hive.gossip` | http(s) peers only, `HIVE_GOSSIP_SECRET` on receive |
 | `busybee` | `busybee_cpu` | joblib trust, `/v1/learn`, CORS, body limits, predict DoS |
 | `honeycomb` | `honeycomb` | model fallback, CORE system prompts, tee paths, large inputs |
 | `integration` | all three | `HiveStack` wired to real busybee + honeycomb |
+
+Production environment variables:
+
+| Variable | Surface | Purpose |
+|----------|---------|---------|
+| `HIVE_REQUIRE_AUTH=true` | REST API, MCP SSE | Require `Authorization: Bearer <jwt>` |
+| `HIVE_JWKS_URL` / `HIVE_JWT_PUBLIC_KEY` | JWT validation | Identity provider |
+| `HIVE_GOSSIP_SECRET` | Gossip receive | Shared secret for cross-node memory sync |
 
 For Kubernetes deployments, set `HIVE_HEALTH_BIND=0.0.0.0` only inside the
 pod network; the default is loopback (`127.0.0.1`). Always configure

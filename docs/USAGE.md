@@ -372,19 +372,23 @@ tel.export_jsonl("/var/log/hive/dump.jsonl")
 Run the modular pentest before production:
 
 ```bash
-python scripts/hive_pentest.py --module hive
+python scripts/hive_pentest.py --module hive --module api --module mcp --module gossip
+python scripts/hive_pentest.py --profile prod --module api --module mcp --module gossip
+python scripts/hive_pentest.py --active --module api
 ```
 
-With siblings installed:
+With siblings installed (full stack):
 
 ```bash
-python scripts/hive_pentest.py --active --fail-on-skip
+python scripts/hive_pentest.py --profile prod --fail-on-skip --active
 ```
 
 Key hardening checklist:
 
 - [ ] Set `HIVE_ENCRYPTION_KEY` in production
 - [ ] Configure `HIVE_JWKS_URL` + `HIVE_JWT_ISSUER`
+- [ ] Set `HIVE_REQUIRE_AUTH=true` on REST API / MCP SSE
+- [ ] Set `HIVE_GOSSIP_SECRET` on gossip receivers
 - [ ] Set `BUSYBEE_LEARN_API_KEY` (if using bee-serve)
 - [ ] Load `.joblib` models **only from trusted paths** (pickle RCE risk)
 - [ ] Run Prometheus behind a reverse proxy (binds 127.0.0.1 by default)
@@ -440,7 +444,8 @@ pytest tests/test_pentest_runner.py -v
 # Lint
 ruff check hive/ tests/
 mypy hive/ --ignore-missing-imports
-bandit -r hive/ -ll
+bandit -r hive/ scripts/hive_api_server.py scripts/hive_mcp_server.py -ll
+pip-audit
 ```
 
 ---

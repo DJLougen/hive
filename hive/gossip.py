@@ -20,11 +20,22 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import queue
 import threading
 from typing import Any
 
 _log = logging.getLogger("hive.gossip")
+
+
+def _validate_peer_url(peer: str) -> None:
+    """Only allow http(s) gossip peers (blocks file://, gopher://, etc.)."""
+    if not peer.startswith(("http://", "https://")):
+        raise ValueError(f"gossip peer URL must use http or https, got: {peer!r}")
+
+
+def _gossip_secret_configured() -> bool:
+    return bool(os.environ.get("HIVE_GOSSIP_SECRET", "").strip())
 
 
 try:
@@ -60,6 +71,8 @@ class GossipProtocol:
     ) -> None:
         self._brain = brain
         self._peers = peers
+        for peer in self._peers:
+            _validate_peer_url(peer)
         self._interval = interval
         self._batch_size = batch_size
         self._queue: queue.Queue[dict[str, Any]] = queue.Queue()
@@ -105,6 +118,7 @@ class GossipProtocol:
         headers = {"Content-Type": "application/json"}
         for peer in self._peers:
             try:
+                _validate_peer_url(peer)
                 req = urllib.request.Request(
                     f"{peer.rstrip('/')}/gossip/receive",
                     data=payload,
@@ -114,11 +128,26 @@ class GossipProtocol:
                 with urllib.request.urlopen(req, timeout=2.0) as resp:  # nosec B310
                     if resp.status == 200:
                         _log.debug("Gossiped %d events to %s", len(batch), peer)
+            except ValueError:
+                raise
             except Exception as exc:
                 _log.warning("Gossip to %s failed: %s", peer, exc)
 
-    def receive(self, events: list[dict[str, Any]]) -> int:
-        """Receive gossiped events and write them into the local brain."""
+    def receive(
+        self,
+        events: list[dict[str, Any]],
+        *,
+        auth_token: str | None = None,
+    ) -> int:
+        """Receive gossiped events and write them into the local brain.
+
+        When ``HIVE_GOSSIP_SECRET`` is set, ``auth_token`` must match or
+        :class:`PermissionError` is raised.
+        """
+        if _gossip_secret_configured():
+            expected = os.environ["HIVE_GOSSIP_SECRET"].strip()
+            if auth_token != expected:
+                raise PermissionError("Gossip authentication failed")
         applied = 0
         for ev in events:
             try:
@@ -134,4 +163,6 @@ class GossipProtocol:
         return applied
 
 
-__all__ = ["GossipProtocol"]
+validate_peer_url = _validate_peer_url
+
+__all__ = ["GossipProtocol", "validate_peer_url", "_gossip_secret_configured"]

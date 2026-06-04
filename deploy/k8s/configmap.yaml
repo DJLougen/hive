@@ -9,3 +9,7 @@ data:
   HIVE_DEFAULT_TTL_S: "86400"
   HIVE_MAX_NODES: "10000"
   HIVE_MAX_CONTENT_BYTES: "1048576"
+  # Set via Secret in production (not committed):
+  # HIVE_REQUIRE_AUTH: "true"
+  # HIVE_JWKS_URL: "https://idp.example.com/.well-known/jwks.json"
+  # HIVE_GOSSIP_SECRET: "<shared-secret>"

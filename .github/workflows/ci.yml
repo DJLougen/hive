@@ -42,11 +42,12 @@ jobs:
         run: |
           python -m ruff check hive/ tests/
           python -m mypy hive/ --ignore-missing-imports
-      - name: Security scan (hive only)
+      - name: Security scan (hive + HTTP surfaces)
         run: |
-          pip install bandit
-          python -m bandit -r hive/ -ll -q
-          python scripts/hive_pentest.py --module hive
+          pip install bandit pip-audit
+          python -m bandit -r hive/ scripts/hive_api_server.py scripts/hive_mcp_server.py -ll -q
+          pip-audit
+          python scripts/hive_pentest.py --module hive --module api --module mcp --module gossip --active
 
   # Full-stack pentest: hive + busybee-cpu + honey-comb
   pentest:
@@ -66,7 +67,9 @@ jobs:
         env:
           HIVE_NO_NVML: "1"
         run: |
-          python scripts/hive_pentest.py --fail-on-skip
+          pip install pip-audit
+          pip-audit
+          python scripts/hive_pentest.py --profile prod --fail-on-skip --active
 
   # x86_64 + CUDA. Requires self-hosted runner with GPU label.
   # Disabled until self-hosted runner is registered.
