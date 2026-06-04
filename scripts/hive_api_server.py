@@ -7,6 +7,11 @@ Usage::
 
     python scripts/hive_api_server.py --port 8080
 
+Production::
+
+    export HIVE_REQUIRE_AUTH=true
+    export HIVE_JWKS_URL=https://idp.example.com/.well-known/jwks.json
+
 Endpoints:
     POST /route        → RouteDecision
     POST /compress     → CompressedTurn
@@ -20,14 +25,17 @@ Endpoints:
 from __future__ import annotations
 
 import argparse
+import os
 from typing import Any
 
 from hive import HiveStack
+from hive.auth import AuthError
+from hive.http_auth import require_auth_enabled, verify_bearer_token
 from hive.rule_fast import RuleFastHoneyComb
 
 
 try:
-    from fastapi import FastAPI, HTTPException
+    from fastapi import FastAPI, HTTPException, Request
     from fastapi.responses import JSONResponse
     from pydantic import BaseModel, Field
     import uvicorn
@@ -36,10 +44,25 @@ try:
 except Exception:  # pragma: no cover
     _HAS_FASTAPI = False
 
+_PUBLIC_PATHS = frozenset({"/health", "/ready", "/openapi.json", "/docs", "/redoc", "/docs/oauth2-redirect"})
+
 
 if _HAS_FASTAPI:
     app = FastAPI(title="Hive Agent Memory", version="0.5.0")
-    stack = HiveStack(honey_comb=RuleFastHoneyComb())
+    _max_content = int(os.environ.get("HIVE_MAX_CONTENT_BYTES", "1048576"))
+    stack = HiveStack(honey_comb=RuleFastHoneyComb(), max_content_bytes=_max_content)
+
+    @app.middleware("http")
+    async def _auth_middleware(request: Request, call_next):  # type: ignore[no-untyped-def]
+        path = request.url.path
+        if path in _PUBLIC_PATHS or path.startswith("/docs"):
+            return await call_next(request)
+        if require_auth_enabled():
+            try:
+                verify_bearer_token(request.headers.get("Authorization"))
+            except AuthError as exc:
+                return JSONResponse({"detail": str(exc)}, status_code=401)
+        return await call_next(request)
 
     class RouteRequest(BaseModel):
         goal: str = Field(default="")
@@ -80,7 +103,10 @@ if _HAS_FASTAPI:
 
     @app.post("/compress", response_model=CompressResponse)
     async def compress(req: CompressRequest) -> CompressResponse:
-        c = stack.compress(req.role, req.content)
+        try:
+            c = stack.compress(req.role, req.content)
+        except ValueError as exc:
+            raise HTTPException(status_code=413, detail=str(exc)) from exc
         return CompressResponse(role=c.role, content=c.content, label=c.label)
 
     @app.post("/remember")
@@ -101,6 +127,7 @@ if _HAS_FASTAPI:
     async def ready() -> JSONResponse:
         try:
             from hive.health import is_healthy
+
             if is_healthy(stack):
                 return JSONResponse({"status": "ready"})
         except Exception:

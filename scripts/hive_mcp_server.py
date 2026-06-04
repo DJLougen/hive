@@ -8,6 +8,11 @@ Usage::
 
     python scripts/hive_mcp_server.py --transport sse --port 8080
 
+Production (SSE transport only)::
+
+    export HIVE_REQUIRE_AUTH=true
+    export HIVE_JWKS_URL=https://idp.example.com/.well-known/jwks.json
+
 Tools exposed:
 - ``hive_route`` — route a decision locally
 - ``hive_compress`` — compress bloated context
@@ -20,8 +25,11 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 
 from hive import HiveStack
+from hive.auth import AuthError
+from hive.http_auth import require_auth_enabled, verify_bearer_token
 from hive.rule_fast import RuleFastHoneyComb
 
 
@@ -176,7 +184,19 @@ def main(argv: list[str] | None = None) -> int:
     else:
         from mcp.server.sse import SseServerTransport  # type: ignore[import]
         from starlette.applications import Starlette  # type: ignore[import]
+        from starlette.middleware import Middleware  # type: ignore[import]
+        from starlette.middleware.base import BaseHTTPMiddleware  # type: ignore[import]
+        from starlette.responses import JSONResponse  # type: ignore[import]
         from starlette.routing import Route  # type: ignore[import]
+
+        class _AuthMiddleware(BaseHTTPMiddleware):
+            async def dispatch(self, request, call_next):  # type: ignore[no-untyped-def]
+                if require_auth_enabled():
+                    try:
+                        verify_bearer_token(request.headers.get("Authorization"))
+                    except AuthError as exc:
+                        return JSONResponse({"detail": str(exc)}, status_code=401)
+                return await call_next(request)
 
         transport = SseServerTransport("/messages/")
         async def handle_sse(request):
@@ -185,9 +205,14 @@ def main(argv: list[str] | None = None) -> int:
             ) as (read, write):
                 await server.run(read, write, server.create_initialization_options())
 
-        app = Starlette(routes=[Route("/sse", handle_sse)])
+        app = Starlette(
+            routes=[Route("/sse", handle_sse)],
+            middleware=[Middleware(_AuthMiddleware)],
+        )
         import uvicorn  # type: ignore[import]
-        uvicorn.run(app, host="127.0.0.1", port=args.port)
+
+        host = os.environ.get("HIVE_MCP_BIND", "127.0.0.1")
+        uvicorn.run(app, host=host, port=args.port)
 
     return 0
 
