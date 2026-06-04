@@ -2,9 +2,9 @@
 
 **Orchestration layer for AI agents** - CPU-side routing, context compression, and causal memory to reduce token usage by 64%.
 
-[![Version](https://img.shields.io/badge/version-0.3.0-blue)](https://github.com/DJLougen/hive)
+[![Version](https://img.shields.io/badge/version-0.5.0-blue)](https://github.com/DJLougen/hive)
 [![Python](https://img.shields.io/badge/python-3.10+-green)](https://python.org)
-[![Tests](https://img.shields.io/badge/tests-15%20passed-brightgreen)](https://github.com/DJLougen/hive/actions)
+[![Tests](https://img.shields.io/badge/tests-135%20passed-brightgreen)](https://github.com/DJLougen/hive/actions)
 [![License](https://img.shields.io/badge/license-MIT-yellow)](https://opensource.org/licenses/MIT)
 [![RTX 3090](https://img.shields.io/badge/RTX%203090-validated-orange)]()
 [![DGX Spark](https://img.shields.io/badge/DGX%20Spark-validated-red)]()
@@ -88,6 +88,8 @@ pip install -e ".[dev]"
 ```
 
 ## Quick Start
+
+📖 **Full usage guide**: [docs/USAGE.md](docs/USAGE.md) — covers enterprise features, security, deployment, and observability.
 
 ```python
 from hive import HiveStack
