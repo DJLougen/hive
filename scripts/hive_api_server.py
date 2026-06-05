@@ -101,7 +101,9 @@ if _HAS_FASTAPI:
     async def ready() -> JSONResponse:
         try:
             from hive.health import is_healthy
-            if is_healthy(stack):
+
+            ready, _backends = is_healthy(stack)
+            if ready:
                 return JSONResponse({"status": "ready"})
         except Exception:
             pass
