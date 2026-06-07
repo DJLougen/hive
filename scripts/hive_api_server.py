@@ -23,6 +23,7 @@ import argparse
 from typing import Any
 
 from hive import HiveStack
+from hive.config import HiveConfig
 from hive.rule_fast import RuleFastHoneyComb
 
 
@@ -39,7 +40,7 @@ except Exception:  # pragma: no cover
 
 if _HAS_FASTAPI:
     app = FastAPI(title="Hive Agent Memory", version="0.5.0")
-    stack = HiveStack(honey_comb=RuleFastHoneyComb())
+    stack = HiveStack(honey_comb=RuleFastHoneyComb(), config=HiveConfig.from_env())
 
     class RouteRequest(BaseModel):
         goal: str = Field(default="")
