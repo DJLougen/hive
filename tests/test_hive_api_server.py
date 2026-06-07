@@ -41,3 +41,26 @@ def test_ready_returns_200_when_stack_is_healthy():
     resp = client.get("/ready")
     assert resp.status_code == 200
     assert resp.json()["status"] == "ready"
+
+
+@pytest.mark.skipif(not _HAS_FASTAPI, reason="fastapi not installed")
+def test_api_server_applies_validate_inputs_from_env(monkeypatch):
+    """K8s sets HIVE_VALIDATE_INPUTS=true; the REST server must honor it."""
+    from hive import HiveStack
+    from hive.config import HiveConfig
+    from hive.rule_fast import RuleFastHoneyComb
+
+    monkeypatch.setenv("HIVE_VALIDATE_INPUTS", "true")
+    # Rebuild stack with fresh env (module-level singleton).
+    api_server.stack = HiveStack(
+        honey_comb=RuleFastHoneyComb(),
+        config=HiveConfig.from_env(),
+    )
+    client = TestClient(api_server.app)
+    resp = client.post("/route", json={"goal": "x", "step": -1, "available_tools": []})
+    assert resp.status_code == 422
+    monkeypatch.delenv("HIVE_VALIDATE_INPUTS", raising=False)
+    api_server.stack = HiveStack(
+        honey_comb=RuleFastHoneyComb(),
+        config=HiveConfig.from_env(),
+    )

@@ -29,6 +29,7 @@ class HiveConfig:
     rate_limit: int = 0  # 0 = disabled
     default_ttl_s: float | None = None
     max_memory_nodes: int = 10_000
+    max_content_bytes: int = 1_048_576
     jwt_secret: str | None = None
     otel_endpoint: str | None = None
     prometheus_port: int = 0  # 0 = disabled
@@ -68,6 +69,12 @@ class HiveConfig:
             else:
                 kwargs[attr] = raw
 
+        # K8s/Helm manifests use HIVE_MAX_NODES (not HIVE_MAX_MEMORY_NODES).
+        if "max_memory_nodes" not in kwargs:
+            alias = os.environ.get(f"{prefix}MAX_NODES")
+            if alias is not None:
+                kwargs["max_memory_nodes"] = int(alias)
+
         return cls(**kwargs)
 
     def validate(self) -> None:
@@ -76,6 +83,8 @@ class HiveConfig:
             raise ValueError("rate_limit must be >= 0")
         if self.max_memory_nodes < 1:
             raise ValueError("max_memory_nodes must be >= 1")
+        if self.max_content_bytes < 1:
+            raise ValueError("max_content_bytes must be >= 1")
 
     def to_dict(self) -> dict[str, Any]:
         """Return a plain dict (useful for JSON logging)."""
