@@ -31,6 +31,16 @@ async def test_async_remember_recall():
 
 
 @pytest.mark.asyncio
+async def test_async_remember_passes_trust_and_tags():
+    stack = AsyncHiveStack()
+    await stack.remember("k", "v", trust=0.25, tags={"audit"})
+    node = stack.stack.brain.get("k")
+    assert node is not None
+    assert node.trust == 0.25
+    assert node.tags == {"audit"}
+
+
+@pytest.mark.asyncio
 async def test_async_compress_many():
     stack = AsyncHiveStack(honey_comb=RuleFastHoneyComb())
     results = await stack.compress_many([("user", "a"), ("user", "b")])

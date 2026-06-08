@@ -54,3 +54,37 @@ def test_config_to_dict():
     d = cfg.to_dict()
     assert d["rate_limit"] == 100
     assert "validate_inputs" in d
+
+
+def test_from_env_reads_max_nodes_alias():
+    os.environ["HIVE_MAX_NODES"] = "42"
+    try:
+        cfg = HiveConfig.from_env()
+        assert cfg.max_memory_nodes == 42
+    finally:
+        del os.environ["HIVE_MAX_NODES"]
+
+
+def test_from_env_reads_max_content_bytes():
+    os.environ["HIVE_MAX_CONTENT_BYTES"] = "2048"
+    try:
+        cfg = HiveConfig.from_env()
+        assert cfg.max_content_bytes == 2048
+    finally:
+        del os.environ["HIVE_MAX_CONTENT_BYTES"]
+
+
+def test_stack_applies_config_memory_and_content_limits():
+    cfg = HiveConfig(max_memory_nodes=3, max_content_bytes=64)
+    stack = HiveStack(honey_comb=RuleFastHoneyComb(), config=cfg)
+    assert stack.brain._max_nodes == 3
+    assert stack._max_content_bytes == 64
+
+
+def test_stack_auto_rate_limiter_from_config():
+    cfg = HiveConfig(rate_limit=1)
+    stack = HiveStack(honey_comb=RuleFastHoneyComb(), config=cfg)
+    assert stack.rate_limiter is not None
+    stack.route({"goal": "first", "available_tools": []})
+    limited = stack.route({"goal": "second", "available_tools": []})
+    assert limited.source == "ratelimit"
