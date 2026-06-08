@@ -96,7 +96,8 @@ class AsyncHiveStack:
         async with self._lock:
             loop = asyncio.get_running_loop()
             return await loop.run_in_executor(
-                None, self._stack.remember, key, value,
+                None,
+                lambda: self._stack.remember(key, value, trust=trust, tags=tags),
             )
 
     async def recall(self, key: str, default: Any = None) -> Any:

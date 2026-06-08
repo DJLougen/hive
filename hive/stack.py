@@ -147,7 +147,7 @@ class HiveStack:
         validate: bool = False,
         config: HiveConfig | None = None,
         rate_limiter: RateLimiter | None = None,
-        max_content_bytes: int = 1_048_576,
+        max_content_bytes: int | None = None,
         circuit_breaker: CircuitBreaker | None = None,
     ) -> None:
         self.config = config or HiveConfig()
@@ -163,12 +163,22 @@ class HiveStack:
             tenant_id=tenant_id,
             tenant_isolation=self.config.tenant_isolation,
             default_ttl_s=self.config.default_ttl_s,
+            max_nodes=self.config.max_memory_nodes,
         )
         self._tenant_id = tenant_id
         self._validate = validate or self.config.validate_inputs
         self.rate_limiter = rate_limiter
+        if self.rate_limiter is None and self.config.rate_limit > 0:
+            self.rate_limiter = RateLimiter(
+                default_capacity=self.config.rate_limit,
+                refill_rate=max(self.config.rate_limit / 60.0, 1.0),
+            )
         self.circuit_breaker = circuit_breaker
-        self._max_content_bytes = max_content_bytes
+        self._max_content_bytes = (
+            max_content_bytes
+            if max_content_bytes is not None
+            else self.config.max_content_bytes
+        )
         self.telemetry = telemetry
         self.feedback = feedback_buffer
         self._policy_updater = PolicyUpdater() if feedback_buffer is not None else None
