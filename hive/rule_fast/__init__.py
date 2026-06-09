@@ -175,7 +175,10 @@ _RE_SIGNATURE = re.compile(
     r"^\s*(?:async\s+def|def|class|pub fn|fn|function|export)\b"
     r"|^[A-Za-z_]\w*\s*=\s"
     r"|^(?:import|from)\s"
-    r"|^\s+[A-Z_a-z]\w*\s*(?::[^=]+)?=\s*(?:-?\d|[\"'])[^(]*$"
+    # Literal body assignments only — allow trailing comments and quoted
+    # strings that contain parens; still reject computed rhs (`payload.get(...)`).
+    r"|^\s+[A-Z_a-z]\w*\s*(?::[^=]+)?=\s*"
+    r"(?:-?\d+\s*(?:#.*)?|\"[^\"]*\"|'[^']*')\s*$"
 )
 
 
@@ -229,8 +232,14 @@ def _compress_command(content: str) -> str:
     """
     lines = content.splitlines()
     head = lines[:6]
-    tail = lines[-3:] if len(lines) > 9 else []
-    middle = lines[6 : len(lines) - len(tail)]
+    # Keep the tail (exit code) for short logs too; the >9 guard only avoids
+    # head/tail overlap on longer output.
+    if len(lines) > 9:
+        tail = lines[-3:]
+        middle = lines[6 : len(lines) - len(tail)]
+    else:
+        tail = lines[6:]
+        middle = []
     errors = [line for line in middle if _RE_ERRORISH.search(line)][:_MAX_ERROR_LINES]
     parts = head + (["..."] if middle else []) + errors + (["..."] if tail else []) + tail
     return f"[cmd] ({len(content)} chars)\n" + "\n".join(parts)

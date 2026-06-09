@@ -10,6 +10,8 @@ from hive.rule_fast import (
     Label,
     Message,
     RuleFastHoneyComb,
+    _compact_file,
+    _compress_command,
     _compress_test_output,
     _infer_content_type,
 )
@@ -52,6 +54,40 @@ def test_compress_test_output_collapses_lines():
     out = _compress_test_output("test_a ... ok\ntest_b ... FAIL\ntest_c ... ok")
     assert "FAIL" in out
     assert "12 passed" not in out  # we didn't claim that
+
+
+def test_compact_file_keeps_literal_assignments_with_paren_comments():
+    """Body literals must survive comments/URLs containing parentheses."""
+    content = "\n".join(
+        [
+            "def handler(payload, *, timeout=30):",
+            '    """Handler."""',
+            "    limit = 4321  # see RFC (section 3)",
+            '    url = "http://registry.internal/path(v2)/push"',
+            "    x = payload.get('retry')",
+            "    return limit",
+        ]
+    )
+    out = _compact_file(content)
+    assert "limit = 4321" in out
+    assert 'url = "http://registry.internal/path(v2)/push"' in out
+    assert "payload.get" not in out
+
+
+def test_compress_command_keeps_exit_code_on_short_logs():
+    short = "\n".join(
+        [
+            "$ make deploy",
+            "step 1 ok",
+            "step 2 ok",
+            "step 3 ok",
+            "step 4 ok",
+            "step 5 ok",
+            "step 6 ok",
+            "exit 1",
+        ]
+    )
+    assert "exit 1" in _compress_command(short)
 
 
 def test_route_falls_back_when_no_policy():
