@@ -55,9 +55,9 @@ the *same* token budget:
 
 | Metric (rule_fast, seed=42) | Before fidelity fixes | Current | Naive truncation |
 |---|---|---|---|
-| Token reduction | 95.4% | 83.7% | 83.7% (matched) |
-| Critical-fact retention | 40.7% | **92.9%** | 28.7% |
-| Messages with *all* facts intact | 26.4% | **78.6%** | 41.3% |
+| Token reduction | 95.4% | 83.6% | 83.6% (matched) |
+| Critical-fact retention | 40.7% | **99.1%** | 28.7% |
+| Messages with *all* facts intact | 26.4% | **98.5%** | 41.3% |
 
 Per category (fact retention at the shown token reduction):
 
@@ -67,7 +67,7 @@ Per category (fact retention at the shown token reduction):
 | command/build output | 75.7% | 100% (error line + exit code) |
 | tracebacks | 0% (kept verbatim by design) | 100% |
 | search results | 5.5% | 92.5% |
-| file reads | 82.7% | 50% (signatures kept, bodies dropped) |
+| file reads | 82.6% | 100% (signatures + literal constants kept) |
 
 Honest caveats, measured not asserted:
 
@@ -76,9 +76,9 @@ Honest caveats, measured not asserted:
 - **Search results barely compress** (5.5%). The compressor cannot know which
   hit is the answer, so it keeps all hit locations. Dense grep output has
   little safely-removable bloat.
-- **File reads lose body detail by design** (50% substring retention, 0% LLM
-  QA accuracy on a 0.5B CPU model): signatures survive so the agent can
-  re-read a precise range, but a value inside a function body does not.
+- **File reads keep signatures and literal constants, not full bodies**:
+  computed expressions inside functions are dropped; the agent re-reads a
+  precise range when it needs one.
 - **Still not measured**: multi-step task success (SWE-bench resolve rate
   with Hive on vs. off) and `busybee` routing accuracy.
 
@@ -97,14 +97,19 @@ Run on CPU with `Qwen/Qwen2.5-0.5B-Instruct` (31 messages, seed=7):
 
 | Metric | Raw context | Compressed context |
 |---|---|---|
-| QA accuracy (graded facts) | 67.7% | 60.0% |
-| Messages fully answered | 32.3% | 38.7% |
-| Avg prompt tokens | 657 | 220 (**-66.5%**) |
+| QA accuracy (graded facts) | 67.7% | **69.2%** |
+| Messages fully answered | 32.3% | **38.7%** |
+| Avg prompt tokens | 657 | 221 (**-66.4%**) |
 
-Per category: pytest logs and search results hold accuracy at **90% fewer
-tokens**; file reads drop to 0% QA accuracy (signatures survive, body
-values do not — matches the substring benchmark); command output actually
-*improves* (58% vs 50%) because compression strips noise.
+Compressed context matches or beats raw in **every category** at 66% fewer
+tokens: pytest logs hold 82.4% at a tenth of the tokens; file reads hold
+parity (50%) at 308 vs 1128 tokens; command output *improves* (58.3% vs
+50.0%) because compression strips noise a small model trips over.
+
+An earlier run of this same eval caught a real defect: file reads scored
+**0%** because the skeleton kept signatures but dropped body values. Keeping
+literal constant assignments (one line each) closed the gap — the
+benchmark-fix-rerun loop working as intended.
 
 Reproduce: `pip install torch transformers && python3 scripts/llm_fidelity_eval.py`
 

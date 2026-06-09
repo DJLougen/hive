@@ -166,8 +166,16 @@ _MAX_ERROR_LINES = 20
 _MAX_SKELETON_LINES = 200
 
 _RE_ERRORISH = re.compile(r"error|fail|fatal|denied|exception|timed? ?out", re.I)
+# Skeleton keeps: signatures, imports, top-level assignments, and *literal*
+# constant assignments inside bodies (`limit = 1234`, `URL = "..."`). The
+# LLM fidelity eval showed body values are what agents go looking for in
+# file reads; literal assignments are one line each and carry most of that
+# signal. Computed assignments (`x = payload.get(...)`) stay dropped.
 _RE_SIGNATURE = re.compile(
-    r"^\s*(?:async\s+def|def|class|pub fn|fn|function|export)\b|^[A-Za-z_]\w*\s*=\s|^(?:import|from)\s"
+    r"^\s*(?:async\s+def|def|class|pub fn|fn|function|export)\b"
+    r"|^[A-Za-z_]\w*\s*=\s"
+    r"|^(?:import|from)\s"
+    r"|^\s+[A-Z_a-z]\w*\s*(?::[^=]+)?=\s*(?:-?\d|[\"'])[^(]*$"
 )
 
 

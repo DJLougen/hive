@@ -6,8 +6,8 @@
   "scale": 0.2,
   "max_new_tokens": 192,
   "machine": "x86_64 / Linux / 4 cores",
-  "commit": "1010e8e",
-  "timestamp": "2026-06-09T22:51:26+00:00",
+  "commit": "fababb1",
+  "timestamp": "2026-06-09T22:56:36+00:00",
   "aggregate": {
     "raw": {
       "messages": 31,
@@ -49,9 +49,9 @@
     },
     "compressed": {
       "messages": 31,
-      "qa_accuracy_pct": 60.0,
+      "qa_accuracy_pct": 69.23076923076923,
       "all_facts_answered_pct": 38.70967741935484,
-      "avg_prompt_tokens": 219.74193548387098,
+      "avg_prompt_tokens": 221.48387096774192,
       "by_category": {
         "command_output": {
           "messages": 6,
@@ -61,9 +61,9 @@
         },
         "file_read": {
           "messages": 6,
-          "qa_accuracy_pct": 0.0,
+          "qa_accuracy_pct": 50.0,
           "all_facts_answered_pct": 0.0,
-          "avg_prompt_tokens": 298.5
+          "avg_prompt_tokens": 307.5
         },
         "pytest_log": {
           "messages": 7,
@@ -93,7 +93,7 @@
       "source": "synthetic",
       "condition": "raw",
       "prompt_tokens": 1071,
-      "latency_s": 5.29,
+      "latency_s": 5.09,
       "answer": "The test that failed is:\n\n```python\ndef test_worker_refresh_016():\n    assert client.get('/api/worker').status_code == 200\n```\n\nThis test fails because it expects an integer status code (HTTP status code), but receives `None` as the status code.\n\nThe number of failed tests is **1**.\n\nThe number of passed tests is **56**.",
       "graded": {
         "failing test name::test_worker_refresh_016": true,
@@ -108,7 +108,7 @@
       "source": "synthetic",
       "condition": "compressed",
       "prompt_tokens": 111,
-      "latency_s": 1.68,
+      "latency_s": 1.66,
       "answer": "The test that failed is `tests/test_worker.py::test_worker_refresh_016`. It has 1 failure. The total number of tests passed is 56.",
       "graded": {
         "failing test name::test_worker_refresh_016": true,
@@ -123,7 +123,7 @@
       "source": "synthetic",
       "condition": "raw",
       "prompt_tokens": 1537,
-      "latency_s": 5.55,
+      "latency_s": 5.54,
       "answer": "The test that failed is:\n\n```python\ndef test_search_login_057():\n    assert client.get('/api/search').status_code == 200\n```\n\nThis test was marked as failing because it attempted to access an attribute `client` without any value assigned to it.\n\nIn total, there were 2 failed tests out of 82 tests run.",
       "graded": {
         "failing test name::test_billing_refresh_017": false,
@@ -139,7 +139,7 @@
       "source": "synthetic",
       "condition": "compressed",
       "prompt_tokens": 125,
-      "latency_s": 2.11,
+      "latency_s": 2.02,
       "answer": "The tests that failed are:\n- `tests/test_billing.py::test_billing_refresh_017`\n- `tests/test_search.py::test_search_login_057`\n\nIn total, 2 tests failed.",
       "graded": {
         "failing test name::test_billing_refresh_017": true,
@@ -155,7 +155,7 @@
       "source": "synthetic",
       "condition": "raw",
       "prompt_tokens": 1731,
-      "latency_s": 6.04,
+      "latency_s": 6.51,
       "answer": "The test that failed is:\n\n```python\ndef test_api_login_061():\n    assert client.get('/api/api').status_code == 200\n```\n\nThis test fails because it expects a status code of 200 but receives a status code of 500.\n\nIn total, there were 1 failed test out of 100 tests run.",
       "graded": {
         "failing test name::test_api_login_061": true,
@@ -170,7 +170,7 @@
       "source": "synthetic",
       "condition": "compressed",
       "prompt_tokens": 112,
-      "latency_s": 1.66,
+      "latency_s": 1.69,
       "answer": "The test that failed is `tests/test_api.py::test_api_login_061`. It has 1 failure. The total number of tests passed is 100.",
       "graded": {
         "failing test name::test_api_login_061": true,
@@ -185,7 +185,7 @@
       "source": "synthetic",
       "condition": "raw",
       "prompt_tokens": 1614,
-      "latency_s": 6.12,
+      "latency_s": 6.35,
       "answer": "The test that failed is:\n\n```python\ndef test_billing_login_089():\n    assert client.get('/api/billing').status_code == 200\n```\n\nThis test fails because it raises a `KeyError` with the message \"KeyError: 'refresh_token'\". This indicates that there was an issue retrieving the refresh token from the API.\n\nIn total, 1 test failed out of 94 tests collected.",
       "graded": {
         "failing test name::test_billing_login_089": true,
@@ -200,7 +200,7 @@
       "source": "synthetic",
       "condition": "compressed",
       "prompt_tokens": 111,
-      "latency_s": 1.63,
+      "latency_s": 1.65,
       "answer": "The test that failed is `tests/test_billing.py::test_billing_login_089`. It has 1 failure. The total number of tests passed is 93.",
       "graded": {
         "failing test name::test_billing_login_089": true,
@@ -215,7 +215,7 @@
       "source": "synthetic",
       "condition": "raw",
       "prompt_tokens": 1457,
-      "latency_s": 5.44,
+      "latency_s": 5.51,
       "answer": "The test that failed is:\n\n```python\ndef test_cache_encode_053():\n    assert client.get('/api/cache').status_code == 200\n```\n\nThis test fails because it attempts to call `client.get` on an `NoneType`, which does not have a `commit` method.\n\nIn total, there were 1 failed test out of 82 tests run.",
       "graded": {
         "failing test name::test_cache_encode_053": true,
@@ -230,7 +230,7 @@
       "source": "synthetic",
       "condition": "compressed",
       "prompt_tokens": 111,
-      "latency_s": 1.65,
+      "latency_s": 1.67,
       "answer": "The test that failed is `tests/test_cache.py::test_cache_encode_053`. It has 1 failure. The total number of tests passed is 82.",
       "graded": {
         "failing test name::test_cache_encode_053": true,
@@ -245,7 +245,7 @@
       "source": "synthetic",
       "condition": "raw",
       "prompt_tokens": 785,
-      "latency_s": 4.27,
+      "latency_s": 4.15,
       "answer": "The test that failed is:\n\n```python\ndef test_config_merge_035():\n    assert client.get('/api/config').status_code == 200\n```\n\nThis test fails because it attempts to parse an invalid integer value ('abc') as an integer.\n\nIn total, there were 1 failed test cases out of 37 passed tests.",
       "graded": {
         "failing test name::test_config_merge_035": true,
@@ -260,7 +260,7 @@
       "source": "synthetic",
       "condition": "compressed",
       "prompt_tokens": 111,
-      "latency_s": 1.7,
+      "latency_s": 1.61,
       "answer": "The test that failed is `tests/test_config.py::test_config_merge_035`. It has 1 failure. The total number of tests passed is 37.",
       "graded": {
         "failing test name::test_config_merge_035": true,
@@ -275,7 +275,7 @@
       "source": "synthetic",
       "condition": "raw",
       "prompt_tokens": 228,
-      "latency_s": 1.82,
+      "latency_s": 1.73,
       "answer": "The exception type is `AttributeError` with the message `'NoneType' object has no attribute 'commit'`. The file path and line number are not provided in this traceback.",
       "graded": {
         "exception line::AttributeError: 'NoneType' object has no attribute 'commit'": true,
@@ -290,7 +290,7 @@
       "source": "synthetic",
       "condition": "compressed",
       "prompt_tokens": 228,
-      "latency_s": 1.76,
+      "latency_s": 1.72,
       "answer": "The exception type is `AttributeError` with the message `'NoneType' object has no attribute 'commit'`. The file path and line number are not provided in this traceback.",
       "graded": {
         "exception line::AttributeError: 'NoneType' object has no attribute 'commit'": true,
@@ -305,7 +305,7 @@
       "source": "synthetic",
       "condition": "raw",
       "prompt_tokens": 233,
-      "latency_s": 1.87,
+      "latency_s": 1.85,
       "answer": "The exception type is `ConnectionResetError` with the message `[Errno 104] Connection reset by peer`. The file path and line number are not provided in this specific traceback.",
       "graded": {
         "exception line::ConnectionResetError: [Errno 104] Connection reset by peer": true,
@@ -320,7 +320,7 @@
       "source": "synthetic",
       "condition": "compressed",
       "prompt_tokens": 233,
-      "latency_s": 1.88,
+      "latency_s": 1.86,
       "answer": "The exception type is `ConnectionResetError` with the message `[Errno 104] Connection reset by peer`. The file path and line number are not provided in this specific traceback.",
       "graded": {
         "exception line::ConnectionResetError: [Errno 104] Connection reset by peer": true,
@@ -335,7 +335,7 @@
       "source": "synthetic",
       "condition": "raw",
       "prompt_tokens": 234,
-      "latency_s": 2.1,
+      "latency_s": 1.8,
       "answer": "Exception type: ValueError\nMessage: invalid literal for int() with base 10: 'abc'\nFile path: src/cache/encode_parse.py\nLine number: 859",
       "graded": {
         "exception line::ValueError: invalid literal for int() with base 10: 'abc'": true,
@@ -350,7 +350,7 @@
       "source": "synthetic",
       "condition": "compressed",
       "prompt_tokens": 234,
-      "latency_s": 2.12,
+      "latency_s": 1.82,
       "answer": "Exception type: ValueError\nMessage: invalid literal for int() with base 10: 'abc'\nFile path: src/cache/encode_parse.py\nLine number: 859",
       "graded": {
         "exception line::ValueError: invalid literal for int() with base 10: 'abc'": true,
@@ -365,7 +365,7 @@
       "source": "synthetic",
       "condition": "raw",
       "prompt_tokens": 312,
-      "latency_s": 2.46,
+      "latency_s": 2.1,
       "answer": "The exception type is `ValueError` and the message is `'invalid literal for int() with base 10: 'abc''`. The file path and line number are not provided in this specific traceback.",
       "graded": {
         "exception line::ValueError: invalid literal for int() with base 10: 'abc'": true,
@@ -380,7 +380,7 @@
       "source": "synthetic",
       "condition": "compressed",
       "prompt_tokens": 312,
-      "latency_s": 2.47,
+      "latency_s": 2.11,
       "answer": "The exception type is `ValueError` and the message is `'invalid literal for int() with base 10: 'abc''`. The file path and line number are not provided in this specific traceback.",
       "graded": {
         "exception line::ValueError: invalid literal for int() with base 10: 'abc'": true,
@@ -395,7 +395,7 @@
       "source": "synthetic",
       "condition": "raw",
       "prompt_tokens": 280,
-      "latency_s": 1.81,
+      "latency_s": 1.54,
       "answer": "The exception type is `KeyError` with the message `'refresh_token'`. The file path and line number are not provided in this specific traceback.",
       "graded": {
         "exception line::KeyError: 'refresh_token'": true,
@@ -410,7 +410,7 @@
       "source": "synthetic",
       "condition": "compressed",
       "prompt_tokens": 280,
-      "latency_s": 1.79,
+      "latency_s": 1.54,
       "answer": "The exception type is `KeyError` with the message `'refresh_token'`. The file path and line number are not provided in this specific traceback.",
       "graded": {
         "exception line::KeyError: 'refresh_token'": true,
@@ -425,7 +425,7 @@
       "source": "synthetic",
       "condition": "raw",
       "prompt_tokens": 249,
-      "latency_s": 1.78,
+      "latency_s": 1.5,
       "answer": "The exception type is `KeyError` with the message `'refresh_token'`. The file path and line number are not provided in this specific traceback.",
       "graded": {
         "exception line::KeyError: 'refresh_token'": true,
@@ -440,7 +440,7 @@
       "source": "synthetic",
       "condition": "compressed",
       "prompt_tokens": 249,
-      "latency_s": 1.77,
+      "latency_s": 1.51,
       "answer": "The exception type is `KeyError` with the message `'refresh_token'`. The file path and line number are not provided in this specific traceback.",
       "graded": {
         "exception line::KeyError: 'refresh_token'": true,
@@ -455,7 +455,7 @@
       "source": "synthetic",
       "condition": "raw",
       "prompt_tokens": 1050,
-      "latency_s": 2.73,
+      "latency_s": 2.54,
       "answer": "The function with the variable `limit` is `login_auth_002`, which has a timeout of 2547.",
       "graded": {
         "target function signature::def login_auth_002(payload, *, timeout=29):": false,
@@ -469,14 +469,14 @@
       "category": "file_read",
       "source": "synthetic",
       "condition": "compressed",
-      "prompt_tokens": 295,
-      "latency_s": 2.48,
-      "answer": "The function with the variable `limit` is `login_auth_002`, it has a timeout of 29 seconds and an initial limit of 1000000000 (which is 1 billion).",
+      "prompt_tokens": 304,
+      "latency_s": 1.98,
+      "answer": "The function with the variable `limit` is `login_db_008`, it has a timeout of 24 seconds by default, and an initial value of 2547.",
       "graded": {
         "target function signature::def login_auth_002(payload, *, timeout=29):": false,
-        "target constant::limit = 2547": false
+        "target constant::limit = 2547": true
       },
-      "correct": 0,
+      "correct": 1,
       "total": 2
     },
     {
@@ -485,7 +485,7 @@
       "source": "synthetic",
       "condition": "raw",
       "prompt_tokens": 1375,
-      "latency_s": 2.49,
+      "latency_s": 2.44,
       "answer": "expiry_worker_001, 25, 3931",
       "graded": {
         "target function signature::def login_db_002(payload, *, timeout=93):": false,
@@ -499,14 +499,14 @@
       "category": "file_read",
       "source": "synthetic",
       "condition": "compressed",
-      "prompt_tokens": 340,
-      "latency_s": 1.93,
-      "answer": "The function with the variable `limit` is `login_db_002`, it has a timeout of 93 seconds and an initial limit of 169 lines.",
+      "prompt_tokens": 349,
+      "latency_s": 2.0,
+      "answer": "```json\n{\n  \"function\": \"retry_db_000\",\n  \"default_timeout\": 88,\n  \"value_of_limit\": 3931\n}\n```",
       "graded": {
         "target function signature::def login_db_002(payload, *, timeout=93):": false,
-        "target constant::limit = 3931": false
+        "target constant::limit = 3931": true
       },
-      "correct": 0,
+      "correct": 1,
       "total": 2
     },
     {
@@ -529,14 +529,14 @@
       "category": "file_read",
       "source": "synthetic",
       "condition": "compressed",
-      "prompt_tokens": 280,
+      "prompt_tokens": 289,
       "latency_s": 2.0,
-      "answer": "The function with the variable `limit` is `parse_search_008`, it has a timeout of 92 seconds by default, and an initial limit of 1000 bytes.",
+      "answer": "The function with the variable `limit` is `parse_search_008`, it has a timeout of 92 characters, and the value of `limit` is 1331.",
       "graded": {
         "target function signature::def encode_auth_010(payload, *, timeout=2):": false,
-        "target constant::limit = 1331": false
+        "target constant::limit = 1331": true
       },
-      "correct": 0,
+      "correct": 1,
       "total": 2
     },
     {
@@ -545,7 +545,7 @@
       "source": "synthetic",
       "condition": "raw",
       "prompt_tokens": 941,
-      "latency_s": 2.84,
+      "latency_s": 2.79,
       "answer": "The function with the variable `limit` is `expiry_config_008`, it has a timeout of 64 seconds and an initial value of 9229.",
       "graded": {
         "target function signature::def expiry_config_008(payload, *, timeout=64):": false,
@@ -559,14 +559,14 @@
       "category": "file_read",
       "source": "synthetic",
       "condition": "compressed",
-      "prompt_tokens": 266,
-      "latency_s": 2.07,
-      "answer": "The function with the variable `limit` is `merge_cache_001`, it has a timeout of 22 seconds by default. The numeric value assigned to `limit` is 113.",
+      "prompt_tokens": 275,
+      "latency_s": 2.13,
+      "answer": "The function with the variable `limit` is `login_config_009`, it has a timeout of 60 seconds by default, and the value assigned to `limit` is 9229.",
       "graded": {
         "target function signature::def expiry_config_008(payload, *, timeout=64):": false,
-        "target constant::limit = 9229": false
+        "target constant::limit = 9229": true
       },
-      "correct": 0,
+      "correct": 1,
       "total": 2
     },
     {
@@ -575,7 +575,7 @@
       "source": "synthetic",
       "condition": "raw",
       "prompt_tokens": 1064,
-      "latency_s": 2.96,
+      "latency_s": 4.06,
       "answer": "The function with the variable `limit` is `refresh_auth_011`, which has a timeout of 88 seconds and an initial value of 6442.",
       "graded": {
         "target function signature::def refresh_auth_011(payload, *, timeout=88):": false,
@@ -589,14 +589,14 @@
       "category": "file_read",
       "source": "synthetic",
       "condition": "compressed",
-      "prompt_tokens": 299,
-      "latency_s": 2.19,
-      "answer": "The function with the variable `limit` is `login_search_000`, it has a timeout of 108 seconds by default. The numeric value assigned to `limit` is 3111.",
+      "prompt_tokens": 308,
+      "latency_s": 2.74,
+      "answer": "The function with the variable `limit` is `login_search_000`, it has a timeout of 6442 characters, and the value of `limit` is 6442.",
       "graded": {
         "target function signature::def refresh_auth_011(payload, *, timeout=88):": false,
-        "target constant::limit = 6442": false
+        "target constant::limit = 6442": true
       },
-      "correct": 0,
+      "correct": 1,
       "total": 2
     },
     {
@@ -605,7 +605,7 @@
       "source": "synthetic",
       "condition": "raw",
       "prompt_tokens": 1186,
-      "latency_s": 3.1,
+      "latency_s": 3.16,
       "answer": "The function with the variable `limit` is `refresh_cache_012`, it has a timeout of 51 seconds and an initial value of 5918.",
       "graded": {
         "target function signature::def merge_billing_011(payload, *, timeout=69):": false,
@@ -619,14 +619,14 @@
       "category": "file_read",
       "source": "synthetic",
       "condition": "compressed",
-      "prompt_tokens": 311,
-      "latency_s": 1.86,
-      "answer": "The function with the variable `limit` is `merge_config_005`, it has a timeout of 87 seconds and an initial limit of 145 lines.",
+      "prompt_tokens": 320,
+      "latency_s": 1.88,
+      "answer": "The function with the variable `limit` is `merge_config_005`, it has a timeout of 87 seconds and an initial limit of 5918.",
       "graded": {
         "target function signature::def merge_billing_011(payload, *, timeout=69):": false,
-        "target constant::limit = 5918": false
+        "target constant::limit = 5918": true
       },
-      "correct": 0,
+      "correct": 1,
       "total": 2
     },
     {
@@ -635,7 +635,7 @@
       "source": "synthetic",
       "condition": "raw",
       "prompt_tokens": 145,
-      "latency_s": 2.56,
+      "latency_s": 2.6,
       "answer": "The constant `SESSION_TTL_000` is defined in the following files:\n\n- src/api/handlers.py: line 376\n- src/worker/handlers.py: line 417\n\nIts numeric value is 75802.",
       "graded": {
         "answer location::src/api/handlers.py:376": true,
@@ -665,7 +665,7 @@
       "source": "synthetic",
       "condition": "raw",
       "prompt_tokens": 218,
-      "latency_s": 2.58,
+      "latency_s": 2.75,
       "answer": "The constant `SESSION_TTL_001` is defined in the following files:\n\n- src/cache/handlers.py: line 896\n- src/db/handlers.py: line 104\n\nIts numeric value is 58631.",
       "graded": {
         "answer location::src/db/handlers.py:104": true,
@@ -680,7 +680,7 @@
       "source": "synthetic",
       "condition": "compressed",
       "prompt_tokens": 231,
-      "latency_s": 2.68,
+      "latency_s": 2.7,
       "answer": "The constant `SESSION_TTL_001` is defined in the following files:\n\n- `src/cache/handlers.py`: Line 896\n- `src/db/handlers.py`: Line 104\n\nIts numeric value is 58631.",
       "graded": {
         "answer location::src/db/handlers.py:104": true,
@@ -695,7 +695,7 @@
       "source": "synthetic",
       "condition": "raw",
       "prompt_tokens": 290,
-      "latency_s": 2.7,
+      "latency_s": 2.74,
       "answer": "The constant `SESSION_TTL_002` is defined in the following files:\n\n- src/search/handlers.py: line 464\n- src/worker/handlers.py: line 245\n\nIts numeric value is 29121.",
       "graded": {
         "answer location::src/worker/handlers.py:245": true,
@@ -710,7 +710,7 @@
       "source": "synthetic",
       "condition": "compressed",
       "prompt_tokens": 307,
-      "latency_s": 4.44,
+      "latency_s": 4.67,
       "answer": "The constant `SESSION_TTL_002` is defined in the following files:\n\n- **src/search/handlers.py**: Line 464\n- **src/worker/handlers.py**: Line 245\n- **src/db/handlers.py**: Line 127\n- **src/api/handlers.py**: Line 331\n\nThe numeric value of `SESSION_TTL_002` is 29121.",
       "graded": {
         "answer location::src/worker/handlers.py:245": true,
@@ -725,7 +725,7 @@
       "source": "synthetic",
       "condition": "raw",
       "prompt_tokens": 217,
-      "latency_s": 2.72,
+      "latency_s": 2.74,
       "answer": "The constant SESSION_TTL_003 is defined in `src/auth/handlers.py` at line 862 with the following values:\n\n- File path: src/auth/handlers.py\n- Line number: 862\n- Numeric value: 6225",
       "graded": {
         "answer location::src/auth/handlers.py:862": true,
@@ -740,7 +740,7 @@
       "source": "synthetic",
       "condition": "compressed",
       "prompt_tokens": 229,
-      "latency_s": 1.44,
+      "latency_s": 1.49,
       "answer": "src/auth/handlers.py:862, 862, SESSION_TTL_003 = 6225",
       "graded": {
         "answer location::src/auth/handlers.py:862": true,
@@ -755,7 +755,7 @@
       "source": "synthetic",
       "condition": "raw",
       "prompt_tokens": 201,
-      "latency_s": 2.54,
+      "latency_s": 2.61,
       "answer": "The constant `SESSION_TTL_004` is defined in the following files:\n\n- src/cache/handlers.py: line 831\n- src/auth/handlers.py: line 165\n\nIts numeric value is 25632.",
       "graded": {
         "answer location::src/auth/handlers.py:484": false,
@@ -770,7 +770,7 @@
       "source": "synthetic",
       "condition": "compressed",
       "prompt_tokens": 212,
-      "latency_s": 2.89,
+      "latency_s": 3.1,
       "answer": "The constant `SESSION_TTL_004` is defined in `src/auth/handlers.py` at line 165 with the following values:\n\n- File path: `src/auth/handlers.py`\n- Line number: `165`\n- Numeric value: `25632`",
       "graded": {
         "answer location::src/auth/handlers.py:484": false,
@@ -785,7 +785,7 @@
       "source": "synthetic",
       "condition": "raw",
       "prompt_tokens": 165,
-      "latency_s": 3.19,
+      "latency_s": 3.43,
       "answer": "The constant `SESSION_TTL_005` is defined in the following files:\n\n- src/config/handlers.py: line 123\n- src/billing/handlers.py: lines 399 to 468\n\nThe numeric value of `SESSION_TTL_005` is 82397.",
       "graded": {
         "answer location::src/config/handlers.py:123": true,
@@ -800,7 +800,7 @@
       "source": "synthetic",
       "condition": "compressed",
       "prompt_tokens": 175,
-      "latency_s": 3.85,
+      "latency_s": 3.98,
       "answer": "The constant `SESSION_TTL_005` is defined in the following files:\n\n- **src/billing/handlers.py** at line 399.\n- **src/worker/handlers.py** at line 847.\n- **src/config/handlers.py** at line 123.\n\nThe numeric value of `SESSION_TTL_005` is 82397.",
       "graded": {
         "answer location::src/config/handlers.py:123": true,
@@ -815,7 +815,7 @@
       "source": "synthetic",
       "condition": "raw",
       "prompt_tokens": 268,
-      "latency_s": 1.82,
+      "latency_s": 1.89,
       "answer": "The error message indicates that there was an issue with pushing an image to the registry internal:5206, specifically due to a connection timeout. The exit code is 1.",
       "graded": {
         "error line::ERROR! failed to push image to registry.internal:5206 (conne": false,
@@ -830,7 +830,7 @@
       "source": "synthetic",
       "condition": "compressed",
       "prompt_tokens": 195,
-      "latency_s": 1.75,
+      "latency_s": 1.77,
       "answer": "The error message indicates that there was an issue with pushing an image to the registry internal:5206, specifically due to a connection timeout. The exit code is 1.",
       "graded": {
         "error line::ERROR! failed to push image to registry.internal:5206 (conne": false,
@@ -845,7 +845,7 @@
       "source": "synthetic",
       "condition": "raw",
       "prompt_tokens": 257,
-      "latency_s": 1.83,
+      "latency_s": 1.86,
       "answer": "The error message indicates that there was an issue with pushing an image to the registry internal:5932, specifically due to a connection timeout. The exit code is 1.",
       "graded": {
         "error line::ERROR! failed to push image to registry.internal:5932 (conne": false,
@@ -860,7 +860,7 @@
       "source": "synthetic",
       "condition": "compressed",
       "prompt_tokens": 196,
-      "latency_s": 1.75,
+      "latency_s": 1.84,
       "answer": "The error message indicates that there was an issue with pushing an image to the registry internal:5932, specifically due to a connection timeout. The exit code is 1.",
       "graded": {
         "error line::ERROR! failed to push image to registry.internal:5932 (conne": false,
@@ -875,7 +875,7 @@
       "source": "synthetic",
       "condition": "raw",
       "prompt_tokens": 233,
-      "latency_s": 1.78,
+      "latency_s": 1.83,
       "answer": "The error message indicates that there was an issue with pushing an image to the registry internal:5568, specifically due to a connection timeout. The exit code is 1.",
       "graded": {
         "error line::ERROR! failed to push image to registry.internal:5568 (conne": false,
@@ -890,7 +890,7 @@
       "source": "synthetic",
       "condition": "compressed",
       "prompt_tokens": 196,
-      "latency_s": 1.76,
+      "latency_s": 1.8,
       "answer": "The error message indicates that there was an issue with pushing an image to the registry internal:5568, specifically due to a connection timeout. The exit code is 1.",
       "graded": {
         "error line::ERROR! failed to push image to registry.internal:5568 (conne": false,
@@ -905,7 +905,7 @@
       "source": "synthetic",
       "condition": "raw",
       "prompt_tokens": 364,
-      "latency_s": 1.6,
+      "latency_s": 1.63,
       "answer": "The error message states that there was an issue connecting to the registry internal endpoint, resulting in a connection timeout. The exit code is 1.",
       "graded": {
         "error line::ERROR! failed to push image to registry.internal:5959 (conne": false,
@@ -920,7 +920,7 @@
       "source": "synthetic",
       "condition": "compressed",
       "prompt_tokens": 243,
-      "latency_s": 1.8,
+      "latency_s": 1.84,
       "answer": "The error message indicates that there was an issue with pushing an image to the registry internal:5959, specifically due to a connection timeout. The exit code is 1.",
       "graded": {
         "error line::ERROR! failed to push image to registry.internal:5959 (conne": false,
@@ -935,7 +935,7 @@
       "source": "synthetic",
       "condition": "raw",
       "prompt_tokens": 328,
-      "latency_s": 1.67,
+      "latency_s": 1.73,
       "answer": "The error message is \"ERROR! failed to push image to registry.internal:5624 (connection timed out)\", with an exit code of 1.",
       "graded": {
         "error line::ERROR! failed to push image to registry.internal:5624 (conne": true,
@@ -950,7 +950,7 @@
       "source": "synthetic",
       "condition": "compressed",
       "prompt_tokens": 207,
-      "latency_s": 1.69,
+      "latency_s": 1.72,
       "answer": "The error message is:\n```\nERROR! failed to push image to registry.internal:5624 (connection timed out)\n```\nThe exit code is 1.",
       "graded": {
         "error line::ERROR! failed to push image to registry.internal:5624 (conne": true,
@@ -965,7 +965,7 @@
       "source": "synthetic",
       "condition": "raw",
       "prompt_tokens": 364,
-      "latency_s": 1.88,
+      "latency_s": 1.93,
       "answer": "The error message indicates that there was an issue pushing an image to the registry internal:5262, specifically due to a connection timeout. The exit code is 1.",
       "graded": {
         "error line::ERROR! failed to push image to registry.internal:5262 (conne": false,
@@ -980,7 +980,7 @@
       "source": "synthetic",
       "condition": "compressed",
       "prompt_tokens": 219,
-      "latency_s": 1.34,
+      "latency_s": 1.33,
       "answer": "The error message indicates that there was an issue connecting to the registry internal endpoint for pushing images. The exit code is 1.",
       "graded": {
         "error line::ERROR! failed to push image to registry.internal:5262 (conne": false,
@@ -995,7 +995,7 @@
       "source": "real",
       "condition": "raw",
       "prompt_tokens": 807,
-      "latency_s": 2.46,
+      "latency_s": 2.5,
       "answer": "The following tests have failed:\n\n- test_auth_token_refresh_expired\n- test_billing_invoice_rounding\n- test_search_unicode_query\n\nThey have been run successfully in total.",
       "graded": {
         "failing test name::test_auth_token_refresh_expired": true,
@@ -1012,7 +1012,7 @@
       "source": "real",
       "condition": "compressed",
       "prompt_tokens": 241,
-      "latency_s": 2.58,
+      "latency_s": 2.61,
       "answer": "The test that failed is `test_auth_token_refresh_expired`, which has 1 failure rate of 30%. The test that failed is also `test_billing_invoice_rounding`, with a failure rate of 25%. There are no tests that failed or passed overall.",
       "graded": {
         "failing test name::test_auth_token_refresh_expired": true,

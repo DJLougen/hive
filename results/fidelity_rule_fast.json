@@ -1,8 +1,8 @@
 {
   "compressor": "RuleFastHoneyComb",
   "messages": 201,
-  "elapsed_s": 0.09482338999987405,
-  "throughput_msg_per_s": 2119.7301636259467,
+  "elapsed_s": 0.08485518100133049,
+  "throughput_msg_per_s": 2368.741632839701,
   "rows": [
     {
       "id": "pytest_log_000",
@@ -970,10 +970,10 @@
       "source": "synthetic",
       "label": "compact",
       "original_tokens": 2281,
-      "compressed_tokens": 375,
-      "naive_tokens": 375,
+      "compressed_tokens": 380,
+      "naive_tokens": 380,
       "facts_total": 2,
-      "facts_retained": 1,
+      "facts_retained": 2,
       "naive_facts_retained": 0
     },
     {
@@ -982,10 +982,10 @@
       "source": "synthetic",
       "label": "compact",
       "original_tokens": 3650,
-      "compressed_tokens": 641,
-      "naive_tokens": 641,
+      "compressed_tokens": 645,
+      "naive_tokens": 645,
       "facts_total": 2,
-      "facts_retained": 1,
+      "facts_retained": 2,
       "naive_facts_retained": 0
     },
     {
@@ -994,10 +994,10 @@
       "source": "synthetic",
       "label": "compact",
       "original_tokens": 2223,
-      "compressed_tokens": 381,
-      "naive_tokens": 381,
+      "compressed_tokens": 385,
+      "naive_tokens": 385,
       "facts_total": 2,
-      "facts_retained": 1,
+      "facts_retained": 2,
       "naive_facts_retained": 0
     },
     {
@@ -1006,10 +1006,10 @@
       "source": "synthetic",
       "label": "compact",
       "original_tokens": 1884,
-      "compressed_tokens": 311,
-      "naive_tokens": 311,
+      "compressed_tokens": 316,
+      "naive_tokens": 316,
       "facts_total": 2,
-      "facts_retained": 1,
+      "facts_retained": 2,
       "naive_facts_retained": 0
     },
     {
@@ -1018,10 +1018,10 @@
       "source": "synthetic",
       "label": "compact",
       "original_tokens": 3775,
-      "compressed_tokens": 653,
-      "naive_tokens": 653,
+      "compressed_tokens": 657,
+      "naive_tokens": 657,
       "facts_total": 2,
-      "facts_retained": 1,
+      "facts_retained": 2,
       "naive_facts_retained": 2
     },
     {
@@ -1030,10 +1030,10 @@
       "source": "synthetic",
       "label": "compact",
       "original_tokens": 2217,
-      "compressed_tokens": 378,
-      "naive_tokens": 378,
+      "compressed_tokens": 382,
+      "naive_tokens": 382,
       "facts_total": 2,
-      "facts_retained": 1,
+      "facts_retained": 2,
       "naive_facts_retained": 0
     },
     {
@@ -1042,10 +1042,10 @@
       "source": "synthetic",
       "label": "compact",
       "original_tokens": 5303,
-      "compressed_tokens": 881,
-      "naive_tokens": 881,
+      "compressed_tokens": 885,
+      "naive_tokens": 885,
       "facts_total": 2,
-      "facts_retained": 1,
+      "facts_retained": 2,
       "naive_facts_retained": 0
     },
     {
@@ -1054,10 +1054,10 @@
       "source": "synthetic",
       "label": "compact",
       "original_tokens": 2437,
-      "compressed_tokens": 433,
-      "naive_tokens": 433,
+      "compressed_tokens": 437,
+      "naive_tokens": 437,
       "facts_total": 2,
-      "facts_retained": 1,
+      "facts_retained": 2,
       "naive_facts_retained": 0
     },
     {
@@ -1066,10 +1066,10 @@
       "source": "synthetic",
       "label": "compact",
       "original_tokens": 3703,
-      "compressed_tokens": 637,
-      "naive_tokens": 637,
+      "compressed_tokens": 642,
+      "naive_tokens": 642,
       "facts_total": 2,
-      "facts_retained": 1,
+      "facts_retained": 2,
       "naive_facts_retained": 0
     },
     {
@@ -1078,10 +1078,10 @@
       "source": "synthetic",
       "label": "compact",
       "original_tokens": 4525,
-      "compressed_tokens": 790,
-      "naive_tokens": 790,
+      "compressed_tokens": 794,
+      "naive_tokens": 794,
       "facts_total": 2,
-      "facts_retained": 1,
+      "facts_retained": 2,
       "naive_facts_retained": 0
     },
     {
@@ -1090,10 +1090,10 @@
       "source": "synthetic",
       "label": "compact",
       "original_tokens": 3071,
-      "compressed_tokens": 538,
-      "naive_tokens": 538,
+      "compressed_tokens": 542,
+      "naive_tokens": 542,
       "facts_total": 2,
-      "facts_retained": 1,
+      "facts_retained": 2,
       "naive_facts_retained": 0
     },
     {
@@ -1102,10 +1102,10 @@
       "source": "synthetic",
       "label": "compact",
       "original_tokens": 5064,
-      "compressed_tokens": 897,
-      "naive_tokens": 897,
+      "compressed_tokens": 901,
+      "naive_tokens": 901,
       "facts_total": 2,
-      "facts_retained": 1,
+      "facts_retained": 2,
       "naive_facts_retained": 2
     },
     {
@@ -1114,10 +1114,10 @@
       "source": "synthetic",
       "label": "compact",
       "original_tokens": 2433,
-      "compressed_tokens": 416,
-      "naive_tokens": 416,
+      "compressed_tokens": 420,
+      "naive_tokens": 420,
       "facts_total": 2,
-      "facts_retained": 1,
+      "facts_retained": 2,
       "naive_facts_retained": 2
     },
     {
@@ -1126,10 +1126,10 @@
       "source": "synthetic",
       "label": "compact",
       "original_tokens": 4466,
-      "compressed_tokens": 784,
-      "naive_tokens": 784,
+      "compressed_tokens": 789,
+      "naive_tokens": 789,
       "facts_total": 2,
-      "facts_retained": 1,
+      "facts_retained": 2,
       "naive_facts_retained": 0
     },
     {
@@ -1138,10 +1138,10 @@
       "source": "synthetic",
       "label": "compact",
       "original_tokens": 3954,
-      "compressed_tokens": 672,
-      "naive_tokens": 672,
+      "compressed_tokens": 676,
+      "naive_tokens": 676,
       "facts_total": 2,
-      "facts_retained": 1,
+      "facts_retained": 2,
       "naive_facts_retained": 0
     },
     {
@@ -1150,10 +1150,10 @@
       "source": "synthetic",
       "label": "compact",
       "original_tokens": 3418,
-      "compressed_tokens": 597,
-      "naive_tokens": 597,
+      "compressed_tokens": 601,
+      "naive_tokens": 601,
       "facts_total": 2,
-      "facts_retained": 1,
+      "facts_retained": 2,
       "naive_facts_retained": 0
     },
     {
@@ -1162,10 +1162,10 @@
       "source": "synthetic",
       "label": "compact",
       "original_tokens": 4323,
-      "compressed_tokens": 740,
-      "naive_tokens": 740,
+      "compressed_tokens": 744,
+      "naive_tokens": 744,
       "facts_total": 2,
-      "facts_retained": 1,
+      "facts_retained": 2,
       "naive_facts_retained": 0
     },
     {
@@ -1174,10 +1174,10 @@
       "source": "synthetic",
       "label": "compact",
       "original_tokens": 2205,
-      "compressed_tokens": 405,
-      "naive_tokens": 405,
+      "compressed_tokens": 409,
+      "naive_tokens": 409,
       "facts_total": 2,
-      "facts_retained": 1,
+      "facts_retained": 2,
       "naive_facts_retained": 0
     },
     {
@@ -1186,10 +1186,10 @@
       "source": "synthetic",
       "label": "compact",
       "original_tokens": 2028,
-      "compressed_tokens": 379,
-      "naive_tokens": 379,
+      "compressed_tokens": 383,
+      "naive_tokens": 383,
       "facts_total": 2,
-      "facts_retained": 1,
+      "facts_retained": 2,
       "naive_facts_retained": 2
     },
     {
@@ -1198,10 +1198,10 @@
       "source": "synthetic",
       "label": "compact",
       "original_tokens": 1411,
-      "compressed_tokens": 242,
-      "naive_tokens": 242,
+      "compressed_tokens": 247,
+      "naive_tokens": 247,
       "facts_total": 2,
-      "facts_retained": 1,
+      "facts_retained": 2,
       "naive_facts_retained": 2
     },
     {
@@ -1210,10 +1210,10 @@
       "source": "synthetic",
       "label": "compact",
       "original_tokens": 1826,
-      "compressed_tokens": 333,
-      "naive_tokens": 333,
+      "compressed_tokens": 337,
+      "naive_tokens": 337,
       "facts_total": 2,
-      "facts_retained": 1,
+      "facts_retained": 2,
       "naive_facts_retained": 0
     },
     {
@@ -1222,10 +1222,10 @@
       "source": "synthetic",
       "label": "compact",
       "original_tokens": 3177,
-      "compressed_tokens": 525,
-      "naive_tokens": 525,
+      "compressed_tokens": 529,
+      "naive_tokens": 529,
       "facts_total": 2,
-      "facts_retained": 1,
+      "facts_retained": 2,
       "naive_facts_retained": 0
     },
     {
@@ -1234,10 +1234,10 @@
       "source": "synthetic",
       "label": "compact",
       "original_tokens": 3572,
-      "compressed_tokens": 631,
-      "naive_tokens": 631,
+      "compressed_tokens": 636,
+      "naive_tokens": 636,
       "facts_total": 2,
-      "facts_retained": 1,
+      "facts_retained": 2,
       "naive_facts_retained": 0
     },
     {
@@ -1246,10 +1246,10 @@
       "source": "synthetic",
       "label": "compact",
       "original_tokens": 3472,
-      "compressed_tokens": 577,
-      "naive_tokens": 577,
+      "compressed_tokens": 581,
+      "naive_tokens": 581,
       "facts_total": 2,
-      "facts_retained": 1,
+      "facts_retained": 2,
       "naive_facts_retained": 0
     },
     {
@@ -1258,10 +1258,10 @@
       "source": "synthetic",
       "label": "compact",
       "original_tokens": 4260,
-      "compressed_tokens": 709,
-      "naive_tokens": 709,
+      "compressed_tokens": 714,
+      "naive_tokens": 714,
       "facts_total": 2,
-      "facts_retained": 1,
+      "facts_retained": 2,
       "naive_facts_retained": 0
     },
     {
@@ -1270,10 +1270,10 @@
       "source": "synthetic",
       "label": "compact",
       "original_tokens": 4846,
-      "compressed_tokens": 880,
-      "naive_tokens": 880,
+      "compressed_tokens": 884,
+      "naive_tokens": 884,
       "facts_total": 2,
-      "facts_retained": 1,
+      "facts_retained": 2,
       "naive_facts_retained": 2
     },
     {
@@ -1282,10 +1282,10 @@
       "source": "synthetic",
       "label": "compact",
       "original_tokens": 1982,
-      "compressed_tokens": 357,
-      "naive_tokens": 357,
+      "compressed_tokens": 362,
+      "naive_tokens": 362,
       "facts_total": 2,
-      "facts_retained": 1,
+      "facts_retained": 2,
       "naive_facts_retained": 0
     },
     {
@@ -1294,10 +1294,10 @@
       "source": "synthetic",
       "label": "compact",
       "original_tokens": 2581,
-      "compressed_tokens": 445,
-      "naive_tokens": 445,
+      "compressed_tokens": 449,
+      "naive_tokens": 449,
       "facts_total": 2,
-      "facts_retained": 1,
+      "facts_retained": 2,
       "naive_facts_retained": 0
     },
     {
@@ -1306,10 +1306,10 @@
       "source": "synthetic",
       "label": "compact",
       "original_tokens": 2388,
-      "compressed_tokens": 410,
-      "naive_tokens": 410,
+      "compressed_tokens": 414,
+      "naive_tokens": 414,
       "facts_total": 2,
-      "facts_retained": 1,
+      "facts_retained": 2,
       "naive_facts_retained": 0
     },
     {
@@ -1318,10 +1318,10 @@
       "source": "synthetic",
       "label": "compact",
       "original_tokens": 2249,
-      "compressed_tokens": 424,
-      "naive_tokens": 424,
+      "compressed_tokens": 429,
+      "naive_tokens": 429,
       "facts_total": 2,
-      "facts_retained": 1,
+      "facts_retained": 2,
       "naive_facts_retained": 0
     },
     {
@@ -1330,10 +1330,10 @@
       "source": "synthetic",
       "label": "compact",
       "original_tokens": 5117,
-      "compressed_tokens": 882,
-      "naive_tokens": 882,
+      "compressed_tokens": 886,
+      "naive_tokens": 886,
       "facts_total": 2,
-      "facts_retained": 1,
+      "facts_retained": 2,
       "naive_facts_retained": 0
     },
     {
@@ -1342,10 +1342,10 @@
       "source": "synthetic",
       "label": "compact",
       "original_tokens": 5124,
-      "compressed_tokens": 886,
-      "naive_tokens": 886,
+      "compressed_tokens": 890,
+      "naive_tokens": 890,
       "facts_total": 2,
-      "facts_retained": 1,
+      "facts_retained": 2,
       "naive_facts_retained": 0
     },
     {
@@ -1354,10 +1354,10 @@
       "source": "synthetic",
       "label": "compact",
       "original_tokens": 1824,
-      "compressed_tokens": 325,
-      "naive_tokens": 325,
+      "compressed_tokens": 330,
+      "naive_tokens": 330,
       "facts_total": 2,
-      "facts_retained": 1,
+      "facts_retained": 2,
       "naive_facts_retained": 0
     },
     {
@@ -1366,10 +1366,10 @@
       "source": "synthetic",
       "label": "compact",
       "original_tokens": 2396,
-      "compressed_tokens": 420,
-      "naive_tokens": 420,
+      "compressed_tokens": 424,
+      "naive_tokens": 424,
       "facts_total": 2,
-      "facts_retained": 1,
+      "facts_retained": 2,
       "naive_facts_retained": 0
     },
     {
@@ -1378,10 +1378,10 @@
       "source": "synthetic",
       "label": "compact",
       "original_tokens": 3281,
-      "compressed_tokens": 583,
-      "naive_tokens": 583,
+      "compressed_tokens": 587,
+      "naive_tokens": 587,
       "facts_total": 2,
-      "facts_retained": 1,
+      "facts_retained": 2,
       "naive_facts_retained": 0
     },
     {
@@ -1390,10 +1390,10 @@
       "source": "synthetic",
       "label": "compact",
       "original_tokens": 3682,
-      "compressed_tokens": 637,
-      "naive_tokens": 637,
+      "compressed_tokens": 641,
+      "naive_tokens": 641,
       "facts_total": 2,
-      "facts_retained": 1,
+      "facts_retained": 2,
       "naive_facts_retained": 0
     },
     {
@@ -1402,10 +1402,10 @@
       "source": "synthetic",
       "label": "compact",
       "original_tokens": 4792,
-      "compressed_tokens": 807,
-      "naive_tokens": 807,
+      "compressed_tokens": 811,
+      "naive_tokens": 811,
       "facts_total": 2,
-      "facts_retained": 1,
+      "facts_retained": 2,
       "naive_facts_retained": 0
     },
     {
@@ -1414,10 +1414,10 @@
       "source": "synthetic",
       "label": "compact",
       "original_tokens": 4112,
-      "compressed_tokens": 687,
-      "naive_tokens": 687,
+      "compressed_tokens": 691,
+      "naive_tokens": 691,
       "facts_total": 2,
-      "facts_retained": 1,
+      "facts_retained": 2,
       "naive_facts_retained": 0
     },
     {
@@ -1426,10 +1426,10 @@
       "source": "synthetic",
       "label": "compact",
       "original_tokens": 3660,
-      "compressed_tokens": 630,
-      "naive_tokens": 630,
+      "compressed_tokens": 635,
+      "naive_tokens": 635,
       "facts_total": 2,
-      "facts_retained": 1,
+      "facts_retained": 2,
       "naive_facts_retained": 0
     },
     {
@@ -1438,10 +1438,10 @@
       "source": "synthetic",
       "label": "compact",
       "original_tokens": 1862,
-      "compressed_tokens": 308,
-      "naive_tokens": 308,
+      "compressed_tokens": 312,
+      "naive_tokens": 312,
       "facts_total": 2,
-      "facts_retained": 1,
+      "facts_retained": 2,
       "naive_facts_retained": 0
     },
     {
@@ -2421,12 +2421,12 @@
     "overall": {
       "messages": 201,
       "original_tokens": 384301,
-      "compressed_tokens": 62729,
-      "token_reduction_pct": 83.67711767598836,
+      "compressed_tokens": 62900,
+      "token_reduction_pct": 83.63262130465444,
       "facts_total": 648,
-      "facts_retained": 602,
-      "fact_retention_pct": 92.90123456790124,
-      "all_facts_rate_pct": 78.60696517412936,
+      "facts_retained": 642,
+      "fact_retention_pct": 99.07407407407408,
+      "all_facts_rate_pct": 98.50746268656717,
       "naive_fact_retention_pct": 28.703703703703702,
       "naive_all_facts_rate_pct": 41.29353233830846
     },
@@ -2458,12 +2458,12 @@
       "file_read": {
         "messages": 40,
         "original_tokens": 130574,
-        "compressed_tokens": 22606,
-        "token_reduction_pct": 82.6872118492196,
+        "compressed_tokens": 22777,
+        "token_reduction_pct": 82.55625162742966,
         "facts_total": 80,
-        "facts_retained": 40,
-        "fact_retention_pct": 50.0,
-        "all_facts_rate_pct": 0.0,
+        "facts_retained": 80,
+        "fact_retention_pct": 100.0,
+        "all_facts_rate_pct": 100.0,
         "naive_fact_retention_pct": 15.0,
         "naive_all_facts_rate_pct": 15.0
       },
@@ -2508,12 +2508,12 @@
       "synthetic": {
         "messages": 200,
         "original_tokens": 383626,
-        "compressed_tokens": 62574,
-        "token_reduction_pct": 83.6888010718773,
+        "compressed_tokens": 62745,
+        "token_reduction_pct": 83.64422640801197,
         "facts_total": 644,
-        "facts_retained": 598,
-        "fact_retention_pct": 92.85714285714286,
-        "all_facts_rate_pct": 78.5,
+        "facts_retained": 638,
+        "fact_retention_pct": 99.06832298136646,
+        "all_facts_rate_pct": 98.5,
         "naive_fact_retention_pct": 28.41614906832298,
         "naive_all_facts_rate_pct": 41.5
       }
@@ -2522,6 +2522,6 @@
   "seed": 42,
   "per_category": 40,
   "machine": "x86_64 / x86_64 / Linux",
-  "commit": "0fed7e6",
-  "timestamp": "2026-06-09T22:33:48+00:00"
+  "commit": "fababb1",
+  "timestamp": "2026-06-09T22:53:39+00:00"
 }

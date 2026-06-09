@@ -8,17 +8,17 @@ report measures whether it is *safe*.
 - Corpus: 201 messages (seed=42, 40/category + real captured fixtures)
 - Baseline: head-truncation of the raw message to the **same** token budget
 - Machine: x86_64 / x86_64 / Linux
-- Commit: `0fed7e6` — 2026-06-09T22:33:48+00:00
+- Commit: `fababb1` — 2026-06-09T22:53:39+00:00
 
 ## Overall
 
 | Metric | rule_fast | naive truncation (same budget) |
 |---|---|---|
-| Token reduction | 83.7% | 83.7% (matched) |
-| Fact retention | **92.9%** | 28.7% |
-| Messages with *all* facts intact | **78.6%** | 41.3% |
+| Token reduction | 83.6% | 83.6% (matched) |
+| Fact retention | **99.1%** | 28.7% |
+| Messages with *all* facts intact | **98.5%** | 41.3% |
 
-Throughput on this machine: 2,120 msg/s (single core).
+Throughput on this machine: 2,369 msg/s (single core).
 
 ## By category
 
@@ -26,7 +26,7 @@ Throughput on this machine: 2,120 msg/s (single core).
 |---|---|---|---|---|---|
 | pytest_log | 41 | 97.4% | 100.0% | 100.0% | 4.3% |
 | traceback | 40 | 0.0% | 100.0% | 100.0% | 100.0% |
-| file_read | 40 | 82.7% | 50.0% | 0.0% | 15.0% |
+| file_read | 40 | 82.6% | 100.0% | 100.0% | 15.0% |
 | search_results | 40 | 5.5% | 92.5% | 92.5% | 92.5% |
 | command_output | 40 | 75.7% | 100.0% | 100.0% | 7.5% |
 
@@ -35,7 +35,7 @@ Throughput on this machine: 2,120 msg/s (single core).
 | Source | Msgs | Token reduction | Fact retention | All-facts rate |
 |---|---|---|---|---|
 | real | 1 | 77.0% | 100.0% | 100.0% |
-| synthetic | 200 | 83.7% | 92.9% | 78.5% |
+| synthetic | 200 | 83.6% | 99.1% | 98.5% |
 
 ## How to read this
 
