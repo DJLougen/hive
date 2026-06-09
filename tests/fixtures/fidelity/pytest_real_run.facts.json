@@ -1,0 +1,22 @@
+{
+  "category": "pytest_log",
+  "role": "tool",
+  "facts": [
+    {
+      "name": "failing test name",
+      "needle": "test_auth_token_refresh_expired"
+    },
+    {
+      "name": "failing test name",
+      "needle": "test_billing_invoice_rounding"
+    },
+    {
+      "name": "failing test name",
+      "needle": "test_search_unicode_query"
+    },
+    {
+      "name": "failure count summary",
+      "needle": "3 failed, 5 passed"
+    }
+  ]
+}
