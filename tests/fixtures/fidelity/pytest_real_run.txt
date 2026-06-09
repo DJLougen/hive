@@ -1,0 +1,49 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+rootdir: /tmp/tmpy3m6kyvw
+plugins: cov-7.1.0, asyncio-1.4.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 8 items
+
+../tmp/tmpy3m6kyvw/test_capture_demo.py::test_auth_token_refresh_expired FAILED [ 12%]
+../tmp/tmpy3m6kyvw/test_capture_demo.py::test_billing_invoice_rounding FAILED [ 25%]
+../tmp/tmpy3m6kyvw/test_capture_demo.py::test_search_unicode_query FAILED [ 37%]
+../tmp/tmpy3m6kyvw/test_capture_demo.py::test_auth_login_ok PASSED       [ 50%]
+../tmp/tmpy3m6kyvw/test_capture_demo.py::test_auth_logout_ok PASSED      [ 62%]
+../tmp/tmpy3m6kyvw/test_capture_demo.py::test_billing_invoice_total PASSED [ 75%]
+../tmp/tmpy3m6kyvw/test_capture_demo.py::test_search_basic_query PASSED  [ 87%]
+../tmp/tmpy3m6kyvw/test_capture_demo.py::test_cache_eviction_lru PASSED  [100%]
+
+=================================== FAILURES ===================================
+_______________________ test_auth_token_refresh_expired ________________________
+
+    def test_auth_token_refresh_expired():
+>       assert _status("fail/test_auth_token_refresh_expired") == 200, "expected 200"
+E       AssertionError: expected 200
+E       assert 500 == 200
+E        +  where 500 = _status('fail/test_auth_token_refresh_expired')
+
+/tmp/tmpy3m6kyvw/test_capture_demo.py:8: AssertionError
+________________________ test_billing_invoice_rounding _________________________
+
+    def test_billing_invoice_rounding():
+>       assert _status("fail/test_billing_invoice_rounding") == 200, "expected 200"
+E       AssertionError: expected 200
+E       assert 500 == 200
+E        +  where 500 = _status('fail/test_billing_invoice_rounding')
+
+/tmp/tmpy3m6kyvw/test_capture_demo.py:11: AssertionError
+__________________________ test_search_unicode_query ___________________________
+
+    def test_search_unicode_query():
+>       assert _status("fail/test_search_unicode_query") == 200, "expected 200"
+E       AssertionError: expected 200
+E       assert 500 == 200
+E        +  where 500 = _status('fail/test_search_unicode_query')
+
+/tmp/tmpy3m6kyvw/test_capture_demo.py:14: AssertionError
+=========================== short test summary info ============================
+FAILED ../tmp/tmpy3m6kyvw/test_capture_demo.py::test_auth_token_refresh_expired
+FAILED ../tmp/tmpy3m6kyvw/test_capture_demo.py::test_billing_invoice_rounding
+FAILED ../tmp/tmpy3m6kyvw/test_capture_demo.py::test_search_unicode_query - A...
+========================= 3 failed, 5 passed in 0.02s ==========================
