@@ -183,19 +183,26 @@ class OpenAIBackend:
 
 
 class LocalBackend:
-    """Greedy decoding with a small instruct model on CPU."""
+    """Greedy decoding with a local HuggingFace model.
+
+    Uses CUDA in fp16 when available (a 7B model fits comfortably on an
+    RTX 3090), otherwise fp32 on CPU.
+    """
 
     def __init__(self, model: str) -> None:
         import torch
         from transformers import AutoModelForCausalLM, AutoTokenizer
 
-        torch.set_num_threads(os.cpu_count() or 4)
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        if self.device == "cpu":
+            torch.set_num_threads(os.cpu_count() or 4)
         self.tokenizer = AutoTokenizer.from_pretrained(model)
         self.model = AutoModelForCausalLM.from_pretrained(
-            model, torch_dtype=torch.float32
-        )
+            model,
+            torch_dtype=torch.float16 if self.device == "cuda" else torch.float32,
+        ).to(self.device)
         self.model.eval()
-        self.name = f"local:{model}"
+        self.name = f"local:{model} ({self.device})"
 
     def ask(self, system: str, user: str, max_new_tokens: int) -> tuple[str, int]:
         import torch
@@ -206,7 +213,7 @@ class LocalBackend:
         ]
         input_ids = self.tokenizer.apply_chat_template(
             messages, add_generation_prompt=True, return_tensors="pt"
-        )
+        ).to(self.device)
         with torch.no_grad():
             out = self.model.generate(
                 input_ids,
