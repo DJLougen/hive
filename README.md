@@ -76,19 +76,40 @@ Honest caveats, measured not asserted:
 - **Search results barely compress** (5.5%). The compressor cannot know which
   hit is the answer, so it keeps all hit locations. Dense grep output has
   little safely-removable bloat.
-- **File reads lose body detail by design** (50%): signatures survive so the
-  agent can re-read a precise range, but a value inside a function body does
-  not survive compression.
-- **Not yet measured**: end-to-end task success with an LLM in the loop
-  (e.g. SWE-bench resolve rate with Hive on vs. off), and `busybee` routing
-  accuracy. This benchmark bounds the information available to the model; it
-  does not measure what the model does with it.
+- **File reads lose body detail by design** (50% substring retention, 0% LLM
+  QA accuracy on a 0.5B CPU model): signatures survive so the agent can
+  re-read a precise range, but a value inside a function body does not.
+- **Still not measured**: multi-step task success (SWE-bench resolve rate
+  with Hive on vs. off) and `busybee` routing accuracy.
 
 Reproduce: `python3 scripts/fidelity_benchmark.py` — emits
 [docs/benchmarks/fidelity.md](docs/benchmarks/fidelity.md) and
 [results/fidelity_rule_fast.json](results/fidelity_rule_fast.json). A
 regression test (`tests/test_fidelity_benchmark.py`) pins the retention
 floors so they cannot silently regress.
+
+### LLM-in-the-loop (CPU, measured)
+
+The substring benchmark bounds what *survives* compression. The
+[LLM fidelity eval](docs/benchmarks/llm-fidelity.md) asks whether a real
+model can still *answer* agent-realistic questions from compressed context.
+Run on CPU with `Qwen/Qwen2.5-0.5B-Instruct` (31 messages, seed=7):
+
+| Metric | Raw context | Compressed context |
+|---|---|---|
+| QA accuracy (graded facts) | 67.7% | 60.0% |
+| Messages fully answered | 32.3% | 38.7% |
+| Avg prompt tokens | 657 | 220 (**-66.5%**) |
+
+Per category: pytest logs and search results hold accuracy at **90% fewer
+tokens**; file reads drop to 0% QA accuracy (signatures survive, body
+values do not — matches the substring benchmark); command output actually
+*improves* (58% vs 50%) because compression strips noise.
+
+Reproduce: `pip install torch transformers && python3 scripts/llm_fidelity_eval.py`
+
+**Still not measured**: multi-step task success (SWE-bench resolve rate with
+Hive on vs. off) and `busybee` routing accuracy.
 
 ## ROI: The $117K Problem
 
