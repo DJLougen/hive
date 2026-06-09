@@ -49,11 +49,10 @@ Throughput on this machine: 2,369 msg/s (single core).
 
 ## Not yet measured
 
-- End-to-end task success with an LLM in the loop (e.g. SWE-bench
-  resolve rate with Hive on vs. off). This benchmark bounds the
-  information available to the model; it does not measure what the
-  model does with it.
-- Routing accuracy of `busybee` (separate repo, not installed here).
+- Open-ended SWE-bench resolve rate with the full Hive stack (busybee +
+  compression + frontier LLM). See also
+  [routing.md](routing.md) (98% CPU routing) and
+  [agent-loop.md](agent-loop.md) (multi-step proxy).
 
 ## Reproduce
 

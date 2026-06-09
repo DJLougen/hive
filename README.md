@@ -79,8 +79,6 @@ Honest caveats, measured not asserted:
 - **File reads keep signatures and literal constants, not full bodies**:
   computed expressions inside functions are dropped; the agent re-reads a
   precise range when it needs one.
-- **Still not measured**: multi-step task success (SWE-bench resolve rate
-  with Hive on vs. off) and `busybee` routing accuracy.
 
 Reproduce: `python3 scripts/fidelity_benchmark.py` — emits
 [docs/benchmarks/fidelity.md](docs/benchmarks/fidelity.md) and
@@ -102,19 +100,51 @@ Run on CPU with `Qwen/Qwen2.5-0.5B-Instruct` (31 messages, seed=7):
 | Avg prompt tokens | 657 | 221 (**-66.4%**) |
 
 Compressed context matches or beats raw in **every category** at 66% fewer
-tokens: pytest logs hold 82.4% at a tenth of the tokens; file reads hold
-parity (50%) at 308 vs 1128 tokens; command output *improves* (58.3% vs
-50.0%) because compression strips noise a small model trips over.
-
-An earlier run of this same eval caught a real defect: file reads scored
-**0%** because the skeleton kept signatures but dropped body values. Keeping
-literal constant assignments (one line each) closed the gap — the
-benchmark-fix-rerun loop working as intended.
+tokens. An earlier run caught a real defect (file reads 0% QA); keeping
+literal constant assignments in skeletons closed the gap.
 
 Reproduce: `pip install torch transformers && python3 scripts/llm_fidelity_eval.py`
 
-**Still not measured**: multi-step task success (SWE-bench resolve rate with
-Hive on vs. off) and `busybee` routing accuracy.
+### CPU routing (busybee-cpu, measured)
+
+Mechanical tool selection is Hive's other CPU offload. The
+[routing eval](docs/benchmarks/routing.md) trains `CpuActionPolicy` on 200
+held-out training rows and evaluates 50 unseen rows **through
+`HiveStack.route()`**:
+
+| Metric | HiveStack + busybee | always escalate |
+|---|---|---|
+| Action accuracy | **98.0%** | ~22% (escalate is rarely correct) |
+| Args semantic match | 48.0% | — |
+| Throughput | 90 routes/s (this machine) | — |
+
+Wrong picks waste one turn; the agent loop retries. On SWE-bench held-out
+data the combined busybee model reaches **96.4%** on 11,881 unseen issues
+(busyBee-cpu's [honest evaluation](https://github.com/DJLougen/busyBee-cpu/blob/main/reports/honest_evaluation.md)).
+
+Reproduce: `pip install -e ../busyBee-cpu && python3 scripts/routing_eval.py`
+
+### Multi-step agent loop (CPU, measured — and what it proves)
+
+The [agent loop eval](docs/benchmarks/agent-loop.md) runs 6 fixed debugging
+episodes (test → read → patch → re-test) and asks a small CPU model to pick
+the next tool at each step, raw vs compressed:
+
+| Metric | Raw transcript | Compressed transcript |
+|---|---|---|
+| Step accuracy | 25.0% | 4.2% |
+| Episodes fully resolved | 0% | 0% |
+
+**This is not a failure of Hive — it's the point.** A 0.5B model cannot
+reliably navigate multi-step tool selection (it defaults to `run_tests`).
+That's exactly why mechanical routing belongs on CPU (98% above), not in the
+LLM. Hive's architecture: **busybee picks the tool, compression feeds the
+LLM only what it needs to reason, LLM handles escalation.**
+
+Reproduce: `python3 scripts/agent_loop_eval.py`
+
+**Still not measured**: open-ended SWE-bench resolve rate with the full
+Hive stack (busybee + compression + frontier LLM).
 
 ## ROI: The $117K Problem
 
