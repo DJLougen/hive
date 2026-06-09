@@ -56,6 +56,33 @@ def test_real_fixtures_load_and_are_grounded():
             assert fact.needle in s.content
 
 
+def test_retention_floors_do_not_regress():
+    """Pin the measured fidelity floors of rule_fast on the full corpus.
+
+    These values were measured on the default corpus (seed=42, 40/category
+    + real fixtures). If a compressor change trips this test, it is
+    trading away facts an agent needs — rerun
+    ``scripts/fidelity_benchmark.py`` and justify the new numbers.
+    """
+    samples = build_corpus(seed=42, per_category=40, include_real=True)
+    agg = aggregate(run_benchmark(samples)["rows"])
+
+    overall = agg["overall"]
+    assert overall["fact_retention_pct"] >= 90.0
+    assert overall["all_facts_rate_pct"] >= 75.0
+    assert overall["token_reduction_pct"] >= 80.0
+
+    by_cat = agg["by_category"]
+    assert by_cat["pytest_log"]["fact_retention_pct"] == 100.0
+    assert by_cat["traceback"]["fact_retention_pct"] == 100.0
+    assert by_cat["command_output"]["fact_retention_pct"] == 100.0
+    assert by_cat["search_results"]["fact_retention_pct"] >= 90.0
+    assert by_cat["file_read"]["fact_retention_pct"] >= 50.0
+
+    # The compressor must beat naive truncation at the same token budget.
+    assert overall["fact_retention_pct"] > overall["naive_fact_retention_pct"]
+
+
 def test_benchmark_runs_and_aggregates():
     samples = build_corpus(seed=42, per_category=4, include_real=False)
     result = run_benchmark(samples)
