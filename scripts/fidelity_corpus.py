@@ -57,6 +57,18 @@ class Sample:
 # Vocabulary
 # ---------------------------------------------------------------------------
 
+def _rr(rng: random.Random, lo: int, hi: int, scale: float = 1.0) -> int:
+    """``rng.randrange`` with optional range scaling.
+
+    At ``scale=1.0`` this is byte-identical to ``rng.randrange(lo, hi)``
+    (same rng consumption), so the default corpus is unchanged. Smaller
+    scales shrink message sizes for compute-bound consumers such as the
+    LLM-in-the-loop eval (CPU inference).
+    """
+    lo2 = max(1, round(lo * scale))
+    return rng.randrange(lo2, max(lo2 + 1, round(hi * scale)))
+
+
 _MODULES = ["auth", "billing", "search", "cache", "api", "worker", "db", "config"]
 _VERBS = ["login", "refresh", "expiry", "parse", "retry", "timeout", "encode", "merge"]
 _EXC_TYPES = [
@@ -81,10 +93,10 @@ def _test_names(rng: random.Random, n: int) -> list[str]:
 # ---------------------------------------------------------------------------
 
 
-def gen_pytest_log(rng: random.Random, idx: int) -> Sample:
+def gen_pytest_log(rng: random.Random, idx: int, scale: float = 1.0) -> Sample:
     """Verbose pytest run: the agent must learn *which* tests failed."""
-    n_tests = rng.randrange(80, 600)
-    n_fail = rng.randrange(1, 15)
+    n_tests = _rr(rng, 80, 600, scale)
+    n_fail = _rr(rng, 1, 15, scale)
     names = _test_names(rng, n_tests)
     fail_set = set(rng.sample(range(n_tests), n_fail))
 
@@ -130,7 +142,7 @@ def gen_pytest_log(rng: random.Random, idx: int) -> Sample:
     )
 
 
-def gen_traceback(rng: random.Random, idx: int) -> Sample:
+def gen_traceback(rng: random.Random, idx: int, scale: float = 1.0) -> Sample:
     """A crash traceback: the agent needs the exception and the deepest frame."""
     depth = rng.randrange(3, 8)
     lines = [
@@ -163,9 +175,9 @@ def gen_traceback(rng: random.Random, idx: int) -> Sample:
     )
 
 
-def gen_file_read(rng: random.Random, idx: int) -> Sample:
+def gen_file_read(rng: random.Random, idx: int, scale: float = 1.0) -> Sample:
     """A read_file result: the agent went looking for one specific function."""
-    n_funcs = rng.randrange(20, 80)
+    n_funcs = _rr(rng, 20, 80, scale)
     target_idx = rng.randrange(2, n_funcs)  # never in the first 2 functions
     lines = ['"""Service module."""', "", "import os", "import json", ""]
     target_sig = ""
@@ -193,9 +205,9 @@ def gen_file_read(rng: random.Random, idx: int) -> Sample:
     )
 
 
-def gen_search_results(rng: random.Random, idx: int) -> Sample:
+def gen_search_results(rng: random.Random, idx: int, scale: float = 1.0) -> Sample:
     """grep-style output: one hit is the answer the agent searched for."""
-    n_hits = rng.randrange(10, 60)
+    n_hits = _rr(rng, 10, 60, scale)
     answer_pos = rng.randrange(n_hits)
     lines = []
     answer_loc = ""
@@ -223,10 +235,11 @@ def gen_search_results(rng: random.Random, idx: int) -> Sample:
     )
 
 
-def gen_command_output(rng: random.Random, idx: int) -> Sample:
+def gen_command_output(rng: random.Random, idx: int, scale: float = 1.0) -> Sample:
     """A build/deploy log: the agent needs the error line and the exit code."""
-    n_steps = rng.randrange(20, 120)
-    err_pos = rng.randrange(8, n_steps)  # past the head the compressor keeps
+    n_steps = _rr(rng, 20, 120, scale)
+    # Past the head the compressor keeps (identical to randrange(8, n) at scale=1).
+    err_pos = rng.randrange(min(8, n_steps - 1), n_steps)
     lines = [f"$ make deploy ENV={rng.choice(['staging', 'prod'])}"]
     error_line = ""
     for i in range(n_steps):
@@ -300,13 +313,14 @@ def build_corpus(
     seed: int = 42,
     per_category: int = 40,
     include_real: bool = True,
+    scale: float = 1.0,
 ) -> list[Sample]:
     rng = random.Random(seed)
     samples: list[Sample] = []
     for category in CATEGORIES:
         gen = _GENERATORS[category]
         for i in range(per_category):
-            samples.append(gen(rng, i))
+            samples.append(gen(rng, i, scale))
     if include_real:
         samples.extend(load_real_fixtures())
     return samples
