@@ -32,3 +32,35 @@ def test_gossip_start_stop():
     gossip.start()
     gossip.stop()
     # No crash
+
+
+def test_gossip_without_ts_ns_does_not_overwrite_existing_key():
+    """Late gossip must not clobber newer local writes (missing ts_ns)."""
+    brain = RustBrain()
+    brain.remember("k1", "new_value", ts_ns=2_000_000)
+    gossip = GossipProtocol(brain, peers=[])
+    applied = gossip.receive([{"key": "k1", "value": "stale_value", "trust": 0.9}])
+    assert applied == 0
+    assert brain.recall("k1") == "new_value"
+
+
+def test_gossip_with_older_ts_ns_is_rejected():
+    brain = RustBrain()
+    brain.remember("k1", "new_value", ts_ns=2_000_000)
+    gossip = GossipProtocol(brain, peers=[])
+    applied = gossip.receive(
+        [{"key": "k1", "value": "stale_value", "trust": 0.9, "ts_ns": 1_000_000}]
+    )
+    assert applied == 0
+    assert brain.recall("k1") == "new_value"
+
+
+def test_gossip_with_newer_ts_ns_updates_existing_key():
+    brain = RustBrain()
+    brain.remember("k1", "old_value", ts_ns=1_000_000)
+    gossip = GossipProtocol(brain, peers=[])
+    applied = gossip.receive(
+        [{"key": "k1", "value": "newer_value", "trust": 0.9, "ts_ns": 2_000_000}]
+    )
+    assert applied == 1
+    assert brain.recall("k1") == "newer_value"

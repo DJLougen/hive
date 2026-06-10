@@ -122,12 +122,23 @@ class GossipProtocol:
         applied = 0
         for ev in events:
             try:
-                self._brain.remember(
-                    ev["key"],
-                    ev["value"],
-                    trust=ev.get("trust", 1.0),
-                    tags=set(ev.get("tags", [])),
-                )
+                key = ev["key"]
+                ts_ns = ev.get("ts_ns")
+                # Without origin timestamp we cannot safely overwrite local data:
+                # remember() would stamp wall-clock now and clobber newer writes.
+                if ts_ns is None and key in self._brain:
+                    _log.debug(
+                        "Skipping gossip for %r: missing ts_ns and key exists locally",
+                        key,
+                    )
+                    continue
+                kwargs: dict[str, Any] = {
+                    "trust": ev.get("trust", 1.0),
+                    "tags": set(ev.get("tags", [])),
+                }
+                if ts_ns is not None:
+                    kwargs["ts_ns"] = ts_ns
+                self._brain.remember(key, ev["value"], **kwargs)
                 applied += 1
             except Exception as exc:
                 _log.warning("Failed to apply gossiped event: %s", exc)
