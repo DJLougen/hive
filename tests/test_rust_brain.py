@@ -35,9 +35,11 @@ def test_recall_returns_stored_none():
 
 def test_monotonic_timestamp_regression_raises():
     brain = RustBrain()
-    brain.remember("a", 1, ts_ns=1000)
+    # Write with HLC (1, 1000, "node1")
+    brain.remember("a", 1, hlc=(1, 1000, "node1"))
+    # Attempt to write with earlier HLC (0, 999, "node1") should raise
     with pytest.raises(TimestampRegression):
-        brain.remember("a", 2, ts_ns=999)
+        brain.remember("a", 2, hlc=(0, 999, "node1"))
     # Stored value unchanged.
     assert brain.recall("a") == 1
 
@@ -60,7 +62,12 @@ def test_snapshot_is_jsonable():
     brain.remember("b", 2, tags=("auth",), edges={EdgeKind.RELATED_TO: ["a"]})
     payload = brain.snapshot()
     text = json.dumps(payload)
-    assert json.loads(text) == payload
+    # HLC tuples are converted to lists in to_dict(), so we need to normalize
+    # the payload for comparison (tuples become lists after JSON round-trip)
+    normalized = json.loads(text)
+    for node in payload:
+        node["hlc"] = list(node["hlc"])
+    assert normalized == payload
 
 
 def test_search_orders_newest_first():

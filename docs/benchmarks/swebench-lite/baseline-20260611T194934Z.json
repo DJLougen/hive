@@ -1,0 +1,2334 @@
+{
+  "condition": "baseline",
+  "num_instances": 5,
+  "resolved_count": 0,
+  "resolve_rate": 0.0,
+  "mean_input_tokens": 19310.0,
+  "mean_output_tokens": 2500.0,
+  "mean_turns": 50.0,
+  "mean_llm_calls": 50.0,
+  "mean_llm_calls_avoided": 0.0,
+  "mean_wall_clock_s": 22.114557180012344,
+  "tokens_per_resolve": Infinity,
+  "platform": {
+    "system": "Windows",
+    "release": "11",
+    "machine": "AMD64",
+    "processor": "Intel64 Family 6 Model 151 Stepping 2, GenuineIntel",
+    "python_version": "3.12.0",
+    "hive_enabled": false,
+    "model": "gpt2"
+  },
+  "results": [
+    {
+      "instance_id": "django__django-13551",
+      "resolved": false,
+      "total_input_tokens": 8200,
+      "total_output_tokens": 2500,
+      "turns_used": 50,
+      "llm_calls": 50,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 27.834175900003174,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 10,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 11,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 12,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 13,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 14,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 15,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 16,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 17,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 18,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 19,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 20,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 21,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 22,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 23,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 24,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 25,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 26,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 27,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 28,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 29,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 30,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 31,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 32,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 33,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 34,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 35,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 36,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 37,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 38,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 39,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 40,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 41,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 42,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 43,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 44,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 45,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 46,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 47,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 48,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 49,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "django__django-11099",
+      "resolved": false,
+      "total_input_tokens": 11550,
+      "total_output_tokens": 2500,
+      "turns_used": 50,
+      "llm_calls": 50,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 21.35102860000916,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 10,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 11,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 12,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 13,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 14,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 15,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 16,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 17,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 18,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 19,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 20,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 21,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 22,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 23,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 24,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 25,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 26,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 27,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 28,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 29,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 30,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 31,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 32,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 33,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 34,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 35,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 36,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 37,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 38,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 39,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 40,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 41,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 42,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 43,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 44,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 45,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 46,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 47,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 48,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 49,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "matplotlib__matplotlib-25498",
+      "resolved": false,
+      "total_input_tokens": 25600,
+      "total_output_tokens": 2500,
+      "turns_used": 50,
+      "llm_calls": 50,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 20.684326200018404,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 10,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 11,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 12,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 13,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 14,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 15,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 16,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 17,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 18,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 19,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 20,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 21,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 22,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 23,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 24,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 25,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 26,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 27,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 28,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 29,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 30,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 31,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 32,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 33,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 34,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 35,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 36,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 37,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 38,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 39,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 40,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 41,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 42,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 43,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 44,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 45,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 46,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 47,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 48,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 49,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "matplotlib__matplotlib-23476",
+      "resolved": false,
+      "total_input_tokens": 25600,
+      "total_output_tokens": 2500,
+      "turns_used": 50,
+      "llm_calls": 50,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 21.091182500007562,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 10,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 11,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 12,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 13,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 14,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 15,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 16,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 17,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 18,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 19,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 20,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 21,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 22,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 23,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 24,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 25,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 26,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 27,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 28,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 29,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 30,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 31,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 32,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 33,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 34,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 35,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 36,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 37,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 38,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 39,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 40,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 41,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 42,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 43,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 44,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 45,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 46,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 47,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 48,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 49,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "django__django-16816",
+      "resolved": false,
+      "total_input_tokens": 25600,
+      "total_output_tokens": 2500,
+      "turns_used": 50,
+      "llm_calls": 50,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 19.61207270002342,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 10,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 11,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 12,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 13,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 14,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 15,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 16,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 17,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 18,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 19,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 20,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 21,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 22,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 23,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 24,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 25,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 26,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 27,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 28,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 29,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 30,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 31,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 32,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 33,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 34,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 35,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 36,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 37,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 38,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 39,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 40,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 41,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 42,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 43,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 44,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 45,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 46,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 47,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 48,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 49,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        }
+      ]
+    }
+  ]
+}

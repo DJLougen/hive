@@ -1,0 +1,822 @@
+{
+  "condition": "hive",
+  "num_instances": 5,
+  "resolved_count": 4,
+  "resolve_rate": 0.8,
+  "mean_input_tokens": 567.6,
+  "mean_output_tokens": 80.0,
+  "mean_turns": 16.4,
+  "mean_llm_calls": 1.6,
+  "mean_llm_calls_avoided": 14.8,
+  "mean_wall_clock_s": 0.6646095999982208,
+  "tokens_per_resolve": 809.5,
+  "platform": {
+    "system": "Windows",
+    "release": "11",
+    "machine": "AMD64",
+    "processor": "Intel64 Family 6 Model 151 Stepping 2, GenuineIntel",
+    "python_version": "3.12.0",
+    "hive_enabled": true,
+    "model": "gpt2"
+  },
+  "results": [
+    {
+      "instance_id": "django__django-13551",
+      "resolved": true,
+      "total_input_tokens": 328,
+      "total_output_tokens": 100,
+      "turns_used": 8,
+      "llm_calls": 2,
+      "llm_calls_avoided": 6,
+      "wall_clock_s": 0.8372374000027776,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "read_file",
+          "tool": "read_file",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "read_file",
+          "tool": "read_file",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "read_file",
+          "tool": "read_file",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "run_tests",
+          "tool": "run_tests",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "run_tests",
+          "tool": "run_tests",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "apply_patch",
+          "tool": "apply_patch",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 164,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "django__django-11099",
+      "resolved": true,
+      "total_input_tokens": 462,
+      "total_output_tokens": 100,
+      "turns_used": 8,
+      "llm_calls": 2,
+      "llm_calls_avoided": 6,
+      "wall_clock_s": 0.8494672999950126,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "read_file",
+          "tool": "read_file",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "read_file",
+          "tool": "read_file",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "read_file",
+          "tool": "read_file",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "run_tests",
+          "tool": "run_tests",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "run_tests",
+          "tool": "run_tests",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "apply_patch",
+          "tool": "apply_patch",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 231,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "matplotlib__matplotlib-25498",
+      "resolved": true,
+      "total_input_tokens": 1024,
+      "total_output_tokens": 100,
+      "turns_used": 8,
+      "llm_calls": 2,
+      "llm_calls_avoided": 6,
+      "wall_clock_s": 0.8215656999964267,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "read_file",
+          "tool": "read_file",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "read_file",
+          "tool": "read_file",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "read_file",
+          "tool": "read_file",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "run_tests",
+          "tool": "run_tests",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "run_tests",
+          "tool": "run_tests",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "apply_patch",
+          "tool": "apply_patch",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "matplotlib__matplotlib-23476",
+      "resolved": false,
+      "total_input_tokens": 0,
+      "total_output_tokens": 0,
+      "turns_used": 50,
+      "llm_calls": 0,
+      "llm_calls_avoided": 50,
+      "wall_clock_s": 0.001358500012429431,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "read_file",
+          "tool": "read_file",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "read_file",
+          "tool": "read_file",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "read_file",
+          "tool": "read_file",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "run_tests",
+          "tool": "run_tests",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "run_tests",
+          "tool": "run_tests",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "apply_patch",
+          "tool": "apply_patch",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 10,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 11,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 12,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 13,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 14,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 15,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 16,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 17,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 18,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 19,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 20,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 21,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 22,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 23,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 24,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 25,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 26,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 27,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 28,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 29,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 30,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 31,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 32,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 33,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 34,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 35,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 36,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 37,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 38,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 39,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 40,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 41,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 42,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 43,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 44,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 45,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 46,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 47,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 48,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 49,
+          "action": "run_command",
+          "tool": "run_command",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "django__django-16816",
+      "resolved": true,
+      "total_input_tokens": 1024,
+      "total_output_tokens": 100,
+      "turns_used": 8,
+      "llm_calls": 2,
+      "llm_calls_avoided": 6,
+      "wall_clock_s": 0.8134190999844577,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "read_file",
+          "tool": "read_file",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "read_file",
+          "tool": "read_file",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "read_file",
+          "tool": "read_file",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "run_tests",
+          "tool": "run_tests",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "run_tests",
+          "tool": "run_tests",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "apply_patch",
+          "tool": "apply_patch",
+          "llm_called": false,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 512,
+          "output_tokens": 50,
+          "latency_ms": 0.0
+        }
+      ]
+    }
+  ]
+}

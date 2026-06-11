@@ -1,10 +1,16 @@
 """Rust-Brain: timestamp-protected, graph-structured agent memory.
 
+**NOTE: This is a Python reference implementation, not Rust.** The name reflects
+the planned production backend (a Rust port in hive-cpp/). This module is the
+reference oracle that the Rust core must match. Agents program against this API
+today; when the Rust core ships, the same API will be served by a native extension.
+
 A reference implementation in Python that exposes the same data model the
 planned Rust core (hive-cpp) will use. The Rust core targets <1µs writes and
 <aarch64 NEON / SVE2 vector ops; this Python shim is the ergonomic surface
 agents program against today and the reference oracle the Rust port must
 match.
+
 
 Key properties:
 
@@ -39,7 +45,74 @@ __all__ = [
     "RustBrain",
     "HermesBackend",
     "HIVE_EPOCH_NS",
+    "HybridLogicalClock",
 ]
+
+# ---------------------------------------------------------------------------
+# Hybrid Logical Clock (HLC)
+# ---------------------------------------------------------------------------
+
+
+class HybridLogicalClock:
+    """Hybrid Logical Clock for distributed causal ordering.
+    
+    Combines wall-clock time with a logical counter to provide:
+    - Causal ordering across processes
+    - Monotonicity even with NTP corrections or clock skew
+    - Unique timestamps for concurrent events
+    
+    Format: (wall_clock_ns, logical_time, node_id)
+    Ordering: wall_clock first, then logical_time, then node_id for tie-breaking
+    """
+    
+    def __init__(self, node_id: str | None = None):
+        self.node_id = node_id or uuid.uuid4().hex[:8]
+        self._logical_time = 0
+        self._last_wall_clock = 0
+        self._lock = threading.Lock()
+    
+    def now(self) -> tuple[int, int, str]:
+        """Generate a new timestamp.
+        
+        Returns:
+            Tuple of (wall_clock_ns, logical_time, node_id)
+        """
+        with self._lock:
+            wall_clock = time.time_ns()
+            
+            # If wall clock went backwards (NTP correction), increment logical time
+            if wall_clock <= self._last_wall_clock:
+                self._logical_time += 1
+            else:
+                # Wall clock moved forward, reset logical counter
+                self._logical_time = 0
+                self._last_wall_clock = wall_clock
+            
+            return (wall_clock, self._logical_time, self.node_id)
+    
+    def update(self, received_ts: tuple[int, int, str]) -> None:
+        """Update clock based on received timestamp.
+        
+        Called when receiving a message from another node to ensure
+        our clock stays ahead of all observed events.
+        """
+        with self._lock:
+            their_wall, their_logical, _ = received_ts
+            our_wall = time.time_ns()
+            
+            # Take the maximum of our wall clock and theirs
+            max_wall = max(our_wall, their_wall)
+            
+            # If their logical time is >= ours, increment to stay ahead
+            if their_logical >= self._logical_time:
+                self._logical_time = their_logical + 1
+            
+            self._last_wall_clock = max_wall
+
+
+# Global HLC instance for this process
+_hlc = HybridLogicalClock()
+
 
 # Hive epoch: 2024-01-01T00:00:00Z in nanoseconds.
 # Using a custom epoch keeps timestamps compact and lets us reason about
@@ -77,7 +150,8 @@ class MemoryNode:
     Attributes:
         key: Stable identifier (e.g. ``"endpoint"`` or ``"session:42"``).
         value: Arbitrary JSON-serialisable payload.
-        ts_ns: Hive-relative nanosecond timestamp. Always set on write.
+        ts_ns: Hive-relative nanosecond timestamp (wall-clock). Always set on write.
+        hlc: Hybrid Logical Clock tuple for causal ordering (logical_time, wall_clock, node_id).
         trust: Confidence in ``[0, 1]``. Default 1.0; lower = suspect.
         edges: Mapping from edge kind to a set of related node keys.
         tags: Free-form labels for retrieval.
@@ -86,6 +160,7 @@ class MemoryNode:
     key: str
     value: Any
     ts_ns: int = field(default_factory=_now_ns)
+    hlc: tuple[int, int, str] = field(default_factory=lambda: _hlc.now())
     trust: float = 1.0
     edges: dict[str, set[str]] = field(default_factory=lambda: defaultdict(set))
     tags: set[str] = field(default_factory=set)
@@ -102,6 +177,7 @@ class MemoryNode:
             "key": self.key,
             "value": self.value,
             "ts_ns": self.ts_ns,
+            "hlc": list(self.hlc),  # Convert tuple to list for JSON compatibility
             "trust": self.trust,
             "tags": sorted(self.tags),
             "edges": {k: sorted(v) for k, v in self.edges.items()},
@@ -142,6 +218,13 @@ class RustBrain:
         # without re-sorting the whole store on every read.
         self._order: list[str] = []
         self._order_index: dict[str, int] = {}
+    def update_hlc(self, received_hlc: tuple[int, int, str]) -> None:
+        """Update the HLC based on a received timestamp from another node.
+        
+        This ensures causal ordering is maintained across distributed nodes.
+        """
+        _hlc.update(received_hlc)
+
 
     def _remove_order_slot(self, idx: int) -> None:
         """Remove ``_order[idx]`` and shift down indices above ``idx``."""
@@ -185,26 +268,30 @@ class RustBrain:
         tags: Iterable[str] | None = None,
         edges: Mapping[str, Iterable[str]] | None = None,
         ts_ns: int | None = None,
+        hlc: tuple[int, int, str] | None = None,
     ) -> MemoryNode:
         storage_key = self._prefix(key)
         """Insert or update a node.
 
-        If ``ts_ns`` is omitted the wall clock is used. If the key already
-        exists, the new timestamp MUST be >= the stored one (when monotonic
-        enforcement is on) — otherwise :class:`TimestampRegression` is
-        raised. The point is to make stale replays loudly fail.
+        If ``ts_ns`` is omitted the wall clock is used. If ``hlc`` is omitted,
+        the HLC is used for causal ordering. If the key already exists, the
+        new HLC MUST be >= the stored one (when monotonic enforcement is on) —
+        otherwise :class:`TimestampRegression` is raised. The point is to make
+        stale replays loudly fail.
         """
         ts = ts_ns if ts_ns is not None else _now_ns()
+        node_hlc = hlc if hlc is not None else _hlc.now()
         with self._lock:
             existing = self._nodes.get(storage_key)
-            if existing is not None and self._enforce_monotonic and ts < existing.ts_ns:
+            if existing is not None and self._enforce_monotonic and node_hlc < existing.hlc:
                 raise TimestampRegression(
-                    f"refusing to write {storage_key!r}: ts={ts} < stored={existing.ts_ns}"
+                    f"refusing to write {storage_key!r}: hlc={node_hlc} < stored={existing.hlc}"
                 )
             node = MemoryNode(
                 key=key,
                 value=value,
                 ts_ns=ts,
+                hlc=node_hlc,
                 trust=max(0.0, min(1.0, trust)),
                 tags=set(tags or ()),
             )

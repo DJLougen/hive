@@ -1,0 +1,62 @@
+[
+  {
+    "setting": {
+      "name": "conservative",
+      "max_failures_retained": 10,
+      "head_words": 200,
+      "tail_words": 100,
+      "compress_threshold": 10000
+    },
+    "num_instances": 20,
+    "resolved_count": 12,
+    "resolve_rate": 0.6,
+    "mean_compression_ratio": 1.0,
+    "mean_tokens": 703.4,
+    "mean_turns": 9.8
+  },
+  {
+    "setting": {
+      "name": "moderate",
+      "max_failures_retained": 5,
+      "head_words": 100,
+      "tail_words": 50,
+      "compress_threshold": 5000
+    },
+    "num_instances": 20,
+    "resolved_count": 12,
+    "resolve_rate": 0.6,
+    "mean_compression_ratio": 1.0,
+    "mean_tokens": 703.4,
+    "mean_turns": 9.8
+  },
+  {
+    "setting": {
+      "name": "aggressive",
+      "max_failures_retained": 2,
+      "head_words": 50,
+      "tail_words": 25,
+      "compress_threshold": 2000
+    },
+    "num_instances": 20,
+    "resolved_count": 12,
+    "resolve_rate": 0.6,
+    "mean_compression_ratio": 1.0,
+    "mean_tokens": 703.4,
+    "mean_turns": 9.8
+  },
+  {
+    "setting": {
+      "name": "extreme",
+      "max_failures_retained": 1,
+      "head_words": 20,
+      "tail_words": 10,
+      "compress_threshold": 1000
+    },
+    "num_instances": 20,
+    "resolved_count": 12,
+    "resolve_rate": 0.6,
+    "mean_compression_ratio": 1.0,
+    "mean_tokens": 703.4,
+    "mean_turns": 9.8
+  }
+]

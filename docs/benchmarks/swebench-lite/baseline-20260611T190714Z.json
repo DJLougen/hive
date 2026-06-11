@@ -1,0 +1,5123 @@
+{
+  "condition": "baseline",
+  "num_instances": 50,
+  "resolved_count": 50,
+  "resolve_rate": 1.0,
+  "mean_input_tokens": 118.0,
+  "mean_output_tokens": 1000.0,
+  "mean_turns": 10.0,
+  "mean_llm_calls": 10.0,
+  "mean_llm_calls_avoided": 0.0,
+  "mean_wall_clock_s": 2.2246000007726252e-05,
+  "tokens_per_resolve": 1118.0,
+  "platform": {
+    "system": "Windows",
+    "release": "11",
+    "machine": "AMD64",
+    "processor": "Intel64 Family 6 Model 151 Stepping 2, GenuineIntel",
+    "python_version": "3.12.0",
+    "hive_enabled": false
+  },
+  "results": [
+    {
+      "instance_id": "swe-bench-lite-0000",
+      "resolved": true,
+      "total_input_tokens": 110,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 2.9699993319809437e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0001",
+      "resolved": true,
+      "total_input_tokens": 110,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 2.4500011932104826e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0002",
+      "resolved": true,
+      "total_input_tokens": 110,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 2.3300002794712782e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0003",
+      "resolved": true,
+      "total_input_tokens": 110,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 1.71000137925148e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0004",
+      "resolved": true,
+      "total_input_tokens": 110,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 4.3400010326877236e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0005",
+      "resolved": true,
+      "total_input_tokens": 110,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 2.6699999580159783e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0006",
+      "resolved": true,
+      "total_input_tokens": 110,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 2.5399989681318402e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0007",
+      "resolved": true,
+      "total_input_tokens": 110,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 2.8999987989664078e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0008",
+      "resolved": true,
+      "total_input_tokens": 110,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 1.9099999917671084e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0009",
+      "resolved": true,
+      "total_input_tokens": 110,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 1.9099999917671084e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 11,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0010",
+      "resolved": true,
+      "total_input_tokens": 120,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 1.8999999156221747e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0011",
+      "resolved": true,
+      "total_input_tokens": 120,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 1.7799990018829703e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0012",
+      "resolved": true,
+      "total_input_tokens": 120,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 1.7399986973032355e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0013",
+      "resolved": true,
+      "total_input_tokens": 120,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 1.680001150816679e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0014",
+      "resolved": true,
+      "total_input_tokens": 120,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 1.7200014553964138e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0015",
+      "resolved": true,
+      "total_input_tokens": 120,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 1.819999306462705e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0016",
+      "resolved": true,
+      "total_input_tokens": 120,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 1.7299986211583018e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0017",
+      "resolved": true,
+      "total_input_tokens": 120,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 1.8399994587525725e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0018",
+      "resolved": true,
+      "total_input_tokens": 120,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 1.7200014553964138e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0019",
+      "resolved": true,
+      "total_input_tokens": 120,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 1.789999078027904e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0020",
+      "resolved": true,
+      "total_input_tokens": 120,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 1.920000067912042e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0021",
+      "resolved": true,
+      "total_input_tokens": 120,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 1.8399994587525725e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0022",
+      "resolved": true,
+      "total_input_tokens": 120,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 1.719998545013368e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0023",
+      "resolved": true,
+      "total_input_tokens": 120,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 1.7300015315413475e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0024",
+      "resolved": true,
+      "total_input_tokens": 120,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 1.6999983927235007e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0025",
+      "resolved": true,
+      "total_input_tokens": 120,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 2.0299979951232672e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0026",
+      "resolved": true,
+      "total_input_tokens": 120,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 2.2599997464567423e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0027",
+      "resolved": true,
+      "total_input_tokens": 120,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 1.8399994587525725e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0028",
+      "resolved": true,
+      "total_input_tokens": 120,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 1.7900019884109497e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0029",
+      "resolved": true,
+      "total_input_tokens": 120,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 1.7900019884109497e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0030",
+      "resolved": true,
+      "total_input_tokens": 120,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 2.9399991035461426e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0031",
+      "resolved": true,
+      "total_input_tokens": 120,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 2.549999044276774e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0032",
+      "resolved": true,
+      "total_input_tokens": 120,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 1.85999961104244e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0033",
+      "resolved": true,
+      "total_input_tokens": 120,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 1.7499987734481692e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0034",
+      "resolved": true,
+      "total_input_tokens": 120,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 1.7200014553964138e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0035",
+      "resolved": true,
+      "total_input_tokens": 120,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 3.259998629800975e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0036",
+      "resolved": true,
+      "total_input_tokens": 120,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 1.7400016076862812e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0037",
+      "resolved": true,
+      "total_input_tokens": 120,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 1.6699981642886996e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0038",
+      "resolved": true,
+      "total_input_tokens": 120,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 1.8000020645558834e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0039",
+      "resolved": true,
+      "total_input_tokens": 120,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 1.7600017599761486e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0040",
+      "resolved": true,
+      "total_input_tokens": 120,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 1.990000600926578e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0041",
+      "resolved": true,
+      "total_input_tokens": 120,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 9.669997962191701e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0042",
+      "resolved": true,
+      "total_input_tokens": 120,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 1.85999961104244e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0043",
+      "resolved": true,
+      "total_input_tokens": 120,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 1.7299986211583018e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0044",
+      "resolved": true,
+      "total_input_tokens": 120,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 1.8999999156221747e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0045",
+      "resolved": true,
+      "total_input_tokens": 120,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 1.990000600926578e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0046",
+      "resolved": true,
+      "total_input_tokens": 120,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 2.2899999748915434e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0047",
+      "resolved": true,
+      "total_input_tokens": 120,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 2.0800012862309813e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0048",
+      "resolved": true,
+      "total_input_tokens": 120,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 2.120001590810716e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    },
+    {
+      "instance_id": "swe-bench-lite-0049",
+      "resolved": true,
+      "total_input_tokens": 120,
+      "total_output_tokens": 1000,
+      "turns_used": 10,
+      "llm_calls": 10,
+      "llm_calls_avoided": 0,
+      "wall_clock_s": 2.4800014216452837e-05,
+      "steps": [
+        {
+          "turn": 0,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 1,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 2,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 3,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 4,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 5,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 6,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 7,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 8,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        },
+        {
+          "turn": 9,
+          "action": "llm_response",
+          "tool": null,
+          "llm_called": true,
+          "input_tokens": 12,
+          "output_tokens": 100,
+          "latency_ms": 0.0
+        }
+      ]
+    }
+  ]
+}

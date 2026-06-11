@@ -1,0 +1,94 @@
+name: Evaluation Result
+description: Submit SWE-bench evaluation results
+title: "[Eval] "
+labels: ["evaluation", "swe-bench"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for running the SWE-bench evaluation! Please provide the results below.
+        
+  - type: input
+    id: model
+    attributes:
+      label: Model
+      description: Which model did you evaluate?
+      placeholder: "e.g., gpt-4, claude-3-opus, llama-3-70b"
+    validations:
+      required: true
+      
+  - type: input
+    id: hive-version
+    attributes:
+      label: Hive Version
+      description: Which version of Hive did you use?
+      placeholder: "e.g., v0.5.0 or commit hash"
+    validations:
+      required: true
+      
+  - type: input
+    id: instances
+    attributes:
+      label: Number of Instances
+      description: How many SWE-bench instances did you run?
+      placeholder: "e.g., 50"
+    validations:
+      required: true
+      
+  - type: input
+    id: resolve-rate-baseline
+    attributes:
+      label: Baseline Resolve Rate
+      description: What was the resolve rate without Hive?
+      placeholder: "e.g., 0.42 (42%)"
+    validations:
+      required: true
+      
+  - type: input
+    id: resolve-rate-hive
+    attributes:
+      label: Hive Resolve Rate
+      description: What was the resolve rate with Hive enabled?
+      placeholder: "e.g., 0.44 (44%)"
+    validations:
+      required: true
+      
+  - type: input
+    id: compression-ratio
+    attributes:
+      label: Average Compression Ratio
+      description: What was the average compression ratio?
+      placeholder: "e.g., 3.2x"
+    validations:
+      required: true
+      
+  - type: textarea
+    id: results-json
+    attributes:
+      label: Results JSON
+      description: Paste the contents of your results JSON file (from docs/benchmarks/swebench-lite/)
+      render: json
+    validations:
+      required: false
+      
+  - type: textarea
+    id: observations
+    attributes:
+      label: Observations
+      description: Any notable observations about the results? Patterns, edge cases, or insights?
+    validations:
+      required: false
+      
+  - type: dropdown
+    id: hardware
+    attributes:
+      label: Hardware
+      description: What hardware did you run on?
+      options:
+        - CPU only
+        - NVIDIA GPU (specify in observations)
+        - AMD GPU (specify in observations)
+        - Apple Silicon
+        - Other
+    validations:
+      required: true

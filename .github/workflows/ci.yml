@@ -42,6 +42,13 @@ jobs:
         run: |
           python -m ruff check hive/ tests/
           python -m mypy hive/ --ignore-missing-imports
+      - name: Validate citation.cff
+        run: |
+          if [ ! -f .github/citation.cff ]; then
+            echo "Error: .github/citation.cff not found"
+            exit 1
+          fi
+          python -c "import json; data = json.load(open('.github/citation.cff')); assert 'authors' in data and 'citationFormat' in data, 'Missing required fields'"
       - name: Security scan (hive only)
         run: |
           pip install bandit

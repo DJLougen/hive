@@ -92,3 +92,36 @@ The Rust port targets the same Python surface, with three wins:
   Python boundary.
 
 See `docs/future-cpp.md` for the full plan.
+
+## 7. Consistency model (rust-brain)
+
+rust-brain uses a **Hybrid Logical Clock (HLC)** as its ordering primitive.
+Each write carries a tuple `(wall_clock_ns, logical_counter, node_id)` that
+provides a total order consistent with causality.
+
+### Guarantees
+
+* **Single-writer monotonicity.** Within one process, every `remember()` call
+  produces a strictly greater HLC than the previous one. A write with an
+  HLC less than the stored value raises `TimestampRegression`.
+* **Multi-writer causal consistency.** Across threads or processes, the HLC
+  ensures that if event A causally precedes event B, then `A.hlc < B.hlc`.
+  Concurrent writes from independent writers receive distinct HLCs ordered
+  by wall-clock then logical counter then node-id.
+* **Thread safety.** All writes are serialised by a re-entrant lock
+  (`threading.RLock`). Reads take a snapshot of the index under the lock
+  and are consistent with respect to a single point in the write sequence.
+* **NTP resilience.** If the wall clock jumps backwards (NTP correction),
+  the logical counter increments to maintain monotonicity. The HLC never
+  produces a timestamp that compares less than a previously issued one.
+
+### Limitations
+
+* **No distributed consensus.** Two writers that never communicate may
+  produce interleaved HLCs that do not reflect a global causal order.
+  The HLC guarantees only that *observed* causality is preserved.
+* **No transactions.** Each `remember()` is atomic; there is no
+  multi-key transaction. If a caller needs atomic multi-key writes,
+  they must serialise externally.
+* **Eviction is FIFO by insertion order**, not by HLC. Under capacity
+  pressure the oldest-inserted key is evicted first.
