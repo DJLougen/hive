@@ -92,7 +92,118 @@ Compressed context + action decision
 LLM (only for complex decisions)
 ```
 
+## Measured Evidence
+
+Compression throughput is easy to measure and easy to oversell. The question
+that decides whether Hive is safe to put in an agent loop is different:
+**after compression, can the agent still see the facts it needs to act** —
+failing test names, exception lines, the function it went looking for, the
+error line, the exit code?
+
+The [compression fidelity benchmark](docs/benchmarks/fidelity.md) measures
+exactly that, on a deterministic 201-message corpus of realistic tool output
+(plus real captured pytest runs), against a naive head-truncation baseline at
+the *same* token budget:
+
+| Metric (rule_fast, seed=42) | Before fidelity fixes | Current | Naive truncation |
+|---|---|---|---|
+| Token reduction | 95.4% | 83.6% | 83.6% (matched) |
+| Critical-fact retention | 40.7% | **99.1%** | 28.7% |
+| Messages with *all* facts intact | 26.4% | **98.5%** | 41.3% |
+
+Per category (fact retention at the shown token reduction):
+
+| Tool output | Token reduction | Fact retention |
+|---|---|---|
+| pytest logs | 97.4% | 100% (every failing test name + summary) |
+| command/build output | 75.7% | 100% (error line + exit code) |
+| tracebacks | 0% (kept verbatim by design) | 100% |
+| search results | 5.5% | 92.5% |
+| file reads | 82.6% | 100% (signatures + literal constants kept) |
+
+Honest caveats, measured not asserted:
+
+- **The 95.4% → 83.7% reduction drop is the cost of safety.** The earlier,
+  higher ratio was achieved by deleting facts agents act on.
+- **Search results barely compress** (5.5%). The compressor cannot know which
+  hit is the answer, so it keeps all hit locations. Dense grep output has
+  little safely-removable bloat.
+- **File reads keep signatures and literal constants, not full bodies**:
+  computed expressions inside functions are dropped; the agent re-reads a
+  precise range when it needs one.
+
+Reproduce: `python3 scripts/fidelity_benchmark.py` — emits
+[docs/benchmarks/fidelity.md](docs/benchmarks/fidelity.md) and
+[results/fidelity_rule_fast.json](results/fidelity_rule_fast.json). A
+regression test (`tests/test_fidelity_benchmark.py`) pins the retention
+floors so they cannot silently regress.
+
+### LLM-in-the-loop (CPU, measured)
+
+The substring benchmark bounds what *survives* compression. The
+[LLM fidelity eval](docs/benchmarks/llm-fidelity.md) asks whether a real
+model can still *answer* agent-realistic questions from compressed context.
+Run on CPU with `Qwen/Qwen2.5-0.5B-Instruct` (31 messages, seed=7):
+
+| Metric | Raw context | Compressed context |
+|---|---|---|
+| QA accuracy (graded facts) | 67.7% | **69.2%** |
+| Messages fully answered | 32.3% | **38.7%** |
+| Avg prompt tokens | 657 | 221 (**-66.4%**) |
+
+Compressed context matches or beats raw in **every category** at 66% fewer
+tokens. An earlier run caught a real defect (file reads 0% QA); keeping
+literal constant assignments in skeletons closed the gap.
+
+Reproduce: `pip install torch transformers && python3 scripts/llm_fidelity_eval.py`
+
+### CPU routing (busybee-cpu, measured)
+
+Mechanical tool selection is Hive's other CPU offload. The
+[routing eval](docs/benchmarks/routing.md) trains `CpuActionPolicy` on 200
+held-out training rows and evaluates 50 unseen rows **through
+`HiveStack.route()`**:
+
+| Metric | HiveStack + busybee | always escalate |
+|---|---|---|
+| Action accuracy | **98.0%** | ~22% (escalate is rarely correct) |
+| Args semantic match | 48.0% | — |
+| Throughput | 90 routes/s (this machine) | — |
+
+Wrong picks waste one turn; the agent loop retries. On SWE-bench held-out
+data the combined busybee model reaches **96.4%** on 11,881 unseen issues
+(busyBee-cpu's [honest evaluation](https://github.com/DJLougen/busyBee-cpu/blob/main/reports/honest_evaluation.md)).
+
+Reproduce: `pip install -e ../busyBee-cpu && python3 scripts/routing_eval.py`
+
+### Multi-step agent loop (CPU, measured — and what it proves)
+
+The [agent loop eval](docs/benchmarks/agent-loop.md) runs 6 fixed debugging
+episodes (test → read → patch → re-test) and asks a small CPU model to pick
+the next tool at each step, raw vs compressed:
+
+| Metric | Raw transcript | Compressed transcript |
+|---|---|---|
+| Step accuracy | 25.0% | 4.2% |
+| Episodes fully resolved | 0% | 0% |
+
+**This is not a failure of Hive — it's the point.** A 0.5B model cannot
+reliably navigate multi-step tool selection (it defaults to `run_tests`).
+That's exactly why mechanical routing belongs on CPU (98% above), not in the
+LLM. Hive's architecture: **busybee picks the tool, compression feeds the
+LLM only what it needs to reason, LLM handles escalation.**
+
+Reproduce: `python3 scripts/agent_loop_eval.py`
+
+**Still not measured**: open-ended SWE-bench resolve rate with the full
+Hive stack (busybee + compression + frontier LLM).
+
 ## ROI: The $117K Problem
+
+> **Note**: the dollar figures below are *projections* from the measured
+> compression/routing numbers at example prices and volumes, not customer
+> billing data. The measured evidence is in the section above and in
+> [results/](results/).
 
 At $10/1M input tokens (GPT-4 pricing), 10k sessions/month:
 
@@ -521,9 +632,13 @@ export HIVE_NATIVE_BACKEND=1
 
 See [hive-cpp/README.md](hive-cpp/README.md) for details.
 
-## Real-World Case Studies
+## Illustrative Scenarios
 
-### Case 1: AI Code Review Bot (50k reviews/month)
+> **Note**: these are modeled scenarios at stated volumes and prices, not
+> named-customer case studies. For measured numbers see
+> [Measured Evidence](#measured-evidence).
+
+### Scenario 1: AI Code Review Bot (50k reviews/month)
 
 **Before**: $47,000/mo (LLM costs), 8% context overflow crashes
 
@@ -536,7 +651,7 @@ How:
 - CPU routing of mechanical decisions (read_file, run_tests)
 - Causal memory prevents repeated fixes
 
-### Case 2: Automated Testing Agent (200k test sessions/month)
+### Scenario 2: Automated Testing Agent (200k test sessions/month)
 
 **Before**: $180,000/mo, 12% session crashes from context limits
 
@@ -549,7 +664,7 @@ How:
 - rust-brain remembers test failures and fixes
 - 2.06M routes/sec CPU routing
 
-### Case 3: Documentation Assistant (25k queries/month)
+### Scenario 3: Documentation Assistant (25k queries/month)
 
 **Before**: $18,750/mo, frequent "I don't have context" responses
 

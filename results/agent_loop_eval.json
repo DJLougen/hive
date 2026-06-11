@@ -1,0 +1,592 @@
+{
+  "backend": "local:Qwen/Qwen2.5-0.5B-Instruct (cpu)",
+  "episodes": 6,
+  "total_steps": 24,
+  "aggregate": {
+    "raw": {
+      "episodes": 6,
+      "total_steps": 24,
+      "correct_steps": 6,
+      "step_accuracy_pct": 25.0,
+      "resolve_rate_pct": 0.0,
+      "avg_prompt_tokens_per_episode": 630.6666666666666
+    },
+    "compressed": {
+      "episodes": 6,
+      "total_steps": 24,
+      "correct_steps": 1,
+      "step_accuracy_pct": 4.166666666666667,
+      "resolve_rate_pct": 0.0,
+      "avg_prompt_tokens_per_episode": 533.6666666666666
+    }
+  },
+  "machine": "x86_64 / Linux / 4 cores",
+  "commit": "6fb595a",
+  "timestamp": "2026-06-09T23:11:03+00:00",
+  "rows": [
+    {
+      "episode_id": "auth_token_expiry",
+      "condition": "raw",
+      "steps": 4,
+      "correct_steps": 1,
+      "step_accuracy_pct": 25.0,
+      "episode_resolved": false,
+      "total_prompt_tokens": 845,
+      "step_rows": [
+        {
+          "step": 0,
+          "expected_tool": "read_file",
+          "predicted_tool": "run_tests",
+          "correct": false,
+          "answer": "run_tests",
+          "prompt_tokens": 77,
+          "latency_s": 13.37
+        },
+        {
+          "step": 1,
+          "expected_tool": "apply_patch",
+          "predicted_tool": "run_tests",
+          "correct": false,
+          "answer": "run_tests",
+          "prompt_tokens": 189,
+          "latency_s": 12.99
+        },
+        {
+          "step": 2,
+          "expected_tool": "run_tests",
+          "predicted_tool": "run_tests",
+          "correct": true,
+          "answer": "run_tests",
+          "prompt_tokens": 250,
+          "latency_s": 2.0
+        },
+        {
+          "step": 3,
+          "expected_tool": "escalate",
+          "predicted_tool": "run_tests",
+          "correct": false,
+          "answer": "run_tests",
+          "prompt_tokens": 329,
+          "latency_s": 0.52
+        }
+      ]
+    },
+    {
+      "episode_id": "auth_token_expiry",
+      "condition": "compressed",
+      "steps": 4,
+      "correct_steps": 1,
+      "step_accuracy_pct": 25.0,
+      "episode_resolved": false,
+      "total_prompt_tokens": 563,
+      "step_rows": [
+        {
+          "step": 0,
+          "expected_tool": "read_file",
+          "predicted_tool": "run_tests",
+          "correct": false,
+          "answer": "run_tests",
+          "prompt_tokens": 77,
+          "latency_s": 0.27
+        },
+        {
+          "step": 1,
+          "expected_tool": "apply_patch",
+          "predicted_tool": "run_tests",
+          "correct": false,
+          "answer": "run_tests",
+          "prompt_tokens": 111,
+          "latency_s": 0.26
+        },
+        {
+          "step": 2,
+          "expected_tool": "run_tests",
+          "predicted_tool": "run_tests",
+          "correct": true,
+          "answer": "run_tests",
+          "prompt_tokens": 148,
+          "latency_s": 0.32
+        },
+        {
+          "step": 3,
+          "expected_tool": "escalate",
+          "predicted_tool": "read_file",
+          "correct": false,
+          "answer": "read_file",
+          "prompt_tokens": 227,
+          "latency_s": 0.35
+        }
+      ]
+    },
+    {
+      "episode_id": "billing_rounding",
+      "condition": "raw",
+      "steps": 4,
+      "correct_steps": 1,
+      "step_accuracy_pct": 25.0,
+      "episode_resolved": false,
+      "total_prompt_tokens": 653,
+      "step_rows": [
+        {
+          "step": 0,
+          "expected_tool": "read_file",
+          "predicted_tool": "run_tests",
+          "correct": false,
+          "answer": "run_tests",
+          "prompt_tokens": 78,
+          "latency_s": 0.23
+        },
+        {
+          "step": 1,
+          "expected_tool": "apply_patch",
+          "predicted_tool": "run_tests",
+          "correct": false,
+          "answer": "run_tests",
+          "prompt_tokens": 168,
+          "latency_s": 0.31
+        },
+        {
+          "step": 2,
+          "expected_tool": "run_tests",
+          "predicted_tool": "run_tests",
+          "correct": true,
+          "answer": "run_tests",
+          "prompt_tokens": 197,
+          "latency_s": 0.34
+        },
+        {
+          "step": 3,
+          "expected_tool": "escalate",
+          "predicted_tool": "run_tests",
+          "correct": false,
+          "answer": "run_tests",
+          "prompt_tokens": 210,
+          "latency_s": 0.34
+        }
+      ]
+    },
+    {
+      "episode_id": "billing_rounding",
+      "condition": "compressed",
+      "steps": 4,
+      "correct_steps": 0,
+      "step_accuracy_pct": 0.0,
+      "episode_resolved": false,
+      "total_prompt_tokens": 485,
+      "step_rows": [
+        {
+          "step": 0,
+          "expected_tool": "read_file",
+          "predicted_tool": "run_tests",
+          "correct": false,
+          "answer": "run_tests",
+          "prompt_tokens": 78,
+          "latency_s": 0.25
+        },
+        {
+          "step": 1,
+          "expected_tool": "apply_patch",
+          "predicted_tool": "run_tests",
+          "correct": false,
+          "answer": "run_tests",
+          "prompt_tokens": 112,
+          "latency_s": 0.29
+        },
+        {
+          "step": 2,
+          "expected_tool": "run_tests",
+          "predicted_tool": "read_file",
+          "correct": false,
+          "answer": "read_file",
+          "prompt_tokens": 141,
+          "latency_s": 0.3
+        },
+        {
+          "step": 3,
+          "expected_tool": "escalate",
+          "predicted_tool": null,
+          "correct": false,
+          "answer": "patch",
+          "prompt_tokens": 154,
+          "latency_s": 0.27
+        }
+      ]
+    },
+    {
+      "episode_id": "db_connection_pool",
+      "condition": "raw",
+      "steps": 4,
+      "correct_steps": 1,
+      "step_accuracy_pct": 25.0,
+      "episode_resolved": false,
+      "total_prompt_tokens": 603,
+      "step_rows": [
+        {
+          "step": 0,
+          "expected_tool": "read_file",
+          "predicted_tool": "run_tests",
+          "correct": false,
+          "answer": "run_tests",
+          "prompt_tokens": 79,
+          "latency_s": 0.24
+        },
+        {
+          "step": 1,
+          "expected_tool": "apply_patch",
+          "predicted_tool": "run_tests",
+          "correct": false,
+          "answer": "run_tests",
+          "prompt_tokens": 142,
+          "latency_s": 0.31
+        },
+        {
+          "step": 2,
+          "expected_tool": "run_tests",
+          "predicted_tool": "run_tests",
+          "correct": true,
+          "answer": "run_tests",
+          "prompt_tokens": 184,
+          "latency_s": 0.38
+        },
+        {
+          "step": 3,
+          "expected_tool": "escalate",
+          "predicted_tool": "run_tests",
+          "correct": false,
+          "answer": "run_tests",
+          "prompt_tokens": 198,
+          "latency_s": 0.38
+        }
+      ]
+    },
+    {
+      "episode_id": "db_connection_pool",
+      "condition": "compressed",
+      "steps": 4,
+      "correct_steps": 0,
+      "step_accuracy_pct": 0.0,
+      "episode_resolved": false,
+      "total_prompt_tokens": 585,
+      "step_rows": [
+        {
+          "step": 0,
+          "expected_tool": "read_file",
+          "predicted_tool": "run_tests",
+          "correct": false,
+          "answer": "run_tests",
+          "prompt_tokens": 79,
+          "latency_s": 0.24
+        },
+        {
+          "step": 1,
+          "expected_tool": "apply_patch",
+          "predicted_tool": "run_tests",
+          "correct": false,
+          "answer": "run_tests",
+          "prompt_tokens": 142,
+          "latency_s": 0.28
+        },
+        {
+          "step": 2,
+          "expected_tool": "run_tests",
+          "predicted_tool": "read_file",
+          "correct": false,
+          "answer": "read_file",
+          "prompt_tokens": 175,
+          "latency_s": 0.31
+        },
+        {
+          "step": 3,
+          "expected_tool": "escalate",
+          "predicted_tool": "read_file",
+          "correct": false,
+          "answer": "read_file",
+          "prompt_tokens": 189,
+          "latency_s": 0.33
+        }
+      ]
+    },
+    {
+      "episode_id": "search_unicode",
+      "condition": "raw",
+      "steps": 4,
+      "correct_steps": 1,
+      "step_accuracy_pct": 25.0,
+      "episode_resolved": false,
+      "total_prompt_tokens": 541,
+      "step_rows": [
+        {
+          "step": 0,
+          "expected_tool": "read_file",
+          "predicted_tool": "run_tests",
+          "correct": false,
+          "answer": "run_tests",
+          "prompt_tokens": 78,
+          "latency_s": 0.22
+        },
+        {
+          "step": 1,
+          "expected_tool": "apply_patch",
+          "predicted_tool": "run_tests",
+          "correct": false,
+          "answer": "run_tests",
+          "prompt_tokens": 132,
+          "latency_s": 0.26
+        },
+        {
+          "step": 2,
+          "expected_tool": "run_tests",
+          "predicted_tool": "run_tests",
+          "correct": true,
+          "answer": "run_tests",
+          "prompt_tokens": 160,
+          "latency_s": 0.29
+        },
+        {
+          "step": 3,
+          "expected_tool": "escalate",
+          "predicted_tool": "run_tests",
+          "correct": false,
+          "answer": "run_tests",
+          "prompt_tokens": 171,
+          "latency_s": 0.32
+        }
+      ]
+    },
+    {
+      "episode_id": "search_unicode",
+      "condition": "compressed",
+      "steps": 4,
+      "correct_steps": 0,
+      "step_accuracy_pct": 0.0,
+      "episode_resolved": false,
+      "total_prompt_tokens": 453,
+      "step_rows": [
+        {
+          "step": 0,
+          "expected_tool": "read_file",
+          "predicted_tool": "run_tests",
+          "correct": false,
+          "answer": "run_tests",
+          "prompt_tokens": 78,
+          "latency_s": 0.22
+        },
+        {
+          "step": 1,
+          "expected_tool": "apply_patch",
+          "predicted_tool": "run_tests",
+          "correct": false,
+          "answer": "run_tests",
+          "prompt_tokens": 104,
+          "latency_s": 0.24
+        },
+        {
+          "step": 2,
+          "expected_tool": "run_tests",
+          "predicted_tool": "read_file",
+          "correct": false,
+          "answer": "read_file",
+          "prompt_tokens": 130,
+          "latency_s": 0.27
+        },
+        {
+          "step": 3,
+          "expected_tool": "escalate",
+          "predicted_tool": "read_file",
+          "correct": false,
+          "answer": "read_file",
+          "prompt_tokens": 141,
+          "latency_s": 0.28
+        }
+      ]
+    },
+    {
+      "episode_id": "cache_eviction",
+      "condition": "raw",
+      "steps": 4,
+      "correct_steps": 1,
+      "step_accuracy_pct": 25.0,
+      "episode_resolved": false,
+      "total_prompt_tokens": 525,
+      "step_rows": [
+        {
+          "step": 0,
+          "expected_tool": "read_file",
+          "predicted_tool": "run_tests",
+          "correct": false,
+          "answer": "run_tests",
+          "prompt_tokens": 82,
+          "latency_s": 0.23
+        },
+        {
+          "step": 1,
+          "expected_tool": "apply_patch",
+          "predicted_tool": "run_tests",
+          "correct": false,
+          "answer": "run_tests",
+          "prompt_tokens": 121,
+          "latency_s": 0.26
+        },
+        {
+          "step": 2,
+          "expected_tool": "run_tests",
+          "predicted_tool": "run_tests",
+          "correct": true,
+          "answer": "run_tests",
+          "prompt_tokens": 155,
+          "latency_s": 0.3
+        },
+        {
+          "step": 3,
+          "expected_tool": "escalate",
+          "predicted_tool": null,
+          "correct": false,
+          "answer": "patch",
+          "prompt_tokens": 167,
+          "latency_s": 0.28
+        }
+      ]
+    },
+    {
+      "episode_id": "cache_eviction",
+      "condition": "compressed",
+      "steps": 4,
+      "correct_steps": 0,
+      "step_accuracy_pct": 0.0,
+      "episode_resolved": false,
+      "total_prompt_tokens": 477,
+      "step_rows": [
+        {
+          "step": 0,
+          "expected_tool": "read_file",
+          "predicted_tool": "run_tests",
+          "correct": false,
+          "answer": "run_tests",
+          "prompt_tokens": 82,
+          "latency_s": 0.23
+        },
+        {
+          "step": 1,
+          "expected_tool": "apply_patch",
+          "predicted_tool": "run_tests",
+          "correct": false,
+          "answer": "run_tests",
+          "prompt_tokens": 109,
+          "latency_s": 0.25
+        },
+        {
+          "step": 2,
+          "expected_tool": "run_tests",
+          "predicted_tool": "read_file",
+          "correct": false,
+          "answer": "read_file",
+          "prompt_tokens": 137,
+          "latency_s": 0.27
+        },
+        {
+          "step": 3,
+          "expected_tool": "escalate",
+          "predicted_tool": null,
+          "correct": false,
+          "answer": "patch",
+          "prompt_tokens": 149,
+          "latency_s": 0.24
+        }
+      ]
+    },
+    {
+      "episode_id": "api_rate_limit",
+      "condition": "raw",
+      "steps": 4,
+      "correct_steps": 1,
+      "step_accuracy_pct": 25.0,
+      "episode_resolved": false,
+      "total_prompt_tokens": 617,
+      "step_rows": [
+        {
+          "step": 0,
+          "expected_tool": "read_file",
+          "predicted_tool": "run_tests",
+          "correct": false,
+          "answer": "run_tests",
+          "prompt_tokens": 83,
+          "latency_s": 0.23
+        },
+        {
+          "step": 1,
+          "expected_tool": "apply_patch",
+          "predicted_tool": "run_tests",
+          "correct": false,
+          "answer": "run_tests",
+          "prompt_tokens": 152,
+          "latency_s": 0.28
+        },
+        {
+          "step": 2,
+          "expected_tool": "run_tests",
+          "predicted_tool": "run_tests",
+          "correct": true,
+          "answer": "run_tests",
+          "prompt_tokens": 183,
+          "latency_s": 0.34
+        },
+        {
+          "step": 3,
+          "expected_tool": "escalate",
+          "predicted_tool": "run_tests",
+          "correct": false,
+          "answer": "run_tests",
+          "prompt_tokens": 199,
+          "latency_s": 0.33
+        }
+      ]
+    },
+    {
+      "episode_id": "api_rate_limit",
+      "condition": "compressed",
+      "steps": 4,
+      "correct_steps": 0,
+      "step_accuracy_pct": 0.0,
+      "episode_resolved": false,
+      "total_prompt_tokens": 639,
+      "step_rows": [
+        {
+          "step": 0,
+          "expected_tool": "read_file",
+          "predicted_tool": "run_tests",
+          "correct": false,
+          "answer": "run_tests",
+          "prompt_tokens": 83,
+          "latency_s": 0.22
+        },
+        {
+          "step": 1,
+          "expected_tool": "apply_patch",
+          "predicted_tool": "run_tests",
+          "correct": false,
+          "answer": "run_tests",
+          "prompt_tokens": 160,
+          "latency_s": 0.29
+        },
+        {
+          "step": 2,
+          "expected_tool": "run_tests",
+          "predicted_tool": "read_file",
+          "correct": false,
+          "answer": "read_file",
+          "prompt_tokens": 190,
+          "latency_s": 0.32
+        },
+        {
+          "step": 3,
+          "expected_tool": "escalate",
+          "predicted_tool": "read_file",
+          "correct": false,
+          "answer": "read_file",
+          "prompt_tokens": 206,
+          "latency_s": 0.33
+        }
+      ]
+    }
+  ]
+}

@@ -155,33 +155,101 @@ _TEST_LINE_RE = re.compile(
 )
 
 
+# Caps below bound worst-case output size while keeping every fact an
+# agent acts on in the common case. Chosen against the fidelity
+# benchmark (scripts/fidelity_benchmark.py): raising them further showed
+# no retention gain on the corpus; lowering them loses failing-test
+# names / search hits.
+_MAX_FAILURE_LINES = 100
+_MAX_SEARCH_HITS = 40
+_MAX_ERROR_LINES = 20
+_MAX_SKELETON_LINES = 200
+
+_RE_ERRORISH = re.compile(r"error|fail|fatal|denied|exception|timed? ?out", re.I)
+# Skeleton keeps: signatures, imports, top-level assignments, and *literal*
+# constant assignments inside bodies (`limit = 1234`, `URL = "..."`). The
+# LLM fidelity eval showed body values are what agents go looking for in
+# file reads; literal assignments are one line each and carry most of that
+# signal. Computed assignments (`x = payload.get(...)`) stay dropped.
+_RE_SIGNATURE = re.compile(
+    r"^\s*(?:async\s+def|def|class|pub fn|fn|function|export)\b"
+    r"|^[A-Za-z_]\w*\s*=\s"
+    r"|^(?:import|from)\s"
+    r"|^\s+[A-Z_a-z]\w*\s*(?::[^=]+)?=\s*(?:-?\d|[\"'])[^(]*$"
+)
+
+
 def _compress_test_output(content: str) -> str:
-    """500 lines of test output → '12 passed, 2 failed' + failure details."""
-    m = _TEST_LINE_RE.search(content)
-    summary = m.group(0) if m else f"{content.count(chr(10))} lines"
-    # Pull out the first FAIL/ERROR block as a representative failure.
+    """Long test output → summary + *every* failing line.
+
+    Keeping only the first few failures loses the rest of the failing
+    test names — the one thing the agent needs from this message — so we
+    keep all FAIL/ERROR lines (bounded by ``_MAX_FAILURE_LINES``).
+    Output size scales with failures, not with log length.
+    """
+    counts = [m.group(0) for m in _TEST_LINE_RE.finditer(content)]
+    # Keep the *last* failed+passed pair: pytest prints the authoritative
+    # totals in the final summary line.
+    summary = ", ".join(counts[-2:]) if counts else f"{content.count(chr(10))} lines"
     failed = [
-        line for line in content.splitlines() if "FAIL" in line or "ERROR" in line
-    ][:5]
+        line.strip()
+        for line in content.splitlines()
+        if "FAIL" in line or "ERROR" in line
+    ]
+    dropped = max(0, len(failed) - _MAX_FAILURE_LINES)
+    failed = failed[:_MAX_FAILURE_LINES]
     if failed:
-        return f"[test] {summary}. failures: " + " | ".join(failed)
+        out = f"[test] {summary}. failures: " + " | ".join(failed)
+        if dropped:
+            out += f" | ... (+{dropped} more)"
+        return out
     return f"[test] {summary}"
 
 
 def _compress_search(content: str) -> str:
-    lines = [line for line in content.splitlines() if line.strip()][:8]
-    return f"[search] {len(content.splitlines())} hits; sample: " + " | ".join(lines)
+    """Search results → all hit locations, long lines truncated.
+
+    The compressor cannot know which hit the agent searched for, so any
+    dropped hit is potentially *the* answer. Keep every hit up to
+    ``_MAX_SEARCH_HITS``; compress by trimming long matched lines.
+    """
+    lines = [line for line in content.splitlines() if line.strip()]
+    kept = [line[:160] for line in lines[:_MAX_SEARCH_HITS]]
+    out = f"[search] {len(lines)} hits: " + " | ".join(kept)
+    if len(lines) > _MAX_SEARCH_HITS:
+        out += f" | ... (+{len(lines) - _MAX_SEARCH_HITS} more hits)"
+    return out
 
 
 def _compress_command(content: str) -> str:
-    head = "\n".join(content.splitlines()[:6])
-    return f"[cmd] {head}\n... ({len(content)} chars)"
+    """Command output → head + every error-ish line + tail.
+
+    The head shows what ran, error lines show what broke (failures sit
+    mid-log in build output), and the tail keeps the exit status.
+    """
+    lines = content.splitlines()
+    head = lines[:6]
+    tail = lines[-3:] if len(lines) > 9 else []
+    middle = lines[6 : len(lines) - len(tail)]
+    errors = [line for line in middle if _RE_ERRORISH.search(line)][:_MAX_ERROR_LINES]
+    parts = head + (["..."] if middle else []) + errors + (["..."] if tail else []) + tail
+    return f"[cmd] ({len(content)} chars)\n" + "\n".join(parts)
 
 
 def _compact_file(content: str) -> str:
+    """File content → signature skeleton.
+
+    Keeps def/class/function signatures, imports, and top-level
+    assignments so the agent retains a map of the file (and can re-read
+    a precise range when it needs a body). Dropping all but the first
+    lines loses the symbol the agent was looking for.
+    """
     lines = content.splitlines()
-    head = "\n".join(lines[:3])
-    return f"[file] {len(lines)} lines, {len(content)} chars\n{head}\n..."
+    skeleton = [
+        line.rstrip() for line in lines if _RE_SIGNATURE.match(line)
+    ][:_MAX_SKELETON_LINES]
+    body = "\n".join(skeleton) if skeleton else "\n".join(lines[:3])
+    return f"[file] {len(lines)} lines, {len(content)} chars\n{body}\n..."
 
 
 def _distill(content: str) -> str:
