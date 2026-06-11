@@ -2,9 +2,9 @@
 
 **Orchestration layer for AI agents** - CPU-side routing, context compression, and causal memory to reduce token usage by 64%.
 
-[![Version](https://img.shields.io/badge/version-0.5.0-blue)](https://github.com/DJLougen/hive)
+[![Version](https://img.shields.io/badge/version-0.6.0-blue)](https://github.com/DJLougen/hive)
 [![Python](https://img.shields.io/badge/python-3.10+-green)](https://python.org)
-[![Tests](https://img.shields.io/badge/tests-135%20passed-brightgreen)](https://github.com/DJLougen/hive/actions)
+[![Tests](https://img.shields.io/badge/tests-190%20passed-brightgreen)](https://github.com/DJLougen/hive/actions)
 [![License](https://img.shields.io/badge/license-MIT-yellow)](https://opensource.org/licenses/MIT)
 [![RTX 3090](https://img.shields.io/badge/RTX%203090-validated-orange)]()
 [![DGX Spark](https://img.shields.io/badge/DGX%20Spark-validated-red)]()
@@ -567,13 +567,15 @@ How:
 ### Running tests
 
 ```bash
-# All 15 tests (should all pass)
+# All 190 tests (should all pass)
 pytest tests/
 
 # Component tests
 pytest tests/test_stack.py -v
 pytest tests/test_rust_brain.py -v
-pytest tests/test_online_learning.py -v  # 15 tests
+pytest tests/test_rust_brain_concurrency.py -v  # 9 concurrency tests
+pytest tests/test_online_learning.py -v
+```
 
 # Code quality
 black hive/ tests/
