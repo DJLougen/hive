@@ -5,6 +5,34 @@ All notable changes to Hive are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-06-11
+
+### Added
+- Real-workload SWE-bench-lite A/B evaluation (`scripts/hive_swebench_eval.py`) with
+  committed baseline vs Hive runs under `docs/benchmarks/swebench-lite/`.
+- Compression sensitivity sweep (`scripts/hive_compression_sweep.py`).
+- Hybrid Logical Clock (HLC) for causal-memory ordering, plus rust_brain concurrency tests.
+- Release workflow (`.github/workflows/release.yml`) and an evaluation-result issue template.
+- CITATION.cff validation in CI.
+
+### Changed
+- README rewritten to reflect the actual current state and module surface: real measured
+  evaluation results, accurate public API, the full ~28-module architecture, and corrected
+  reproduce/script paths.
+- Routing accuracy framed as in-distribution with an explicit out-of-distribution caveat;
+  removed the unmeasured ROI/case-study and energy headline claims.
+- Packaging metadata aligned to the 0.6.0 release.
+
+### Fixed
+- `pyproject.toml`: restored the missing `[build-system]` table and removed a stray
+  top-level `version` key; the package version now reports `0.6.0` (was `0.5.0`).
+- Version drift: `hive.__version__`, the FastAPI server, and the Helm chart now report `0.6.0`.
+- README: balanced the code fences that previously swallowed the Online Learning / Causal
+  Memory and Development sections; corrected the compression label set to
+  `CORE/DISTILL/COMPACT/DROP/STALE/ESCALATE` and the public API examples to the real types.
+- `.github/citation.cff` is now valid CFF 1.2.0 (was JSON); CI validates it as CFF via
+  `cffconvert` instead of `json.load`.
+
 ## [0.5.0] - 2026-06-02
 
 ### Added — Enterprise-Grade Infrastructure (Critical → High → Medium → Low)

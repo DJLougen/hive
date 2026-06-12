@@ -2,6 +2,32 @@
 
 This document contains release notes for tagged versions of Hive.
 
+## v0.6.0 (2026-06-11)
+
+### Highlights
+Real-workload evaluation, API hardening, and a documentation/metadata pass that brings the
+repository in line with the v0.6.0 release.
+
+### Added
+- SWE-bench-lite A/B evaluation harness and committed benchmark runs.
+- Compression sensitivity sweep.
+- Hybrid Logical Clock for causal ordering; additional rust_brain concurrency tests.
+- Release workflow and evaluation-result issue template.
+
+### Changed
+- README rewritten for accuracy and to reflect the full module surface; routing claims
+  reframed as in-distribution with an explicit OOD caveat.
+- Packaging metadata aligned to 0.6.0.
+
+### Fixed
+- Restored the `[build-system]` table in `pyproject.toml` and the `0.6.0` version across the
+  package, the FastAPI server, and the Helm chart.
+- Balanced README code fences and corrected the compression label names.
+- `CITATION.cff` is now valid CFF 1.2.0 and validated as such in CI.
+
+### Migration
+No code changes required. Update version pins to `hive-agent-memory>=0.6.0,<0.7.0`.
+
 ## v0.5.0 (2026-06-02)
 
 ### Highlights

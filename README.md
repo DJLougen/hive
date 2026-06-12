@@ -1,132 +1,143 @@
 # Hive
 
-**Orchestration layer for AI agents** - CPU-side routing, context compression, and causal memory to reduce token usage by 64%.
+**Orchestration layer for AI agents** — CPU-side action routing, context compression, and causal graph memory that keep mechanical work and context bloat off the LLM.
 
 [![Version](https://img.shields.io/badge/version-0.6.0-blue)](https://github.com/DJLougen/hive)
 [![Python](https://img.shields.io/badge/python-3.10+-green)](https://python.org)
-[![Tests](https://img.shields.io/badge/tests-190%20passed-brightgreen)](https://github.com/DJLougen/hive/actions)
+[![Tests](https://img.shields.io/badge/tests-passing-brightgreen)](https://github.com/DJLougen/hive/actions)
 [![License](https://img.shields.io/badge/license-MIT-yellow)](https://opensource.org/licenses/MIT)
 [![RTX 3090](https://img.shields.io/badge/RTX%203090-validated-orange)]()
 [![DGX Spark](https://img.shields.io/badge/DGX%20Spark-validated-red)]()
 
-**TL;DR**: $15,000/mo LLM bill → $5,250/mo with Hive. **Save $9,750/mo ($117,000/year).**
+Hive sits between an agent loop and its LLM. It answers the mechanical decisions on the CPU, compresses the context the LLM actually sees, and keeps a timestamped causal-memory graph so the agent stops re-deriving what it already learned. On a 20-instance SWE-bench-lite A/B (GPT-2 backend) this cut LLM calls by 91.7% and resolved 85% of instances versus 0% for the un-augmented agent — numbers below.
+
+> **Status:** v0.6.0 (Beta). The core stack plus the enterprise, reliability and observability modules are implemented and tested (34 test files). Routing-accuracy numbers are *in-distribution* — see the OOD caveat under [Components](#components).
 
 ---
 
-## Real-Workload Evaluation (SWE-bench-lite)
+## Real-workload evaluation (SWE-bench-lite)
 
-Evaluated on 20 real SWE-bench-lite instances using GPT-2 as the LLM backend.
-Baseline runs the agent without Hive (all decisions go to LLM). Hive runs with
-CPU routing + context compression + causal memory enabled.
+20 real SWE-bench-lite instances, GPT-2 as the LLM backend. **Baseline** runs the agent with every decision going to the LLM. **Hive** adds CPU routing + context compression + causal memory.
 
 | Metric | Baseline | Hive | Delta |
 |---|---|---|---|
-| **Resolve rate** | 0.0% | 85.0% | **+85.0%** |
-| Mean input tokens | 6,324 | 526 | **-91.7%** |
-| Mean output tokens | 1,000 | 85 | **-91.5%** |
-| Mean turns | 20.0 | 9.8 | **-51.0%** |
-| Mean LLM calls | 20.0 | 1.7 | **-91.7%** |
-| LLM calls avoided | N/A | 8.1 | — |
-| Tokens per resolve | ∞ | 718 | — |
-| Mean wall clock (s) | 8.68 | 0.72 | **-91.7%** |
+| Resolve rate | 0.0% | 85.0% (17/20) | **+85.0 pp** |
+| Mean input tokens | 6,324 | 526 | **−91.7%** |
+| Mean output tokens | 1,000 | 85 | **−91.5%** |
+| Mean turns | 20.0 | 9.8 | **−51.0%** |
+| Mean LLM calls | 20.0 | 1.7 | **−91.7%** |
+| LLM calls avoided / instance | — | 8.1 | — |
+| Mean wall clock (s) | 8.68 | 0.72 | **−91.7%** |
 
-**Key finding:** Without Hive, the agent never performs mechanical actions
-(read_file, run_tests, apply_patch) because every turn goes to the LLM for
-reasoning. With Hive, CPU routing handles mechanical actions instantly,
-freeing the LLM for the 2 reasoning steps needed to understand the problem.
-The agent resolves 85% of instances using 91.7% fewer tokens.
+**Why it works:** without Hive every turn — including mechanical ones like `read_file`, `run_tests`, `apply_patch` — burns an LLM call, and the agent never reaches a patch. With Hive the CPU policy handles mechanical actions instantly, leaving the LLM the ~2 reasoning steps that genuinely need it.
 
-**Hardware:** Windows 11, Intel i9-12900K, RTX 3090 (CUDA 13.0), Python 3.12
+- **Hardware:** Windows 11, Intel i9-12900K, RTX 3090 (CUDA 13.0), Python 3.12
+- **Reproduce:** `python scripts/hive_swebench_eval.py --instances 20 --model gpt2`
+- **Raw runs:** [`docs/benchmarks/swebench-lite/`](docs/benchmarks/swebench-lite/)
 
-**Reproduce:** `python scripts/hive_swebench_eval.py --instances 20 --model gpt2`
+### Compression sensitivity
 
-Full results: [`docs/benchmarks/swebench-lite/`](docs/benchmarks/swebench-lite/)
+Sweeping four compression-aggressiveness settings (conservative → extreme) over the same 20 instances:
 
-### Compression Sensitivity Analysis
-
-Swept 4 compression aggressiveness settings (conservative → extreme) across 20
-SWE-bench-lite instances to measure the speed-accuracy tradeoff:
-
-| Setting | Resolve Rate | Compression Ratio | Mean Tokens | Mean Turns |
+| Setting | Resolve rate | Compression ratio | Mean tokens | Mean turns |
 |---|---|---|---|---|
-| Conservative | 60.0% | 1.0x | 703 | 9.8 |
-| Moderate | 60.0% | 1.0x | 703 | 9.8 |
-| Aggressive | 60.0% | 1.0x | 703 | 9.8 |
-| Extreme | 60.0% | 1.0x | 703 | 9.8 |
+| Conservative | 60.0% | 1.0× | 703 | 9.8 |
+| Moderate | 60.0% | 1.0× | 703 | 9.8 |
+| Aggressive | 60.0% | 1.0× | 703 | 9.8 |
+| Extreme | 60.0% | 1.0× | 703 | 9.8 |
 
-**Finding:** The rule-fast compressor operates on short agent messages that
-fall below the compression threshold at all settings, so compression ratio
-stays at 1.0x. The resolve rate is consistent across settings — no accuracy
-tradeoff at these message lengths. Compression benefits appear on longer
-transcripts (tool outputs, logs) where the threshold is exceeded.
-
-Full sweep: [`docs/benchmarks/compression-sweep-20260611T200633Z.json`](docs/benchmarks/compression-sweep-20260611T200633Z.json)
-
+**Honest finding:** the agent messages in this run are short enough to fall below the compressor's threshold at every setting, so the ratio stays at 1.0× and resolve rate is flat — on this workload the win comes from **routing**, not compression. Compression pays off on long transcripts (multi-thousand-line tool output, logs), which this sample does not contain. Full sweep: [`docs/benchmarks/compression-sweep-20260611T200633Z.json`](docs/benchmarks/compression-sweep-20260611T200633Z.json).
 
 ---
 
-## What Hive Does
+## What Hive does
 
-Hive sits between your agent and the LLM, handling three tasks locally:
+Three jobs, all on the CPU, before the LLM is involved:
 
-1. **Mechanical decisions** (35% of calls) - read_file, run_tests, etc. → routed to CPU policies, free
-2. **Context bloat** (2-3x excess tokens) - logs, unchanged files → compressed with 5-label classification
-3. **Memory failures** - forgotten context, repeated mistakes → tracked with causal memory
+1. **Routes mechanical decisions** — `read_file`, `run_tests`, `apply_patch`, etc. go to a trained CPU policy (busyBee-cpu). No LLM call. Out-of-distribution states escalate to the LLM instead of guessing.
+2. **Compresses context** — a content-type-aware classifier labels each message and drops or distills the wax (stale logs, unchanged files) so the LLM sees only the honey.
+3. **Remembers causally** — a timestamped graph store (rust-brain) records cause → effect → supersession chains, so the agent can later answer "why did this happen / what fixed it".
 
-The LLM only sees complex decisions with compressed, relevant context.
-
+```text
+            agent request
+                  │
+        ┌─────────▼──────────┐
+        │     HiveStack      │
+        │                    │
+        │ route(state)       │ → RouteDecision  (CPU policy, or escalate)
+        │ compress(role,msg) │ → CompressedTurn (6-label classifier)
+        │ remember(k, v)     │ → MemoryNode     (causal graph)
+        │ step(state, txns)  │ → all of the above
+        └─────────┬──────────┘
+                  │
+   compressed context + decision
+                  │
+                  ▼
+   LLM  (only for decisions that need reasoning)
 ```
-Agent Request
-    ↓
-┌─────────────────────────────────────┐
-│           HiveStack                 │
-│                                     │
-│  route(state) → RouteDecision      │
-│  compress(role, msg) → CompressedTurn│
-│  remember(key, value) → causal mem  │
-│  step(state, transcript) → all     │
-└─────────────────────────────────────┘
-    ↓
-Compressed context + action decision
-    ↓
-LLM (only for complex decisions)
+
+---
+
+## Architecture & complexity
+
+Hive is a *meta-package*. The orchestrator (`hive.stack.HiveStack`) is small; the surface area around it is not. The package ships ~28 modules spanning orchestration, memory, learning, security, reliability, observability and deployment.
+
+```text
+hive/
+├── stack.py            # HiveStack — the orchestrator facade (route/compress/remember/step)
+├── async_stack.py      # AsyncHiveStack — async API for FastAPI / high-throughput
+├── config.py           # HiveConfig — enterprise configuration
+│
+│   memory
+├── rust_brain/         # RustBrain causal graph: HybridLogicalClock, EdgeKind, MemoryNode,
+│                       #   TTL/eviction, tenant isolation, Hermes backend
+├── semantic_search.py  # SemanticIndex — optional vector search over the brain
+│
+│   compression
+├── rule_fast/          # RuleFastHoneyComb — in-repo rule-based compressor (no honey-comb dep)
+│                       #   Label: CORE / DISTILL / COMPACT / DROP / STALE / ESCALATE
+│
+│   routing & learning
+├── feedback.py         # FeedbackBuffer, OutcomeType, RoutingOutcome
+├── policy_updater.py   # PolicyUpdater — retrain busyBee from collected feedback
+├── ab_test.py          # ABTestHarness — guarded A/B of policy updates
+├── llm.py              # unified LLM client (OpenAI-compatible + echo backend, endpoint discovery)
+│
+│   security
+├── auth.py             # JWTValidator + role-based access control
+├── encryption.py       # Encryptor — encryption at rest
+├── model_registry.py   # signed .joblib registry — blocks pickle-RCE from untrusted models
+├── audit_export.py     # SIEM-compatible audit-log export
+├── schemas.py          # Pydantic validation for the public API
+│
+│   reliability
+├── circuitbreaker.py   # CircuitBreaker for LLM / external calls
+├── ratelimit.py        # TokenBucket / RateLimiter (per-tenant)
+├── health.py           # Kubernetes-style health & readiness probes
+│
+│   distributed
+├── gossip.py           # GossipProtocol — cross-node memory replication
+├── deployment.py       # DeploymentMarker — blue-green / canary rollout markers
+│
+│   observability
+├── telemetry.py        # Telemetry collector (routing/compression/memory events)
+├── tracing.py          # W3C traceparent distributed tracing (TraceContext, Span)
+├── hardware.py         # NVML power/util sampling (PowerSampler)
+│
+│   extensibility
+├── plugins.py          # register custom compressors / routers / memory backends
+└── streaming.py        # WebSocket / SSE streaming (StreamRouter, StreamCompressor, SSETransport)
 ```
 
-## ROI: The $117K Problem
+External siblings (developed in their own repos, all optional):
 
-At $10/1M input tokens (GPT-4 pricing), 10k sessions/month:
+- **busyBee-cpu** — the trained CPU action policy — <https://github.com/DJLougen/busyBee-cpu>
+- **honey-comb** — the full context compressor (`rule_fast` is the in-repo fallback) — <https://github.com/DJLougen/honey-comb>
+- **hive-cpp** — optional native Rust backend (see [below](#native-rust-backend-hive-cpp))
 
-| Cost Component | Before Hive | After Hive | Savings |
-|---|---|---|---|
-| **Mechanical decisions** | $12,000/mo | $0 (CPU routing) | **$12,000/mo** |
-| **Context bloat** | $14,945/mo | $5,405/mo (64% compression) | **$9,540/mo** |
-| **Stale memory** | $2,250/mo | $375/mo (causal tracking) | **$1,875/mo** |
-| **Crash retries** | $2,100/mo | $630/mo (compression) | **$1,470/mo** |
-| **Total** | **$31,295/mo** | **$6,410/mo** | **$24,885/mo** |
+`HiveStack` lazy-imports the siblings, so `pip install hive-agent-memory` runs on the in-repo `rule_fast` + `rust_brain` alone; the others light up automatically when present.
 
-**Annual savings: $298,620**
-
-### How it breaks down
-
-**Mechanical decisions** ($12,000/mo saved):
-- 35% of LLM calls are "read this file", "run tests" - no reasoning needed
-- Hive routes these to busybee-cpu (2.06M routes/sec on RTX 3090)
-- Cost: $0 instead of $0.03/call × 140k calls/mo
-
-**Context compression** ($9,540/mo saved):
-- Agents send 2-3x more tokens than needed (full files, old logs)
-- honey-comb 5-label classification: CRITICAL, DEBUG, TOOL_OUTPUT, ERROR, INFO
-- 5000-line test log → 30 tokens (803x compression)
-- Result: 64% fewer tokens to LLM
-
-**Causal memory** ($1,875/mo saved):
-- rust-brain remembers "fixed X, which caused Y"
-- Prevents repeated mistakes, forgotten context
-- 315K writes/sec on DGX Spark
-
-**Crash prevention** ($1,470/mo saved):
-- Compression prevents 128K context limit crashes
-- 6% of sessions crashed → 1.8% crash rate
+---
 
 ## Installation
 
@@ -134,509 +145,298 @@ At $10/1M input tokens (GPT-4 pricing), 10k sessions/month:
 pip install hive-agent-memory
 ```
 
-For development:
-```bash
-pip install -e ".[dev]"
-```
-
-## Quick Start
-
-📖 **Full usage guide**: [docs/USAGE.md](docs/USAGE.md) — covers enterprise features, security, deployment, and observability.
-
-```python
-from hive import HiveStack
-
-# Initialize (lazy imports components)
-stack = HiveStack()
-
-# Process a conversation turn
-state = {"goal": "Fix auth bug", "step": 1}
-transcript = [
-    ("user", "The login is failing"),
-    ("assistant", "Let me check the logs..."),
-    ("user", "Here: " + "5000 lines of test output...")
-]
-
-# One call does routing, compression, and memory
-result = stack.step(state, transcript)
-
-print(result["decision"])      # {"tool": "read_file", "action": "read_file", ...}
-print(result["compressed"])    # CompressedTurn with 30 tokens instead of 24000
-print(result["memories"])      # List[MemoryNode] from causal memory
-print(result["metadata"])      # {"memory_latency_ms": 0.035, ...}
-```
-
-### Manual control
-
-```python
-# Route a decision
-decision = stack.route(state)
-print(decision.action)         # "read_file"
-print(decision.source)         # "busybee_cpu" (or "llm_fallback")
-
-# Compress a message
-compressed = stack.compress("user", "Long test output...", content_type="TOOL_OUTPUT")
-print(compressed.label)        # "DEBUG"
-print(compressed.ratio)        # 803.0 (compression ratio)
-
-# Remember something important
-stack.remember("auth_bug_2024", {"cause": "expired token", "fix": "refresh"})
-memories = stack.recall("auth")  # List[MemoryNode]
-```
-
-## Core API
-
-### HiveStack
-
-Main orchestrator. Lazy-imports components on demand.
-
-```python
-stack = HiveStack(
-    busybee_policy=None,      # CpuActionPolicy (optional)
-    honey_comb=None,          # HoneyComb (optional, uses rule_fast)
-    rust_brain=None,          # RustBrain (optional)
-)
-```
-
-#### `step(state, transcript) -> dict`
-
-Process one conversation turn. Returns:
-- `decision`: RouteDecision (action + tool + source)
-- `compressed`: CompressedTurn (last message compressed)
-- `memories`: List[MemoryNode] (relevant causal memories)
-- `metadata`: dict (latency, compression ratios)
-
-#### `route(state) -> RouteDecision`
-
-Route a state to CPU policy or LLM fallback.
-
-```python
-@dataclass
-class RouteDecision:
-    action: str      # "read_file", "run_tests", etc.
-    tool: str | None # Tool to use (None = escalate)
-    confidence: float
-    source: str      # "busybee_cpu" or "llm_fallback"
-    latency_ms: float
-```
-
-#### `compress(role, content, content_type=None) -> CompressedTurn`
-
-Compress context with 5-label classification.
-
-```python
-@dataclass
-class CompressedTurn:
-    role: str                # "user", "assistant", "system"
-    content: str             # Compressed message
-    label: str               # "CRITICAL", "DEBUG", "TOOL_OUTPUT", "ERROR", "INFO"
-    original_tokens: int
-    compressed_tokens: int
-    
-    @property
-    def ratio(self) -> float # Compression ratio (803.0 = 803x)
-```
-
-**Compression examples:**
-- 5000-line test log → 30 tokens (803x, label="DEBUG")
-- 50KB source file → 19 tokens (658x, label="TOOL_OUTPUT")
-- Long reasoning → 135 tokens (10x, label="INFO")
-- Search results → 59 tokens (5x, label="INFO")
-
-#### `remember(key, value, edges=None)`
-
-Store in causal memory.
-
-```python
-stack.remember(
-    "auth_bug_2024",
-    {"cause": "expired token", "fix": "refresh logic"},
-    caused_by=["login_failure_2024"]  # Optional causal links
-)
-```
-
-#### `recall(key) -> List[MemoryNode]`
-
-Retrieve from causal memory.
-
-```python
-@dataclass
-class MemoryNode:
-    key: str
-    content: Any
-    timestamp: int
-    caused_by: List[str]
-```
-
-#### `record_outcome(decision, actual_action, outcome_type)`
-
-Record feedback for online learning.
-
-```python
-from hive import OutcomeType
-
-stack.record_outcome(
-    decision=decision,
-    actual_action="read_file",
-    outcome_type=OutcomeType.CORRECT  # or INCORRECT, UNCERTAIN
-)
-```
-
-#### `should_update_policy() -> bool`
-
-Check if busybee policy needs retraining (threshold: 1000 feedback samples with 60%+ accuracy).
-
-#### `update_policy() -> str`
-
-Retrain policy from feedback. Returns policy path.
-
-### Components
-
-**busybee-cpu**: CPU-side decision routing
-- 98.2% accuracy on training distribution (SWE-bench trajectories)
-- OOD performance unknown; out-of-distribution actions escalate to LLM
-- 2.06M routes/sec (RTX 3090), 1.73M routes/sec (DGX Spark)
-- Sanity check: 100/100 on held-out training set (reproducibility baseline)
-
-**honey-comb**: Context compression
-- 5 labels: CRITICAL, DEBUG, TOOL_OUTPUT, ERROR, INFO
-- 29K messages/sec (macro), 200K messages/sec (micro, rule_fast)
-
-**rust-brain**: Causal memory
-- 315K writes/sec (DGX Spark)
-- Causal chains: caused_by, supersedes
-- 128K context window
-
-## Use Cases
-
-### Software Engineering Agent
-
-```python
-stack = HiveStack()
-
-# 100 agent steps
-for step in range(100):
-    state = {"goal": "Fix bug", "step": step}
-    transcript = get_conversation()
-    
-    result = stack.step(state, transcript)
-    
-    if result["decision"].action == "read_file":
-        # Mechanical decision - CPU handled it
-        file_content = read_file(result["decision"].tool)
-        transcript.append(("assistant", f"Reading {result['decision'].tool}"))
-    else:
-        # Complex decision - send to LLM
-        compressed_context = result["compressed"].content
-        response = call_llm(compressed_context)
-        transcript.append(("assistant", response))
-```
-
-**Result**: 35% fewer LLM calls, 64% fewer tokens per call.
-
-### DevOps Agent
-
-```python
-# Remember incident resolution
-stack.remember(
-    "db_crash_2024_01",
-    {"symptom": "connection pool exhausted", "fix": "increase max_connections"},
-    caused_by=["traffic_spike_2024_01"]
-)
-
-# Next similar incident
-memories = stack.recall("db_crash")
-# Returns: [MemoryNode("db_crash_2024_01", ...)]
-# Agent remembers the fix without re-investigating
-```
-
-**Result**: 83% fewer repeated mistakes.
-
-### Code Review Bot
-
-```python
-# Compress 5000-line test output
-compressed = stack.compress(
-    "user",
-    "Test run output:\n" + "5000 lines of logs...",
-    content_type="TOOL_OUTPUT"
-)
-
-print(compressed.label)          # "DEBUG"
-print(compressed.content)        # "707 tests failed: test_auth, test_api..."
-print(f"{compressed.ratio}x")    # 803x compression
-```
-
-
-**Result**: LLM sees 30 tokens instead of 24,000. Saves $0.24 per review.
-
-## Performance
-
-### Benchmarks
-
-| Component | Metric | RTX 3090 | DGX Spark |
-|---|---|---|---|
-| **busybee-cpu** | Routes/sec | 2.06M | 1.73M |
-| **honey-comb** | Messages/sec (macro) | 29K | 29K |
-| **honey-comb** | Messages/sec (micro, rule_fast) | 200K | 200K |
-| **rust-brain** | Writes/sec | 270K | 315K |
-| **rust-brain** | Reads/sec | 315K | 315K |
-
-### Compression ratios (honey-comb)
-
-| Input | Original | Compressed | Ratio | Label |
-|---|---|---|---|---|
-| 5000-line test log | 24,000 tokens | 30 tokens | **803x** | DEBUG |
-| 50KB source file | 12,511 tokens | 19 tokens | **658x** | TOOL_OUTPUT |
-| Long reasoning | 1,350 tokens | 135 tokens | **10x** | INFO |
-| Search results | 322 tokens | 59 tokens | **5x** | INFO |
-
-### Reproduce benchmarks
+Optional extras:
 
 ```bash
-# Macro benchmark (full stack)
-python hive/scripts/hive_benchmark.py
-
-# Micro benchmark (component-level)
-python hive/scripts/hive_benchmark_micro.py
+pip install "hive-agent-memory[observability]"   # Prometheus + OpenTelemetry
+pip install "hive-agent-memory[monitor]"         # NVML hardware monitoring
+pip install "hive-agent-memory[performance]"     # native Rust backend (hive-cpp)
+pip install "hive-agent-memory[gpu]"             # torch + transformers (examples / integration)
 ```
 
-
-**Energy methodology**: Hive measured 11.2% lower joules/token on RTX 3090 (GPT-2, 117M params) by reducing unnecessary inference work. This is a system-level energy reduction, not a model-level efficiency claim. Power sampling via NVML at 10ms intervals, trapezoidal integration. See [docs/energy.md](docs/energy.md) for full methodology and raw data.
-## Features
-
-### Online Learning
-
-Record outcomes to improve routing policy.
-
-```python
-# Record feedback
-stack.record_outcome(decision, "read_file", OutcomeType.CORRECT)
-
-# Check if policy needs update
-if stack.should_update_policy():
-    new_policy_path = stack.update_policy()
-    print(f"Policy updated: {new_policy_path}")
-
-### Causal Memory (rust-brain)
-
-Unlike vector stores, rust-brain tracks **cause-and-effect provenance chains** — the kind of structured memory that lets an agent answer "why did this happen?" weeks after the fact.
-
-```python
-stack.remember("bug_A", {"type": "race condition"})
-stack.remember("fix_B", {"type": "mutex"}, caused_by=["bug_A"])
-stack.remember("test_C", {"type": "concurrency test"}, caused_by=["fix_B"])
-
-# Query causal chain via graph edges on the brain store
-stack.brain.neighbours("bug_A", "caused_by")
-```
-
-#### Worked example: tool result → superseding write → chain walk
-
-```python
-# Day 1: Agent discovers a failing endpoint
-stack.remember(
-    "endpoint_health",
-    {"url": "/api/v2/users", "status": 500, "root_cause": "db connection pool exhausted"},
-    tags=("incident", "production"),
-)
-
-# Day 1: Agent applies a fix (supersedes the old observation)
-stack.brain.supersede(
-    "endpoint_health",
-    {"url": "/api/v2/users", "status": 200, "fix": "increased max_connections to 200"},
-    tags=("incident", "production", "resolved"),
-)
-
-# Day 14: A new incident hits the same endpoint. Walk the causal chain:
-memories = stack.brain.neighbours("endpoint_health", "supersedes")
-# → ["endpoint_health"] (the original failing observation)
-#
-# The agent sees the full provenance:
-#   original failure (500, pool exhausted)
-#     → superseded by fix (200, increased pool)
-#
-# This is the differentiated feature: vector stores cannot reconstruct
-# "this was fixed two weeks ago by doing X" from embeddings alone.
-```
-
-Edge kinds: `related_to`, `caused_by`, `supersedes`, `attached_to`. The store enforces monotonic timestamps — stale writes raise `TimestampRegression` rather than silently overwriting fresh data.
-
-### Compression Labels
-
-5-label classification for intelligent context management:
-
-- **CRITICAL**: Security issues, exceptions (never compress)
-- **DEBUG**: Test output, logs (compress to summary)
-- **TOOL_OUTPUT**: File contents, API responses (compress to signatures)
-- **ERROR**: Stack traces, error messages (compress to key info)
-- **INFO**: Reasoning, search results (light compression)
-
-## Architecture
-
-```
-hive/
-├── stack.py              # HiveStack orchestrator
-├── rust_brain.py         # Causal memory (RustBrain class)
-├── rule_fast.py          # Rule-based compression (rule_fast)
-├── telemetry.py          # Performance monitoring
-├── feedback.py           # Online learning feedback
-└── policy_updater.py     # busybee policy retraining
-```
-
-### Lazy imports
-
-HiveStack lazy-imports components to avoid hard dependencies:
-
-```python
-# stack.py imports on-demand
-if self.busybee_policy is None:
-    from busybee_cpu import CpuActionPolicy  # Only if needed
-    self.busybee_policy = CpuActionPolicy()
-```
-
-This means you can install `hive-agent-memory` without the other packages.
-
-## Native Rust Backend (hive-cpp)
-
-**hive-cpp** is the optional Rust implementation for 5-10× performance.
-
-### Installation
-
-```bash
-# Install Rust backend wheel
-pip install hive-cpp-0.1.0-cp312-cp312-win_amd64.whl
-
-# Enable via environment variable
-export HIVE_NATIVE_BACKEND=1
-```
-
-### Performance: Python vs Rust
-
-| Component | Python | Rust | Speedup |
-|---|---|---|---|
-| Router | ~100ms | 0.001ms | **100×** |
-| Memory store | ~0.01ms | 0.002ms | **5×** |
-| Memory retrieve | ~0.01ms | 0.012ms | Comparable |
-
-See [hive-cpp/README.md](hive-cpp/README.md) for details.
-
-## Real-World Case Studies
-
-### Case 1: AI Code Review Bot (50k reviews/month)
-
-**Before**: $47,000/mo (LLM costs), 8% context overflow crashes
-
-**After**: $16,480/mo (LLM costs), 0.5% crash rate
-
-**Savings**: **$30,520/mo = $366,240/year**
-
-How:
-- 803x compression on test logs (24k → 30 tokens)
-- CPU routing of mechanical decisions (read_file, run_tests)
-- Causal memory prevents repeated fixes
-
-### Case 2: Automated Testing Agent (200k test sessions/month)
-
-**Before**: $180,000/mo, 12% session crashes from context limits
-
-**After**: $63,000/mo, 1.2% crashes
-
-**Savings**: **$117,000/mo = $1.4M/year**
-
-How:
-- Compression prevents 128K context limit crashes
-- rust-brain remembers test failures and fixes
-- 2.06M routes/sec CPU routing
-
-### Case 3: Documentation Assistant (25k queries/month)
-
-**Before**: $18,750/mo, frequent "I don't have context" responses
-
-**After**: $8,438/mo, persistent cross-query memory
-
-**Savings**: **$10,312/mo = $123,744/year**
-
-How:
-- Causal memory links related documentation
-- Compression reduces redundant context
-- rust-brain tracks document relationships
-
-## Development
-
-### Running tests
-
-```bash
-# All 190 tests (should all pass)
-pytest tests/
-
-# Component tests
-pytest tests/test_stack.py -v
-pytest tests/test_rust_brain.py -v
-pytest tests/test_rust_brain_concurrency.py -v  # 9 concurrency tests
-pytest tests/test_online_learning.py -v
-```
-
-# Code quality
-black hive/ tests/
-isort hive/ tests/
-mypy hive/
-```
-
-### Building from source
+From source:
 
 ```bash
 git clone https://github.com/DJLougen/hive.git
 cd hive
 pip install -e ".[dev]"
-pytest tests/
+pytest
 ```
 
-### Contributing
+---
 
-We welcome contributions! Key areas:
-- Additional compression labels
-- More routing policies
-- Memory graph optimizations
-- Test coverage improvements
+## Quick start
 
-Please run tests and formatters before PR.
+```python
+from hive import HiveStack
+
+stack = HiveStack()                       # rule_fast + rust_brain; siblings auto-detected
+
+state = {"goal": "Fix auth bug", "step": 1}
+transcript = [
+    ("user", "The login is failing"),
+    ("assistant", "Let me check the logs..."),
+    ("user", "Here: " + "...5000 lines of test output..."),
+]
+
+result = stack.step(state, transcript)
+print(result["decision"])    # RouteDecision(tool=..., args=..., escalated=..., source=...)
+print(result["compressed"])  # CompressedTurn(label=..., original_tokens=..., compressed_tokens=...)
+print(result["stats"])       # {"brain": {...}, "comb": {...}}
+```
+
+`step()` returns a dict with exactly three keys: `decision`, `compressed`, `stats`.
+
+### Manual control
+
+```python
+# Route a decision (CPU-only). With no busyBee policy loaded, every call escalates.
+decision = stack.route(state)
+print(decision.tool, decision.source, decision.escalated)   # e.g. "read_file" "busybee" False
+
+# Compress a message (content_type is optional — inferred if omitted)
+turn = stack.compress("user", "...long test output...", content_type="TOOL_RESULT_TEST")
+print(turn.label, turn.ratio)   # e.g. "DROP" 12.4
+
+# Remember something, optionally causal-linked
+stack.remember("auth_bug", {"cause": "expired token", "fix": "refresh"}, tags=("incident",))
+value = stack.recall("auth_bug")        # exact-key lookup → the stored value (or None)
+```
+
+---
+
+## Core API
+
+### `HiveStack`
+
+The orchestrator. All constructor arguments are keyword-only and optional:
+
+```python
+stack = HiveStack(
+    busybee_policy=None,      # trained CpuActionPolicy; None → every route() escalates
+    honey_comb=None,          # HoneyComb instance; None → in-repo RuleFastHoneyComb
+    rust_brain=None,          # RustBrain instance; None → in-memory store
+    telemetry=None,           # Telemetry collector
+    feedback_buffer=None,     # FeedbackBuffer for online learning
+    tenant_id="default",      # multi-tenant memory isolation
+    validate=False,           # Pydantic validation of inputs
+    config=None,              # HiveConfig
+    rate_limiter=None,        # RateLimiter (per-tenant)
+    circuit_breaker=None,     # CircuitBreaker for the LLM path
+    max_content_bytes=1_048_576,
+)
+```
+
+Methods: `route`, `compress`, `compress_many`, `remember`, `recall`, `record_outcome`, `should_update_policy`, `update_policy`, `step`, `stats`. The causal store is exposed directly as `stack.brain`.
+
+#### `route(state) -> RouteDecision`
+
+```python
+@dataclass(slots=True)
+class RouteDecision:
+    tool: str            # "read_file", "run_tests", "escalate", ...
+    args: dict
+    confidence: float
+    escalated: bool      # True when the decision was sent to the LLM
+    source: str          # "busybee" | "fallback" | "ratelimit"
+```
+
+#### `compress(role, content, *, content_type=None) -> CompressedTurn`
+
+```python
+@dataclass(slots=True)
+class CompressedTurn:
+    role: str
+    content: str
+    label: str           # CORE | DISTILL | COMPACT | DROP | STALE | ESCALATE
+    original_tokens: int
+    compressed_tokens: int
+    # .ratio -> original_tokens / compressed_tokens
+```
+
+#### `remember(key, value, *, trust=1.0, tags=None, caused_by=None) -> MemoryNode`
+
+Write a node, optionally causal-linked to earlier keys via `caused_by`.
+
+#### `recall(key, default=None) -> Any`
+
+Exact-key lookup returning the stored value. For tag / trust queries use `stack.brain.search(tag=..., min_trust=...)`; for graph walks use `stack.brain.neighbours(key, kind)`.
+
+#### Online learning
+
+```python
+from hive.feedback import OutcomeType
+
+decision = stack.route(state)
+stack.record_outcome(decision, actual_action="read_file", outcome_type=OutcomeType.CORRECT)
+
+if stack.should_update_policy():     # True once the feedback buffer is full
+    stack.update_policy()            # retrains busyBee in place; returns bool
+```
+
+`record_outcome` rejects feedback that does not match the most recent `route()` call — an anti-policy-poisoning guard.
+
+---
+
+## Components
+
+**busyBee-cpu** — CPU action routing
+- 98.2% accuracy on the training distribution (SWE-bench trajectories).
+- **OOD performance is unproven**; out-of-distribution states escalate to the LLM rather than guess.
+- ~2.06M routes/s (RTX 3090), ~1.73M routes/s (DGX Spark).
+
+**honey-comb / rule_fast** — context compression
+- 6-label scheme — `CORE, DISTILL, COMPACT, DROP, STALE, ESCALATE` — driven by an 11-value `ContentType` taxonomy (`TOOL_RESULT_TEST`, `AGENT_PATCH`, `TOOL_RESULT_FILE`, …).
+- `rule_fast` is the dependency-free in-repo fast path; `honey-comb` is the full compressor.
+- Compression ratio scales with input length: ~1.0× on short agent turns, high ratios on long tool output / logs.
+
+**rust-brain** — causal memory
+- Timestamped graph with a Hybrid Logical Clock; monotonic timestamps (`TimestampRegression` on stale writes).
+- Edge kinds: `related_to`, `caused_by`, `supersedes`, `attached_to`.
+- Per-tenant isolation, TTL + LRU eviction, snapshot / restore, optional vector search (`semantic_search.SemanticIndex`).
+- ~270K writes/s, ~315K reads/s (DGX Spark).
+
+### Causal memory: worked example
+
+```python
+# Day 1 — agent records a failing endpoint
+stack.remember(
+    "endpoint_health",
+    {"url": "/api/v2/users", "status": 500, "root_cause": "db pool exhausted"},
+    tags=("incident", "production"),
+)
+
+# Day 1 — agent applies a fix; supersede the old observation
+stack.brain.supersede(
+    "endpoint_health",
+    {"url": "/api/v2/users", "status": 200, "fix": "max_connections=200"},
+    tags=("incident", "production", "resolved"),
+)
+
+# Day 14 — same endpoint breaks again; walk the chain for provenance
+prior = stack.brain.neighbours("endpoint_health", "supersedes")
+# → ["endpoint_health"]: the original 500 / pool-exhausted observation.
+#   The agent reconstructs "this was fixed two weeks ago by raising the pool" —
+#   something a pure vector store cannot recover from embeddings alone.
+```
+
+---
+
+## Performance
+
+Component micro-benchmarks (synthetic load; raw data in [`docs/benchmarks/`](docs/benchmarks/)):
+
+| Component | Metric | RTX 3090 | DGX Spark |
+|---|---|---|---|
+| busyBee-cpu | routes/s | 2.06M | 1.73M |
+| rule_fast | messages/s | 200K | 200K |
+| honey-comb | messages/s | 29K | 29K |
+| rust-brain | writes/s | 270K | 315K |
+| rust-brain | reads/s | 315K | 315K |
+
+Reproduce:
+
+```bash
+python scripts/hive_benchmark.py          # macro (full stack)
+python scripts/hive_benchmark_micro.py    # micro (per component)
+```
+
+Energy methodology and raw NVML samples live in [`docs/energy.md`](docs/energy.md).
+
+---
+
+## Native Rust backend (hive-cpp)
+
+`hive-cpp` is an optional Rust implementation of the hot paths (router, compressor, memory store). When the `hive_cpp` module is importable, `HiveStack` auto-detects and uses it — there is no flag to set:
+
+```bash
+pip install "hive-agent-memory[performance]"   # or: pip install hive-cpp
+```
+
+Wheels for Linux / macOS / Windows (x86_64 + aarch64) are built by the `rust-wheels` CI job on tagged releases. See [`hive-cpp/README.md`](hive-cpp/README.md) for component benchmarks and build-from-source (maturin).
+
+---
+
+## Deployment
+
+Hive ships container and orchestration assets:
+
+- **HTTP server** — [`scripts/hive_api_server.py`](scripts/hive_api_server.py) (FastAPI). Endpoints: `POST /route`, `POST /compress`, `POST /remember`, `GET /recall`, plus `GET /health` and `GET /ready` probes. `AsyncHiveStack` backs high-throughput deployments.
+- **Helm chart** — [`deploy/helm/`](deploy/helm/) (chart `0.6.0`).
+- **Raw K8s manifests** — [`deploy/k8s/`](deploy/k8s/) (Deployment, Service, ConfigMap).
+- **ARM64 image** — [`docker/Dockerfile.aarch64`](docker/Dockerfile.aarch64) for Jetson / Grace.
+
+Enterprise concerns are first-class modules, documented in [docs/USAGE.md](docs/USAGE.md):
+
+| Concern | Module |
+|---|---|
+| AuthN / AuthZ | `hive.auth` — JWT + RBAC |
+| Encryption at rest | `hive.encryption` |
+| Untrusted-model safety | `hive.model_registry` — signed `.joblib`, blocks pickle RCE |
+| Audit / SIEM | `hive.audit_export` |
+| Rate limiting | `hive.ratelimit` — per-tenant token bucket |
+| Circuit breaking | `hive.circuitbreaker` |
+| Multi-tenancy | `RustBrain(tenant_id=…, tenant_isolation=True)` |
+| Observability | `hive.telemetry`, `hive.tracing` (W3C traceparent), Prometheus / OTel |
+| Health probes | `hive.health` |
+
+---
+
+## Development
+
+```bash
+pip install -e ".[dev]"
+
+# Run the suite (34 test files)
+pytest
+
+# Focused runs
+pytest tests/test_stack.py -v
+pytest tests/test_rust_brain.py tests/test_rust_brain_concurrency.py -v
+pytest tests/test_online_learning.py -v
+pytest tests/test_enterprise_auth.py tests/test_security_fixes.py -v
+
+# Lint & types (matches CI)
+ruff check hive/ tests/
+mypy hive/ --ignore-missing-imports
+```
+
+CI (`.github/workflows/ci.yml`) runs the suite on Python 3.10–3.12, a benchmark smoke test, ruff, mypy, bandit, the modular pentest, and CITATION.cff validation.
+
+---
+
+## Roadmap
+
+- [x] Core orchestration (routing, compression, causal memory)
+- [x] Enterprise modules (auth, encryption, audit, rate limiting, multi-tenancy)
+- [x] Observability (telemetry, W3C tracing, Prometheus / OpenTelemetry)
+- [x] Online learning + guarded policy A/B
+- [x] Native Rust backend (hive-cpp) with multi-platform wheels
+- [x] Real-workload SWE-bench-lite A/B evaluation
+- [ ] Durable distributed memory backend (gossip replication is in place; durability pending)
+- [ ] Kubernetes operator for autoscaling
+- [ ] Broader out-of-distribution routing coverage
+
+---
 
 ## License
 
-MIT License. See [LICENSE](LICENSE).
+MIT — see [LICENSE](LICENSE).
 
 ## Citation
 
+If you use Hive in research, cite it via the repository's [`CITATION.cff`](.github/citation.cff), or:
+
 ```bibtex
 @software{hive2026,
-  title={Hive: Orchestration layer for AI agents},
-  author={DJLougen and Contributors},
-  year={2026},
-  url={https://github.com/DJLougen/hive}
+  title  = {Hive: orchestration layer for AI agents},
+  author = {Lougen, Daniel J.},
+  year   = {2026},
+  url    = {https://github.com/DJLougen/hive}
 }
 ```
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/DJLougen/hive/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/DJLougen/hive/discussions)
-- **Email**: lougen.mindweaver@pm.me
-
-## Roadmap
-
-- [x] Core orchestration (routing, compression, memory)
-- [x] Python backend implementation
-- [x] Native Rust backend (hive-cpp)
-- [x] Online learning for routing policies
-- [x] Comprehensive test suite (15 tests, all passing)
-- [ ] Production deployment guides
-- [ ] Additional compression strategies
-- [ ] Distributed memory backend
-- [ ] Kubernetes operator for auto-scaling
-
----
-
-**Hive** - Orchestration layer for AI agents. CPU-side routing, context compression, and causal memory.
-
-Save 64% on tokens. $15,000/mo → $5,250/mo. **$117K/year saved.**
+- Issues — <https://github.com/DJLougen/hive/issues>
+- Discussions — <https://github.com/DJLougen/hive/discussions>
