@@ -22,7 +22,7 @@ body:
     attributes:
       label: Hive Version
       description: Which version of Hive did you use?
-      placeholder: "e.g., v0.5.0 or commit hash"
+      placeholder: "e.g., v0.6.0 or commit hash"
     validations:
       required: true
       

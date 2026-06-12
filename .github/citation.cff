@@ -1,26 +1,28 @@
-{
-  "$schema": "https://json.schemastore.org/citation-files.json",
-  "citationFormat": "apa",
-  "authors": [
-    {
-      "name": "Lougen, Daniel J.",
-      "url": "https://github.com/DJLougen"
-    }
-  ],
-  "contributors": [],
-  "keywords": [
-    "agent",
-    "memory",
-    "context-compression",
-    "honeycomb",
-    "busybee",
-    "rust-brain",
-    "hive",
-    "llm",
-    "jetson",
-    "grace",
-    "nvidia",
-    "edge-ai",
-    "cpu-offload"
-  ]
-}
+cff-version: 1.2.0
+message: "If you use Hive, please cite it as below."
+title: "Hive: orchestration layer for AI agents"
+abstract: "CPU-side action routing, context compression, and causal graph memory that keep mechanical work and context bloat off the LLM."
+type: software
+authors:
+  - family-names: Lougen
+    given-names: "Daniel J."
+    website: "https://github.com/DJLougen"
+repository-code: "https://github.com/DJLougen/hive"
+url: "https://github.com/DJLougen/hive"
+license: MIT
+version: "0.6.0"
+date-released: "2026-06-11"
+keywords:
+  - agent
+  - memory
+  - context-compression
+  - honeycomb
+  - busybee
+  - rust-brain
+  - hive
+  - llm
+  - jetson
+  - grace
+  - nvidia
+  - edge-ai
+  - cpu-offload

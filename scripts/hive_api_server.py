@@ -38,7 +38,7 @@ except Exception:  # pragma: no cover
 
 
 if _HAS_FASTAPI:
-    app = FastAPI(title="Hive Agent Memory", version="0.5.0")
+    app = FastAPI(title="Hive Agent Memory", version="0.6.0")
     stack = HiveStack(honey_comb=RuleFastHoneyComb())
 
     class RouteRequest(BaseModel):
