@@ -293,7 +293,7 @@ if stack.should_update_policy():     # True once the feedback buffer is full
 **rust-brain** — causal memory
 - Timestamped graph with a Hybrid Logical Clock; monotonic timestamps (`TimestampRegression` on stale writes).
 - Edge kinds: `related_to`, `caused_by`, `supersedes`, `attached_to`.
-- Per-tenant isolation, TTL + LRU eviction, snapshot / restore, optional vector search (`semantic_search.SemanticIndex`).
+- Per-tenant isolation, TTL + LRU eviction, optional vector search (`semantic_search.SemanticIndex`). Data is durable: `snapshot_to_file()` (gzip+SHA256) and `restore_from_file()` persist memory across restarts.
 - ~270K writes/s, ~315K reads/s (DGX Spark).
 
 ### Causal memory: worked example
@@ -355,6 +355,8 @@ pip install "hive-agent-memory[performance]"   # or: pip install hive-cpp
 
 Wheels for Linux / macOS / Windows (x86_64 + aarch64) are built by the `rust-wheels` CI job on tagged releases. See [`hive-cpp/README.md`](hive-cpp/README.md) for component benchmarks and build-from-source (maturin).
 
+*Note: The current `hive-cpp` memory backend uses a `HashMap` in `OnceLock` for stable, high-performance in-memory state. SIMD-accelerated roaring-bitmap indexing is on the roadmap.*
+
 ---
 
 ## Deployment
@@ -376,9 +378,10 @@ Enterprise concerns are first-class modules, documented in [docs/USAGE.md](docs/
 | Audit / SIEM | `hive.audit_export` |
 | Rate limiting | `hive.ratelimit` — per-tenant token bucket |
 | Circuit breaking | `hive.circuitbreaker` |
-| Multi-tenancy | `RustBrain(tenant_id=…, tenant_isolation=True)` |
+| Multi-tenancy | `RustBrain(tenant_id=…, tenant_isolation=True)` — supports `revoke_tenant()` for GDPR Article 17 mass-erase |
 | Observability | `hive.telemetry`, `hive.tracing` (W3C traceparent), Prometheus / OTel |
 | Health probes | `hive.health` |
+| Audit | `hive.audit_export` (SIEM-compatible) |
 
 ---
 
