@@ -389,6 +389,7 @@ class RustBrain:
                 tags=row.get("tags", ()),
                 edges=row.get("edges"),
                 ts_ns=row.get("ts_ns"),
+                hlc=tuple(row["hlc"]) if row.get("hlc") is not None else None,
             )
             n += 1
         return n
@@ -493,10 +494,13 @@ class RustBrain:
         self._order.clear()
         self._order_index.clear()
         for node_dict in nodes:
+            hlc_raw = node_dict.get("hlc")
+            hlc = tuple(hlc_raw) if hlc_raw is not None else _hlc.now()
             node = MemoryNode(
                 key=node_dict["key"],
                 value=node_dict["value"],
                 ts_ns=node_dict["ts_ns"],
+                hlc=hlc,
                 trust=node_dict.get("trust", 1.0),
                 tags=set(node_dict.get("tags", [])),
                 node_id=node_dict.get("id", uuid.uuid4().hex[:12]),
@@ -508,6 +512,7 @@ class RustBrain:
             self._nodes[storage_key] = node
             self._order_index[storage_key] = len(self._order)
             self._order.append(storage_key)
+            _hlc.update(hlc)
         return len(nodes)
 
     def __repr__(self) -> str:
