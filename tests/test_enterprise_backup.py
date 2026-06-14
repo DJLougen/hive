@@ -62,6 +62,7 @@ def test_restore_clears_existing_data():
 
 
 def test_corruption_detection():
+    """Tampering with snapshot content is caught by the embedded SHA-256."""
     brain = RustBrain()
     brain.remember("k", "v")
 
@@ -70,15 +71,64 @@ def test_corruption_detection():
 
     try:
         brain.snapshot_to_file(path)
-        # Corrupt the file
+        # Tamper with a node value while keeping the gzip+JSON framing intact,
+        # so only the checksum can catch it.
+        with open(path, "rb") as fh:
+            data = json.loads(gzip.decompress(fh.read()).decode("utf-8"))
+        data["nodes"][0]["value"] = "tampered"
+        with open(path, "wb") as fh:
+            fh.write(gzip.compress(json.dumps(data).encode("utf-8")))
+
+        brain2 = RustBrain()
+        with pytest.raises(ValueError, match="checksum mismatch"):
+            brain2.restore_from_file(path)
+    finally:
+        if os.path.exists(path):
+            os.unlink(path)
+
+
+def test_corruption_detection_leaves_existing_data_intact():
+    """A failed restore must not wipe the destination store."""
+    brain = RustBrain()
+    brain.remember("k", "v")
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".gz") as f:
+        path = f.name
+
+    try:
+        brain.snapshot_to_file(path)
+        with open(path, "rb") as fh:
+            data = json.loads(gzip.decompress(fh.read()).decode("utf-8"))
+        data["nodes"][0]["value"] = "tampered"
+        with open(path, "wb") as fh:
+            fh.write(gzip.compress(json.dumps(data).encode("utf-8")))
+
+        target = RustBrain()
+        target.remember("keep", "safe")
+        with pytest.raises(ValueError, match="checksum mismatch"):
+            target.restore_from_file(path)
+        # Pre-existing data survives the aborted restore.
+        assert target.recall("keep") == "safe"
+    finally:
+        if os.path.exists(path):
+            os.unlink(path)
+
+
+def test_truncated_snapshot_raises():
+    """Raw byte corruption that breaks gzip/JSON framing also fails loudly."""
+    brain = RustBrain()
+    brain.remember("k", "v")
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".gz") as f:
+        path = f.name
+
+    try:
+        brain.snapshot_to_file(path)
         with open(path, "rb+") as fh:
             fh.seek(-10, os.SEEK_END)
             fh.write(b"CORRUPTED!")
-
-        # Should still decompress but SHA won't match — we don't enforce it on restore
-        # However gzip should fail if corruption is bad enough
-        with pytest.raises((gzip.BadGzipFile, Exception)):
-            brain2 = RustBrain()
+        brain2 = RustBrain()
+        with pytest.raises(Exception):
             brain2.restore_from_file(path)
     finally:
         if os.path.exists(path):

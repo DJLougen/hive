@@ -5,6 +5,21 @@ All notable changes to Hive are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Security
+- `rust_brain` snapshot integrity: `RustBrain.snapshot_to_file` now embeds the
+  SHA-256 of the node payload in the file, and `restore_from_file` verifies it
+  before mutating state. Previously the checksum was computed and discarded, so
+  a corrupted or tampered snapshot restored silently. A failed check now raises
+  `ValueError("snapshot checksum mismatch ...")` and leaves the existing store
+  untouched. Backward compatible: pre-checksum snapshots skip verification.
+
+### Tests
+- Replaced the catch-all corruption test with deterministic checks: content
+  tamper → checksum `ValueError`, restore atomicity (existing data survives a
+  failed restore), and truncated-file framing failure.
+
 ## [0.6.0] - 2026-06-11
 
 ### Added

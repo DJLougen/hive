@@ -459,20 +459,25 @@ class RustBrain:
     def snapshot_to_file(self, path: str) -> dict[str, Any]:
         """Persist a compressed snapshot to disk. Returns metadata dict.
 
-        The snapshot is a gzip-compressed JSON file with a SHA-256 checksum
-        for corruption detection.
+        The snapshot is a gzip-compressed JSON file with an embedded SHA-256
+        checksum that :meth:`restore_from_file` verifies for corruption/tamper
+        detection.
         """
         import gzip
 
         nodes = self.snapshot()
+        # Checksum covers the canonical node payload and is embedded in the file
+        # (not just returned) so restore_from_file can actually verify it.
+        nodes_json = json.dumps(nodes, sort_keys=True, ensure_ascii=False)
+        checksum = hashlib.sha256(nodes_json.encode("utf-8")).hexdigest()
         data = {
             "tenant_id": self._tenant_id,
             "tenant_isolation": self._tenant_isolation,
             "nodes": nodes,
+            "sha256": checksum,
             "version": "hive-snapshot-v1",
         }
         payload = json.dumps(data).encode("utf-8")
-        checksum = hashlib.sha256(payload).hexdigest()
         compressed = gzip.compress(payload)
         with open(path, "wb") as fh:
             fh.write(compressed)
@@ -489,6 +494,17 @@ class RustBrain:
         if data.get("version") != "hive-snapshot-v1":
             raise ValueError(f"Unsupported snapshot version: {data.get('version')}")
         nodes = data.get("nodes", [])
+        # Verify integrity before mutating state. Snapshots written before the
+        # checksum was embedded omit "sha256"; those skip verification.
+        expected = data.get("sha256")
+        if expected is not None:
+            actual = hashlib.sha256(
+                json.dumps(nodes, sort_keys=True, ensure_ascii=False).encode("utf-8")
+            ).hexdigest()
+            if actual != expected:
+                raise ValueError(
+                    "snapshot checksum mismatch: file is corrupt or tampered"
+                )
         self._nodes.clear()
         self._order.clear()
         self._order_index.clear()
