@@ -163,6 +163,7 @@ class HiveStack:
             tenant_id=tenant_id,
             tenant_isolation=self.config.tenant_isolation,
             default_ttl_s=self.config.default_ttl_s,
+            max_nodes=self.config.max_memory_nodes,
         )
         self._tenant_id = tenant_id
         self._validate = validate or self.config.validate_inputs

@@ -68,6 +68,12 @@ class HiveConfig:
             else:
                 kwargs[attr] = raw
 
+        # Deploy manifests use HIVE_MAX_NODES; the dataclass field is max_memory_nodes.
+        if "max_memory_nodes" not in kwargs:
+            legacy = os.environ.get(f"{prefix}MAX_NODES")
+            if legacy is not None:
+                kwargs["max_memory_nodes"] = int(legacy)
+
         return cls(**kwargs)
 
     def validate(self) -> None:

@@ -49,6 +49,24 @@ def test_config_integration_with_stack():
     assert stack._validate is True
 
 
+def test_stack_applies_max_memory_nodes_from_config():
+    cfg = HiveConfig(max_memory_nodes=3)
+    stack = HiveStack(honey_comb=RuleFastHoneyComb(), config=cfg)
+    assert stack.brain._max_nodes == 3
+    for i in range(5):
+        stack.remember(f"k{i}", i)
+    assert len(stack.brain) == 3
+
+
+def test_from_env_reads_hive_max_nodes_alias():
+    os.environ["HIVE_MAX_NODES"] = "4"
+    try:
+        cfg = HiveConfig.from_env()
+        assert cfg.max_memory_nodes == 4
+    finally:
+        del os.environ["HIVE_MAX_NODES"]
+
+
 def test_config_to_dict():
     cfg = HiveConfig(rate_limit=100)
     d = cfg.to_dict()
