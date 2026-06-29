@@ -1,6 +1,6 @@
 # SOC 2 Evidence Stubs
 
-**Control Environment**: Hive Agent Memory v0.5.0  
+**Control Environment**: Hive Agent Memory v0.6.1  
 **Trust Service Criteria**: Security, Availability
 
 ---
@@ -40,7 +40,7 @@
 - All changes via GitHub PR
 - CI runs: `ruff`, `mypy`, `bandit`, `pytest`
 - CHANGELOG.md maintained
-- Semantic versioning (currently v0.5.0)
+- Semantic versioning (currently v0.6.1)
 
 **Audit trail**: Git history + `hive/audit.py` signed logs.
 

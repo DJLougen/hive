@@ -1,6 +1,6 @@
 # Hive Incident Response Runbook
 
-**Version**: 0.5.0  
+**Version**: 0.6.1  
 **Owner**: Hive SRE  
 **Last updated**: 2026-06-02
 

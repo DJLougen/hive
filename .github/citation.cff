@@ -10,8 +10,8 @@ authors:
 repository-code: "https://github.com/DJLougen/hive"
 url: "https://github.com/DJLougen/hive"
 license: MIT
-version: "0.6.0"
-date-released: "2026-06-11"
+version: "0.6.1"
+date-released: "2026-06-29"
 keywords:
   - agent
   - memory
