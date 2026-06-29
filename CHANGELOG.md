@@ -5,7 +5,7 @@ All notable changes to Hive are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.6.1] - 2026-06-29
 
 ### Security
 - `rust_brain` snapshot integrity: `RustBrain.snapshot_to_file` now embeds the
@@ -15,10 +15,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `ValueError("snapshot checksum mismatch ...")` and leaves the existing store
   untouched. Backward compatible: pre-checksum snapshots skip verification.
 
+### Added
+- PyPI publishing in the release workflow (trusted publishing via GitHub OIDC).
+- `[full]` optional extra: `busybee-cpu` + `honey-comb` pulled from PyPI.
+- `docs/PYPI.md` with one-time publisher setup instructions.
+
+### Changed
+- Dependency pins refreshed across core, dev, observability, and GPU extras.
+- `hive_api_server` reads version from `hive.__version__` instead of a hardcoded string.
+
 ### Tests
 - Replaced the catch-all corruption test with deterministic checks: content
   tamper → checksum `ValueError`, restore atomicity (existing data survives a
   failed restore), and truncated-file framing failure.
+
+## [Unreleased]
 
 ## [0.6.0] - 2026-06-11
 

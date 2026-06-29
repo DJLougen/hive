@@ -2,6 +2,25 @@
 
 This document contains release notes for tagged versions of Hive.
 
+## v0.6.1 (2026-06-29)
+
+### Highlights
+Security fix for rust_brain snapshot restore, PyPI distribution, and refreshed dependency pins.
+
+### Security
+- `restore_from_file` now verifies SHA-256 checksums embedded in snapshots; tampered files raise `ValueError` and leave existing state untouched.
+
+### Added
+- PyPI publishing via the release workflow (tag `v*` → build wheels/sdist → upload).
+- `[full]` extra installs `busybee-cpu` and `honey-comb` from PyPI.
+
+### Changed
+- Core and optional dependency minimum versions bumped (see `pyproject.toml`).
+- FastAPI server version tracks `hive.__version__`.
+
+### Migration
+No code changes required. Update version pins to `hive-agent-memory>=0.6.1,<0.7.0`.
+
 ## v0.6.0 (2026-06-11)
 
 ### Highlights

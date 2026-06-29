@@ -1,6 +1,6 @@
 # Hive Usage Guide
 
-**Version**: 0.5.0  
+**Version**: 0.6.1  
 **Target audience**: Engineers deploying Hive in production
 
 ---
@@ -35,14 +35,21 @@
 pip install hive-agent-memory
 ```
 
+### Full stack (CPU router + ML compressor)
+
+```bash
+pip install "hive-agent-memory[full]"
+```
+
 ### With all extras
 
 ```bash
-pip install hive-agent-memory[dev,monitor,observability]
+pip install "hive-agent-memory[dev,monitor,observability]"
 ```
 
 | Extra | What it adds |
 |-------|-------------|
+| `full` | busybee-cpu + honey-comb (from PyPI) |
 | `dev` | pytest, ruff, mypy |
 | `monitor` | pynvml (GPU monitoring) |
 | `observability` | Prometheus, OpenTelemetry |

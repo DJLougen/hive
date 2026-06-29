@@ -18,4 +18,4 @@ __all__ = [
     "rust_memory_retrieve",
 ]
 
-__version__ = "0.1.0"
+__version__ = "0.6.1"
