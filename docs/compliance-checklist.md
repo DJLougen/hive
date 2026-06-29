@@ -1,8 +1,8 @@
 # Hive Enterprise Compliance Checklist
 
-**Version**: 0.5.0  
-**Date**: 2026-06-02  
-**Status**: Partial — v0.5.0 gaps plugged; encryption at rest + backup + auth + offboarding now in place. See remaining gaps below.
+**Version**: 0.6.1  
+**Date**: 2026-06-29  
+**Status**: Partial — enterprise gaps plugged in v0.5.0; v0.6.x adds real-workload eval + snapshot integrity. See remaining gaps below.
 
 ---
 

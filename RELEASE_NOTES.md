@@ -156,10 +156,12 @@ Enable via environment: `HIVE_USE_RUST=1`
    git push origin main --tags
    ```
 
-5. **CI automatically**:
-   - Builds wheels for all platforms
-   - Creates GitHub release with notes from CHANGELOG
-   - Uploads artifacts to release
+5. **CI automatically** (`.github/workflows/release.yml`):
+   - Builds wheels for Linux / macOS / Windows and an sdist
+   - Extracts title from `RELEASE_NOTES.md` and body from `CHANGELOG.md` via `scripts/extract_release_notes.py`
+   - Creates a GitHub Release named `Hive vX.Y.Z — <highlights>`
+   - Uploads wheel/sdist artifacts to the release
+   - Publishes to PyPI when trusted publishing is configured (`docs/PYPI.md`)
 
 ### Release Notes Format
 

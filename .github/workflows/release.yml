@@ -81,6 +81,7 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: dist/
+        continue-on-error: true
 
   create-release:
     name: Create GitHub Release
@@ -98,33 +99,18 @@ jobs:
       - name: Extract release notes
         id: extract-notes
         run: |
-          # Extract the section for the current tag from CHANGELOG.md
           TAG_VERSION=${GITHUB_REF#refs/tags/v}
-          python -c "
-          import re
-          import sys
-          
-          with open('CHANGELOG.md', 'r') as f:
-              content = f.read()
-          
-          # Find the section for this version
-          pattern = rf'## \[{re.escape(sys.argv[1])}\].*?(?=\n## \[|\Z)'
-          match = re.search(pattern, content, re.DOTALL)
-          
-          if match:
-              print(match.group(0).strip())
-          else:
-              print('Release ${{ github.ref_name }}')
-          " "$TAG_VERSION" > release_notes.md
-          
-          echo "notes_file=release_notes.md" >> $GITHUB_OUTPUT
+          python scripts/extract_release_notes.py "$TAG_VERSION"
+          echo "release_name=$(cat release_name.txt)" >> "$GITHUB_OUTPUT"
 
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
+          name: ${{ steps.extract-notes.outputs.release_name }}
           body_path: release_notes.md
           files: |
             dist/*.whl
             dist/*.tar.gz
           draft: false
           prerelease: false
+          make_latest: true

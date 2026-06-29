@@ -2,7 +2,7 @@
 
 **Orchestration layer for AI agents** — CPU-side action routing, context compression, and causal graph memory that keep mechanical work and context bloat off the LLM.
 
-[![Version](https://img.shields.io/badge/version-0.6.1-blue)](https://github.com/DJLougen/hive)
+[![Version](https://img.shields.io/github/v/release/DJLougen/hive?label=release)](https://github.com/DJLougen/hive/releases/latest)
 [![Python](https://img.shields.io/badge/python-3.10+-green)](https://python.org)
 [![Tests](https://img.shields.io/badge/tests-passing-brightgreen)](https://github.com/DJLougen/hive/actions)
 [![License](https://img.shields.io/badge/license-MIT-yellow)](https://opensource.org/licenses/MIT)
