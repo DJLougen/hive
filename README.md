@@ -2,7 +2,7 @@
 
 **Orchestration layer for AI agents** — CPU-side action routing, context compression, and causal graph memory that keep mechanical work and context bloat off the LLM.
 
-[![Version](https://img.shields.io/badge/version-0.6.0-blue)](https://github.com/DJLougen/hive)
+[![Version](https://img.shields.io/badge/version-0.6.1-blue)](https://github.com/DJLougen/hive)
 [![Python](https://img.shields.io/badge/python-3.10+-green)](https://python.org)
 [![Tests](https://img.shields.io/badge/tests-passing-brightgreen)](https://github.com/DJLougen/hive/actions)
 [![License](https://img.shields.io/badge/license-MIT-yellow)](https://opensource.org/licenses/MIT)
@@ -11,7 +11,7 @@
 
 Hive sits between an agent loop and its LLM. It answers the mechanical decisions on the CPU, compresses the context the LLM actually sees, and keeps a timestamped causal-memory graph so the agent stops re-deriving what it already learned. On a 20-instance SWE-bench-lite A/B (GPT-2 backend) this cut LLM calls by 91.7% and resolved 85% of instances versus 0% for the un-augmented agent — numbers below.
 
-> **Status:** v0.6.0 (Beta). The core stack plus the enterprise, reliability and observability modules are implemented and tested (34 test files). Routing-accuracy numbers are *in-distribution* — see the OOD caveat under [Components](#components).
+> **Status:** v0.6.1 (Beta). The core stack plus the enterprise, reliability and observability modules are implemented and tested (34 test files). Routing-accuracy numbers are *in-distribution* — see the OOD caveat under [Components](#components).
 
 ---
 
@@ -145,6 +145,12 @@ External siblings (developed in their own repos, all optional):
 pip install hive-agent-memory
 ```
 
+Full stack (trained CPU router + ML compressor, when sibling packages are on PyPI):
+
+```bash
+pip install "hive-agent-memory[full]"
+```
+
 Optional extras:
 
 ```bash
@@ -154,7 +160,7 @@ pip install "hive-agent-memory[performance]"     # native Rust backend (hive-cpp
 pip install "hive-agent-memory[gpu]"             # torch + transformers (examples / integration)
 ```
 
-From source:
+From source (development — clones sibling repos for full-stack work):
 
 ```bash
 git clone https://github.com/DJLougen/hive.git
@@ -162,6 +168,8 @@ cd hive
 pip install -e ".[dev]"
 pytest
 ```
+
+For publishing and one-time PyPI setup, see [`docs/PYPI.md`](docs/PYPI.md).
 
 ---
 
@@ -364,7 +372,7 @@ Wheels for Linux / macOS / Windows (x86_64 + aarch64) are built by the `rust-whe
 Hive ships container and orchestration assets:
 
 - **HTTP server** — [`scripts/hive_api_server.py`](scripts/hive_api_server.py) (FastAPI). Endpoints: `POST /route`, `POST /compress`, `POST /remember`, `GET /recall`, plus `GET /health` and `GET /ready` probes. `AsyncHiveStack` backs high-throughput deployments.
-- **Helm chart** — [`deploy/helm/`](deploy/helm/) (chart `0.6.0`).
+- **Helm chart** — [`deploy/helm/`](deploy/helm/) (chart `0.6.1`).
 - **Raw K8s manifests** — [`deploy/k8s/`](deploy/k8s/) (Deployment, Service, ConfigMap).
 - **ARM64 image** — [`docker/Dockerfile.aarch64`](docker/Dockerfile.aarch64) for Jetson / Grace.
 

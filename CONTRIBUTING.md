@@ -7,9 +7,18 @@ benchmark suite, the documentation, and the CI matrix.
 
 ## Development setup
 
+**End users** install from PyPI:
+
+```bash
+pip install hive-agent-memory
+pip install "hive-agent-memory[full]"   # when busybee-cpu + honey-comb are on PyPI
+```
+
+**Contributors** clone the meta-package and its siblings side-by-side:
+
 ```bash
 # 1. Clone all three repos side-by-side. The hive meta-package depends
-#    on busyBee-cpu and honey-comb as sibling packages.
+#    on busyBee-cpu and honey-comb as sibling packages for full-stack dev.
 git clone https://github.com/DJLougen/hive
 git clone https://github.com/DJLougen/busyBee-cpu
 git clone https://github.com/DJLougen/honey-comb
@@ -19,7 +28,7 @@ cd hive
 python -m venv .venv && . .venv/bin/activate
 pip install -e ../busyBee-cpu ../honey-comb -e ".[dev,monitor]"
 
-# 3. Run the test suite. We expect 37 tests to pass in well under 10 s.
+# 3. Run the test suite.
 pytest -q
 
 # 4. Run the macro benchmark (echo backend — no model server required).

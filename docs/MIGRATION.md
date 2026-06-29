@@ -1,7 +1,19 @@
 # Hive Migration Guide
 
-**Version**: 0.5.0 → 0.6.0  
+**Version**: 0.6.0 → 0.6.1  
 **Policy**: Semantic versioning with deprecation warnings.
+
+---
+
+## 0.6.0 → 0.6.1
+
+No breaking API changes. Snapshot restore now verifies SHA-256 checksums when present.
+
+```bash
+pip install --upgrade "hive-agent-memory>=0.6.1,<0.7.0"
+```
+
+Pre-checksum snapshots (from 0.6.0 and earlier) restore without verification, as before.
 
 ---
 
@@ -67,8 +79,8 @@ None. All changes were backward-compatible additions.
 |-------------|--------|-------|----------|--------------|--------|
 | 0.3.x | 3.10+ | N/A | N/A | N/A | maintained |
 | 0.4.x | 3.10+ | N/A | N/A | N/A | maintained |
-| 0.5.x | 3.10+ | ≥2.8 | ≥2.0 | ≥41.0 | current |
-| 0.6.x | 3.10+ | ≥2.8 | ≥2.0 | ≥41.0 | planned |
+| 0.5.x | 3.10+ | ≥2.8 | ≥2.0 | ≥41.0 | maintained |
+| 0.6.x | 3.10+ | ≥2.10 | ≥2.10 | ≥43.0 | current |
 
 ---
 
@@ -76,7 +88,7 @@ None. All changes were backward-compatible additions.
 
 ```bash
 # 1. Pin version
-pip install "hive-agent-memory>=0.5.0,<0.6.0"
+pip install "hive-agent-memory>=0.6.1,<0.7.0"
 
 # 2. Run tests
 pytest tests/ -v
