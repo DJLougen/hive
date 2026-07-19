@@ -149,6 +149,31 @@ def test_version_mismatch():
         os.unlink(path)
 
 
+def test_restore_preserves_hlc_and_accepts_causal_writes():
+    """HLC timestamps must survive snapshot/restore (v0.6.0 regression)."""
+    brain = RustBrain()
+    original_hlc = (100, 5, "nodeA")
+    brain.remember("k", "v1", hlc=original_hlc)
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".gz") as f:
+        path = f.name
+
+    try:
+        brain.snapshot_to_file(path)
+        brain2 = RustBrain()
+        brain2.restore_from_file(path)
+        restored = brain2.get("k")
+        assert restored is not None
+        assert restored.hlc == original_hlc
+
+        # A write with a newer HLC must succeed after restore.
+        newer_hlc = (101, 0, "nodeB")
+        brain2.remember("k", "v2", hlc=newer_hlc)
+        assert brain2.recall("k") == "v2"
+    finally:
+        os.unlink(path)
+
+
 def test_snapshot_with_tenant_isolation():
     brain = RustBrain(tenant_id="org_a", tenant_isolation=True)
     brain.remember("secret", "data")
