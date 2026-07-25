@@ -149,6 +149,34 @@ def test_version_mismatch():
         os.unlink(path)
 
 
+def test_restore_preserves_hlc_for_replication():
+    """HLC must survive snapshot round-trip so post-restore writes stay ordered."""
+    from hive.rust_brain import TimestampRegression
+
+    brain = RustBrain()
+    brain.remember("k", "v1", hlc=(5000, 10, "nodeA"))
+    orig_hlc = brain.get("k").hlc
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".gz") as f:
+        path = f.name
+
+    try:
+        brain.snapshot_to_file(path)
+        brain2 = RustBrain()
+        brain2.restore_from_file(path)
+        assert brain2.get("k").hlc == orig_hlc
+
+        # Causal successor from the original writer should apply after restore.
+        brain2.remember("k", "v2", hlc=(5000, 11, "nodeA"))
+        assert brain2.recall("k") == "v2"
+
+        # Stale replay must still be rejected.
+        with pytest.raises(TimestampRegression):
+            brain2.remember("k", "stale", hlc=(5000, 5, "nodeA"))
+    finally:
+        os.unlink(path)
+
+
 def test_snapshot_with_tenant_isolation():
     brain = RustBrain(tenant_id="org_a", tenant_isolation=True)
     brain.remember("secret", "data")
