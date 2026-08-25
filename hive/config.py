@@ -34,7 +34,7 @@ class HiveConfig:
     prometheus_port: int = 0  # 0 = disabled
 
     @classmethod
-    def from_env(cls, prefix: str = "HIVE_") -> "HiveConfig":
+    def from_env(cls, prefix: str = "HIVE_") -> HiveConfig:
         """Construct config from environment variables.
 
         Booleans: ``true``, ``1``, ``yes`` → True; anything else → False.

@@ -43,8 +43,9 @@ import statistics
 import string
 import sys
 import time
+from collections.abc import Sequence
 from dataclasses import asdict, dataclass, field
-from typing import Any, Sequence
+from typing import Any
 
 # ---------------------------------------------------------------------------
 # Optional deps — make the script degrade gracefully.
@@ -67,9 +68,9 @@ except Exception:  # pragma: no cover - import guard
     _HAS_TORCH = False
 
 # Hive components
-from hive import HiveStack
+from hive import HiveStack, hardware
+from hive import llm as llm_mod
 from hive.rust_brain import RustBrain
-from hive import hardware, llm as llm_mod
 
 _log = logging.getLogger("hive.benchmark")
 
@@ -155,7 +156,7 @@ class MemoryTracker:
     def gpu_avg_power_w(self) -> float:
         return self._sampler.avg_power_w()
 
-    def finalise(self) -> "MemoryTracker":
+    def finalise(self) -> MemoryTracker:
         self.sample()
         return self
 

@@ -5,6 +5,9 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  schedule:
+    # Nightly GPU smoke (self-hosted runner when available)
+    - cron: "0 6 * * *"
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
@@ -17,15 +20,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python: ["3.10", "3.11", "3.12"]
+        python: ["3.10", "3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
       - name: Install
         run: |
           python -m pip install --upgrade pip
-          # Install hive only — sibling packages (busyBee-cpu, honey-comb) are
-          # NOT present in the checkout. Tests gracefully skip when absent.
-          pip install -e .[dev,monitor,observability]
+          pip install -e .[dev,monitor,observability,server,mcp,http]
       - name: Test
         env:
           HIVE_NO_NVML: "1"
@@ -38,6 +42,10 @@ jobs:
               --transcript-turns 50 --brain-writes 500 \
               --honey-comb-mode auto --inference-backend echo \
               --quiet
+      - name: Long-context compression (smoke)
+        env:
+          HIVE_NO_NVML: "1"
+        run: python scripts/hive_long_context_eval.py --smoke
       - name: Lint
         run: |
           python -m ruff check hive/ tests/
@@ -55,6 +63,44 @@ jobs:
           pip install bandit
           python -m bandit -r hive/ -ll -q
           python scripts/hive_pentest.py --module hive
+      - name: Supply chain audit
+        run: |
+          pip install --upgrade 'setuptools>=83'
+          pip-audit --skip-editable
+
+  # MCP server import smoke
+  mcp-smoke:
+    name: MCP / server smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install agents extra
+        run: pip install -e ".[dev,agents]"
+      - name: MCP module smoke
+        run: pytest tests/test_mcp_smoke.py -v
+
+  # SBOM generation on main
+  sbom:
+    name: SBOM
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: pip install -e .
+      - name: Generate SBOM
+        run: python scripts/generate_sbom.py --output sbom.json
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom.json
 
   # Full-stack pentest: hive + busybee-cpu + honey-comb
   pentest:
@@ -77,11 +123,11 @@ jobs:
           python scripts/hive_pentest.py --fail-on-skip
 
   # x86_64 + CUDA. Requires self-hosted runner with GPU label.
-  # Disabled until self-hosted runner is registered.
   gpu:
-    name: x86_64 / Python 3.12 / CUDA
-    if: false  # Re-enable when self-hosted GPU runner is available
+    name: x86_64 / Python 3.12 / CUDA (nightly smoke)
+    if: github.event_name == 'schedule' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
     runs-on: [self-hosted, gpu, cuda]
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - name: Install
@@ -89,26 +135,20 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e .[dev,monitor,observability]
       - name: Test
-        run: pytest -v
+        run: pytest -v -k "not integration"
       - name: Benchmark
         run: |
           python scripts/hive_benchmark.py \
-              --transcript-turns 200 --brain-writes 5000 \
+              --transcript-turns 50 --brain-writes 500 \
               --honey-comb-mode auto --inference-backend echo \
-              --runs 3 --output bench-gpu.json --quiet
-      - name: Upload
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: bench-gpu
-          path: bench-gpu.json
+              --quiet
 
   # aarch64 + CUDA. Jetson / Grace.
-  # Disabled until self-hosted runner is registered.
   jetson:
-    name: aarch64 / Python 3.12 / Jetson
-    if: false  # Re-enable when self-hosted Jetson runner is available
+    name: aarch64 / Python 3.12 / Jetson (nightly smoke)
+    if: github.event_name == 'schedule'
     runs-on: [self-hosted, jetson]
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - name: Install
@@ -118,22 +158,15 @@ jobs:
       - name: Test
         env:
           HIVE_NO_NVML: "0"
-        run: pytest -v
+        run: pytest -v -k "not integration"
       - name: Benchmark
         run: |
           python scripts/hive_benchmark.py \
-              --transcript-turns 100 --brain-writes 1000 \
+              --transcript-turns 50 --brain-writes 500 \
               --honey-comb-mode fast --inference-backend echo \
-              --output bench-jetson.json --quiet
-      - name: Upload
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: bench-jetson
-          path: bench-jetson.json
+              --quiet
 
   # Build Rust wheels for major platforms.
-  # Only runs on tags or manual dispatch to avoid burning minutes on every PR.
   rust-wheels:
     name: Build hive-cpp wheels
     runs-on: ${{ matrix.os }}

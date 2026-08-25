@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=68", "wheel"]
+requires = ["setuptools>=83", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -50,10 +50,11 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# Full stack: trained CPU router + ML compressor (siblings on PyPI)
+# Full stack: trained CPU router + ML compressor (siblings on PyPI when published).
+# Until published, install siblings from git or local paths — see README.
 full = [
-    "busybee-cpu>=0.6.0,<0.7.0",
-    "honey-comb>=0.3.0,<0.4.0",
+    "busybee-cpu @ git+https://github.com/DJLougen/busyBee-cpu.git",
+    "honey-comb @ git+https://github.com/DJLougen/honey-comb.git",
 ]
 # GPU / inference (used by examples + integration, not required for the core stack)
 gpu = [
@@ -63,8 +64,8 @@ gpu = [
 vllm = ["vllm>=0.6"]
 # Hardware monitoring. pynvml works on NVIDIA + nvidia-ml-py on Jetson.
 monitor = ["pynvml>=12.0"]
-# Native Rust backend for performance-critical workloads (optional)
-performance = ["hive-cpp>=0.6.0,<0.7.0"]
+# Native Rust backend for performance-critical workloads (optional, built from hive-cpp/)
+performance = ["hive-cpp"]
 # Real-time observability: Prometheus, OpenTelemetry, JSONL export
 observability = [
     "prometheus-client>=0.21",
@@ -75,11 +76,55 @@ dev = [
     "pytest>=8.3",
     "pytest-asyncio>=0.24",
     "pytest-cov>=5.0",
-    "ruff>=0.8",
+    "ruff>=0.8,<0.17",
     "mypy>=1.13",
     "build>=1.2",
     "twine>=5.1",
+    "pip-audit>=2.7",
+    "pre-commit>=4.0",
 ]
+server = ["fastapi>=0.115", "uvicorn[standard]>=0.32"]
+mcp = ["mcp>=1.0"]
+agents = ["fastapi>=0.115", "uvicorn[standard]>=0.32", "mcp>=1.0"]
+http = ["httpx>=0.28"]
+
+[project.scripts]
+hive-mcp = "hive.mcp_server:main"
+hive-mcp-install = "hive.mcp_install:main"
+
+[tool.uv.sources]
+hive-cpp = { path = "hive-cpp", editable = true }
+
+[tool.uv]
+default-groups = ["dev"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "pytest-cov>=5.0",
+    "ruff>=0.8,<0.17",
+    "mypy>=1.13",
+    "build>=1.2",
+    "twine>=5.1",
+    "pip-audit>=2.7",
+    "pre-commit>=4.0",
+]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "RUF"]
+ignore = ["B008", "B017", "RUF002", "RUF003", "RUF012", "E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"scripts/*" = ["E402"]
+"tests/fixtures/*" = ["E501", "F401"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["hive"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

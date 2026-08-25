@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from hive.tracing import TraceContext, Span
+from hive.tracing import Span, TraceContext
 
 
 def test_traceparent_format():
