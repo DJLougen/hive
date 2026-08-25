@@ -14,8 +14,9 @@ match.
 
 Key properties:
 
-* **Timestamp protection** — every write carries a monotonic + wall-clock
-  timestamp and an optional trust score. Replaying an older write raises.
+* **Logical clocks** — every write carries a monotonic hybrid logical clock
+  (order + cause-and-effect, not just time-of-day) and an optional trust score.
+  Replaying an older write raises.
 * **Graph relations** — nodes carry typed edges (``related_to``, ``caused_by``,
   ``supersedes``, ``attached_to``) so an agent can walk cause/effect chains.
 * **Hermes integration** — the ``HermesBackend`` stub matches the payload
