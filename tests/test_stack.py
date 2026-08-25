@@ -154,3 +154,33 @@ def test_hive_stack_stats_shape():
     assert "brain" in stats
     assert "comb" in stats
     assert stats["brain"]["node_count"] == 1
+
+
+def test_native_compress_with_telemetry_does_not_crash():
+    """Native compress must not reference the Python-only ``out`` variable."""
+    from unittest.mock import patch
+
+    from hive.rust_brain import RustBrain
+    from hive.telemetry import Telemetry
+
+    telemetry = Telemetry()
+    stack = HiveStack(
+        honey_comb=RuleFastHoneyComb(),
+        rust_brain=RustBrain(),
+        telemetry=telemetry,
+        backend="native",
+    )
+    with patch(
+        "hive.backend.native_compress",
+        return_value={
+            "role": "user",
+            "content": "hi",
+            "label": "CORE",
+            "original_tokens": 10,
+            "compressed_tokens": 5,
+        },
+    ):
+        result = stack.compress("user", "hello world")
+    assert result.content == "hi"
+    assert len(telemetry.compression) == 1
+    assert telemetry.compression[0].original_tokens == 10
