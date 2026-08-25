@@ -17,12 +17,11 @@ from __future__ import annotations
 
 import argparse
 import json
-import sys
 from typing import Any
 
 
 def load(path: str) -> dict[str, Any]:
-    with open(path, "r", encoding="utf-8") as fh:
+    with open(path, encoding="utf-8") as fh:
         return json.load(fh)
 
 

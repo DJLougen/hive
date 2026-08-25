@@ -21,9 +21,10 @@ from __future__ import annotations
 
 import threading
 import time
+from collections.abc import Iterator
 from contextlib import contextmanager
 from enum import Enum
-from typing import Any, Iterator
+from typing import Any
 
 
 class CircuitState(Enum):
