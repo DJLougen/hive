@@ -146,6 +146,31 @@ def test_rule_fast_throughput_smoke():
     assert rate >= 2_000, f"rule_fast throughput {rate:.0f} msg/s below 2k floor"
 
 
+def test_native_compress_with_telemetry_does_not_crash():
+    """Native compress path must not reference the Python-only ``out`` variable."""
+    from unittest.mock import patch
+
+    from hive.rust_brain import RustBrain
+    from hive.telemetry import Telemetry
+
+    telemetry = Telemetry()
+    brain = RustBrain()
+    with patch("hive.backend.native_compress") as mock_compress:
+        mock_compress.return_value = {
+            "role": "user",
+            "content": "hi",
+            "label": "CORE",
+            "original_tokens": 10,
+            "compressed_tokens": 5,
+        }
+        stack = HiveStack(rust_brain=brain, telemetry=telemetry, backend="native")
+        out = stack.compress("user", "hello world")
+    assert out.role == "user"
+    assert out.content == "hi"
+    assert len(telemetry.compression) == 1
+    assert telemetry.compression[0].original_tokens == 10
+
+
 def test_hive_stack_stats_shape():
     stack = HiveStack(honey_comb=RuleFastHoneyComb())
     stack.remember("k", "v")
