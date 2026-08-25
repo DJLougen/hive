@@ -5,7 +5,7 @@ Branch: [`cursor/modernize-all-tiers-fda8`](https://github.com/DJLougen/hive/pul
 ## Headline outcomes
 
 - **214 tests passing** — full `pytest` suite green after modernization
-- **HLC bug fixed** — snapshot restore and gossip replay preserve causal timestamps (`hlc` / `ts_ns`)
+- **HLC bug fixed** — logical clocks preserve event order and cause-and-effect (not just time-of-day); snapshot restore and gossip replay keep `hlc`/`ts_ns` intact
 - **MCP server** — `pip install "hive-agent-memory[agents]"` → `hive-mcp`; configs for Cursor, Claude Desktop, and Codex ([MCP_SETUP.md](docs/MCP_SETUP.md))
 - **Harness integration** — SWE-bench eval + Hermes/OpenClaw guides + MCP bridge ([HARNESS_SETUP.md](docs/HARNESS_SETUP.md))
 - **Long-context eval** — `scripts/hive_long_context_eval.py --smoke` shows up to **153×** compression on 50k+ char logs

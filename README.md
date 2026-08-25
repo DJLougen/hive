@@ -19,7 +19,7 @@ Four-tier modernization, validated locally with **200 tests** (`pytest`) and CI 
 
 | Outcome | What shipped |
 |---|---|
-| **HLC correctness** | `restore_from_file` and gossip replay preserve `hlc`/`ts_ns` — causal ordering survives snapshot restore |
+| **Logical clocks (HLC)** | Memory tracks event order and cause-and-effect, not just wall-clock time — ordering stays correct when messages arrive late; snapshot restore and gossip replay preserve `hlc`/`ts_ns` |
 | **MCP server** | `pip install "hive-agent-memory[agents]"` → `hive-mcp` console command; project config at `.cursor/mcp.json`; setup for Cursor, Claude Desktop, and Codex via [docs/MCP_SETUP.md](docs/MCP_SETUP.md) |
 | **Long-context proof** | `python scripts/hive_long_context_eval.py --smoke` — up to **153×** compression on 50k+ char synthetic logs (short SWE-bench turns stay at 1.0×; routing is the win there) |
 | **`HIVE_BACKEND`** | `python` \| `native` \| `auto` — route/compress via hive-cpp when installed |
@@ -72,7 +72,7 @@ Three jobs, all on the CPU, before the LLM is involved:
 
 1. **Routes mechanical decisions** — `read_file`, `run_tests`, `apply_patch`, etc. go to a trained CPU policy (busyBee-cpu). No LLM call. Out-of-distribution states escalate to the LLM instead of guessing.
 2. **Compresses context** — a content-type-aware classifier labels each message and drops or distills the wax (stale logs, unchanged files) so the LLM sees only the honey.
-3. **Remembers causally** — a timestamped graph store (rust-brain) records cause → effect → supersession chains, so the agent can later answer "why did this happen / what fixed it".
+3. **Remembers causally** — a timestamped graph store (rust-brain) records cause → effect → supersession chains, so the agent can later answer "why did this happen / what fixed it". A **logical clock** keeps that history in the right order: it tracks sequence and cause-and-effect between events, not just the time of day, so memory stays correct even when messages arrive late or out of sequence.
 
 ```text
             agent request
@@ -322,7 +322,8 @@ if stack.should_update_policy():     # True once the feedback buffer is full
 - Compression ratio scales with input length: ~1.0× on short agent turns, high ratios on long tool output / logs.
 
 **rust-brain** — causal memory
-- Timestamped graph with a Hybrid Logical Clock; monotonic timestamps (`TimestampRegression` on stale writes).
+- A **logical clock** (Hybrid Logical Clock) tracks event order and cause-and-effect, not just wall-clock time — memory stays correctly ordered when messages arrive late or out of sequence.
+- Timestamped graph with monotonic ordering (`TimestampRegression` on stale writes).
 - Edge kinds: `related_to`, `caused_by`, `supersedes`, `attached_to`.
 - Per-tenant isolation, TTL + LRU eviction, optional vector search (`semantic_search.SemanticIndex`). Data is durable: `snapshot_to_file()` (gzip+SHA256) and `restore_from_file()` persist memory across restarts.
 - ~270K writes/s, ~315K reads/s (DGX Spark).

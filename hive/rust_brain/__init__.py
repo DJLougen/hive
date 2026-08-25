@@ -56,12 +56,16 @@ __all__ = [
 
 class HybridLogicalClock:
     """Hybrid Logical Clock for distributed causal ordering.
-    
-    Combines wall-clock time with a logical counter to provide:
-    - Causal ordering across processes
-    - Monotonicity even with NTP corrections or clock skew
-    - Unique timestamps for concurrent events
-    
+
+    A logical clock is a better way to keep track of the sequence of what
+    happened when — it focuses on order and cause-and-effect between events
+    instead of the actual time of day, so memory stays correctly ordered even
+    if messages arrive late or out of sequence.
+
+    This implementation combines wall-clock time with a logical counter to
+    provide causal ordering across processes, monotonicity through NTP
+    corrections or clock skew, and unique timestamps for concurrent events.
+
     Format: (wall_clock_ns, logical_time, node_id)
     Ordering: wall_clock first, then logical_time, then node_id for tie-breaking
     """

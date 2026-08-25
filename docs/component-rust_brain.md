@@ -15,8 +15,11 @@
 agent memory — endpoints, decisions, test outcomes, causal links —
 with three properties that matter at 2026 scale:
 
-1. **Monotonic timestamps.** Replays of older writes fail loudly
-   (`TimestampRegression`). Stale data cannot silently win.
+1. **Monotonic logical clocks.** A logical clock tracks the *sequence* of what
+   happened and the cause-and-effect between events — not just the time of day.
+   Memory stays correctly ordered even when messages arrive late or out of
+   sequence. Replays of older writes fail loudly (`TimestampRegression`).
+   Stale data cannot silently win.
 2. **Graph relations.** Nodes carry typed edges
    (`related_to`, `caused_by`, `supersedes`, `attached_to`), so an
    agent can walk cause/effect chains.
