@@ -79,8 +79,8 @@ jobs:
           python-version: "3.12"
       - name: Install agents extra
         run: pip install -e ".[dev,agents]"
-      - name: MCP module smoke
-        run: pytest tests/test_mcp_smoke.py -v
+      - name: MCP integration tests
+        run: pytest tests/test_mcp_smoke.py tests/test_mcp_integration.py -v
 
   # SBOM generation on main
   sbom:

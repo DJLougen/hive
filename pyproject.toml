@@ -135,7 +135,7 @@ busyBee = "https://github.com/DJLougen/busyBee-cpu"
 honeyComb = "https://github.com/DJLougen/honey-comb"
 
 [tool.setuptools]
-packages = ["hive", "hive.rust_brain", "hive.rule_fast"]
+packages = ["hive", "hive.mcp", "hive.rust_brain", "hive.rule_fast"]
 include-package-data = true
 
 [tool.setuptools.package-data]

@@ -50,6 +50,8 @@ def codex_config_toml(*, command: list[str] | None = None) -> str:
     if len(cmd) > 1:
         args = ", ".join(json.dumps(part) for part in cmd[1:])
         lines.append(f"args = [{args}]")
+    else:
+        lines.append("args = []")
     return "\n".join(lines) + "\n"
 
 

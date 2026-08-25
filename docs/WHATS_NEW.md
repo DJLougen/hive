@@ -4,7 +4,7 @@ Branch: [`cursor/modernize-all-tiers-fda8`](https://github.com/DJLougen/hive/pul
 
 ## Headline outcomes
 
-- **200 tests passing** — full `pytest` suite green after modernization
+- **214 tests passing** — full `pytest` suite green after modernization
 - **HLC bug fixed** — snapshot restore and gossip replay preserve causal timestamps (`hlc` / `ts_ns`)
 - **MCP server** — `pip install "hive-agent-memory[agents]"` → `hive-mcp`; configs for Cursor, Claude Desktop, and Codex ([MCP_SETUP.md](docs/MCP_SETUP.md))
 - **Harness integration** — SWE-bench eval + Hermes/OpenClaw guides + MCP bridge ([HARNESS_SETUP.md](docs/HARNESS_SETUP.md))
@@ -46,7 +46,7 @@ Branch: [`cursor/modernize-all-tiers-fda8`](https://github.com/DJLougen/hive/pul
 **Short (≤280 chars)**
 
 ```
-Hive update: fixes memory ordering when agents sync across machines, 200 tests green, MCP server for agent tool hooks (bring your own client config), better compression on long logs, faster native backend option. github.com/DJLougen/hive/pull/62
+Hive update: memory sync fix, 214 tests green, MCP server with bundled Cursor/Claude/Codex configs (hive-mcp), better compression on long logs. Setup: docs/MCP_SETUP.md — github.com/DJLougen/hive/pull/62
 ```
 
 **Plain English (thread-friendly)**
@@ -57,7 +57,7 @@ We updated Hive — the layer that lets AI agents handle boring steps on the CPU
 What's new:
 • Memory keeps the right order when saving/restoring or syncing between servers
 • 200 automated tests passing
-• MCP server ships with the package — connect it from whatever agent client you use
+• MCP server + bundled configs for Cursor, Claude Desktop, and Codex — see docs/MCP_SETUP.md
 • Long chat logs compress much harder (tested on 50k+ character dumps)
 • Optional faster Rust backend when you need speed
 

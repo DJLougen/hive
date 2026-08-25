@@ -401,7 +401,7 @@ Wheels for Linux / macOS / Windows (x86_64 + aarch64) are built by the `rust-whe
 Hive ships container and orchestration assets:
 
 - **HTTP server** — [`scripts/hive_api_server.py`](scripts/hive_api_server.py) (FastAPI). Endpoints: `POST /route`, `POST /compress`, `POST /remember`, `GET /recall`, plus `GET /health` and `GET /ready` probes. Install with `pip install "hive-agent-memory[server]"`. `AsyncHiveStack` backs high-throughput deployments.
-- **MCP server** — [`hive-mcp`](hive/mcp_server.py) (stdio or SSE). Install with `pip install "hive-agent-memory[agents]"`. Wired configs for **Cursor**, **Claude Desktop**, and **Codex** — see [docs/MCP_SETUP.md](docs/MCP_SETUP.md). Quick install: `python -m hive.mcp_install --all`.
+- **MCP server** — [`hive-mcp`](hive/mcp_server.py) (stdio or SSE). Install with `pip install "hive-agent-memory[agents]"`. Bundled configs for **Cursor**, **Claude Desktop**, and **Codex** — see [docs/MCP_SETUP.md](docs/MCP_SETUP.md). Quick install: `python -m hive.mcp install --all`.
 - **Harness integration** — Hermes, OpenClaw, SWE-bench eval, and MCP bridge — see [docs/HARNESS_SETUP.md](docs/HARNESS_SETUP.md).
 - **Helm chart** — [`deploy/helm/`](deploy/helm/) (chart `0.6.1`).
 - **Raw K8s manifests** — [`deploy/k8s/`](deploy/k8s/) (Deployment, Service, ConfigMap).

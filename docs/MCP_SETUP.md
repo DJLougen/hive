@@ -16,6 +16,7 @@ Verify:
 
 ```bash
 hive-mcp --help
+python -m hive.mcp --help
 # or
 python -c "from hive.mcp_server import HIVE_MCP_TOOLS; print(HIVE_MCP_TOOLS)"
 ```
@@ -23,6 +24,8 @@ python -c "from hive.mcp_server import HIVE_MCP_TOOLS; print(HIVE_MCP_TOOLS)"
 ## 2. Quick install (all clients)
 
 ```bash
+python -m hive.mcp install --all
+# equivalent:
 python -m hive.mcp_install --all
 ```
 
@@ -88,7 +91,13 @@ Restart Claude Desktop.
 ### Codex (CLI / IDE extension / desktop app)
 
 Append [integrations/mcp/codex.config.snippet.toml](../integrations/mcp/codex.config.snippet.toml)
-to `~/.codex/config.toml`, or create `.codex/config.toml` in a trusted project.
+to your Codex config:
+
+| Scope | Path |
+|-------|------|
+| Global (macOS/Linux) | `~/.codex/config.toml` |
+| Global (Windows) | `%USERPROFILE%\.codex\config.toml` |
+| Project (trusted repo) | `.codex/config.toml` |
 
 ```toml
 [mcp_servers.hive]
