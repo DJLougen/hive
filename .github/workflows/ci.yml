@@ -64,7 +64,9 @@ jobs:
           python -m bandit -r hive/ -ll -q
           python scripts/hive_pentest.py --module hive
       - name: Supply chain audit
-        run: pip-audit --skip-editable
+        run: |
+          pip install --upgrade 'setuptools>=83'
+          pip-audit --skip-editable
 
   # MCP server import smoke
   mcp-smoke:
