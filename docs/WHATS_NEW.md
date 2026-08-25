@@ -45,10 +45,31 @@ Branch: [`cursor/modernize-all-tiers-fda8`](https://github.com/DJLougen/hive/pul
 **Short (≤280 chars)**
 
 ```
+Hive update: fixes memory ordering when agents sync across machines, 200 tests green, plug into Cursor/Claude via MCP, better compression on long logs, faster native backend option. github.com/DJLougen/hive/pull/62
+```
+
+**Plain English (thread-friendly)**
+
+```
+We updated Hive — the layer that lets AI agents handle boring steps on the CPU instead of burning LLM calls.
+
+What's new:
+• Memory keeps the right order when saving/restoring or syncing between servers
+• 200 automated tests passing
+• One install line to hook Hive into Cursor and Claude Desktop
+• Long chat logs compress much harder (tested on 50k+ character dumps)
+• Optional faster Rust backend when you need speed
+
+PR: github.com/DJLougen/hive/pull/62
+```
+
+**Technical (for dev audience)**
+
+```
 Hive August 2026 refresh: HLC snapshot fix, 200 tests, MCP one-liner (pip install hive-agent-memory[agents]), 153× long-context compression eval, HIVE_BACKEND native/python, LinUCB + httpx async LLM. PR: github.com/DJLougen/hive/pull/62
 ```
 
-**Longer**
+**Longer (technical)**
 
 ```
 Shipped a four-tier modernization of Hive — the CPU orchestration layer that routes mechanical agent work off the LLM.
