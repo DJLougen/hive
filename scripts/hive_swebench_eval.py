@@ -40,8 +40,8 @@ except Exception:
 
 try:
     from hive import HiveStack
-    from hive.rust_brain import RustBrain
     from hive.rule_fast import RuleFastHoneyComb
+    from hive.rust_brain import RustBrain
     _HAS_HIVE = True
 except Exception as e:
     _log.warning("Hive not available: %s", e)
@@ -163,7 +163,7 @@ class TransformersLLMBackend:
             )
 
         output_ids = outputs[0][input_ids.shape[1]:]
-        output_tokens = int(len(output_ids))
+        output_tokens = len(output_ids)
 
         self.total_input_tokens += input_tokens
         self.total_output_tokens += output_tokens
@@ -537,8 +537,8 @@ def _print_comparison_table(baseline: EvalReport, hive: EvalReport) -> None:
     print("=" * 80)
     print(f"\nInstances: {baseline.num_instances}")
     print(f"Model: {baseline.platform.get('model', 'unknown')}")
-    print(f"Seed: 42")
-    print(f"Max turns: 50")
+    print("Seed: 42")
+    print("Max turns: 50")
     print()
     print(f"{'Metric':<30} {'Baseline':>15} {'Hive':>15} {'Delta':>15}")
     print("-" * 80)

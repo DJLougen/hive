@@ -138,7 +138,7 @@ class HealthServer:
             self._server.shutdown()
             self._server = None
 
-    def __enter__(self) -> "HealthServer":
+    def __enter__(self) -> HealthServer:
         self.start_in_background()
         return self
 

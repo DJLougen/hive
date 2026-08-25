@@ -24,11 +24,9 @@ import json
 from hive import HiveStack
 from hive.rule_fast import RuleFastHoneyComb
 
-
 try:
     from mcp.server import Server  # type: ignore[import]
-    from mcp.server.sse import SseServerTransport  # type: ignore[import]
-    from mcp.types import Tool, TextContent  # type: ignore[import]
+    from mcp.types import TextContent, Tool  # type: ignore[import]
 
     _HAS_MCP = True
 except Exception:

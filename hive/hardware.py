@@ -17,8 +17,8 @@ from __future__ import annotations
 import logging
 import os
 import time
+from collections.abc import Iterator
 from contextlib import contextmanager
-from typing import Iterator
 
 _log = logging.getLogger("hive.hardware")
 
@@ -133,7 +133,7 @@ class PowerSampler:
         if len(self.samples) < 2:
             return 0.0
         total = 0.0
-        for (t0, p0, _), (t1, p1, _) in zip(self.samples, self.samples[1:]):
+        for (t0, p0, _), (t1, p1, _) in zip(self.samples, self.samples[1:], strict=False):
             dt = t1 - t0
             avg_mw = (p0 + p1) / 2.0
             total += avg_mw * dt * 1e-3  # mW × s = mJ; /1000 → J
@@ -146,7 +146,7 @@ class PowerSampler:
         if len(self.samples) < 2:
             return 0.0
         total = 0.0
-        for (t0, p0, _), (t1, p1, _) in zip(self.samples, self.samples[1:]):
+        for (_t0, p0, _), (_t1, p1, _) in zip(self.samples, self.samples[1:], strict=False):
             total += (p0 + p1) / 2.0
         dur = self.samples[-1][0] - self.samples[0][0]
         return (total / max(1, len(self.samples) - 1)) / 1000.0 if dur > 0 else 0.0

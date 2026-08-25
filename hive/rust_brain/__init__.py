@@ -36,16 +36,17 @@ import threading
 import time
 import uuid
 from collections import defaultdict
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
-from typing import Any, Iterable, Mapping
+from typing import Any
 
 __all__ = [
+    "HIVE_EPOCH_NS",
     "EdgeKind",
+    "HermesBackend",
+    "HybridLogicalClock",
     "MemoryNode",
     "RustBrain",
-    "HermesBackend",
-    "HIVE_EPOCH_NS",
-    "HybridLogicalClock",
 ]
 
 # ---------------------------------------------------------------------------
@@ -214,6 +215,7 @@ class RustBrain:
         self._enforce_monotonic = enforce_monotonic
         self._default_ttl_s = default_ttl_s
         self._max_nodes = max_nodes
+        self._hlc_high_water: tuple[int, int, str] | None = None
         # Simple per-key counter so we can show "newest first" ordering
         # without re-sorting the whole store on every read.
         self._order: list[str] = []
@@ -224,6 +226,21 @@ class RustBrain:
         This ensures causal ordering is maintained across distributed nodes.
         """
         _hlc.update(received_hlc)
+        if self._hlc_high_water is None or received_hlc > self._hlc_high_water:
+            self._hlc_high_water = received_hlc
+
+    def _check_hlc_monotonic(self, node_hlc: tuple[int, int, str], storage_key: str, *, explicit: bool) -> None:
+        if not self._enforce_monotonic:
+            return
+        existing = self._nodes.get(storage_key)
+        if existing is not None and node_hlc < existing.hlc:
+            raise TimestampRegression(
+                f"refusing to write {storage_key!r}: hlc={node_hlc} < stored={existing.hlc}"
+            )
+        if explicit and self._hlc_high_water is not None and node_hlc < self._hlc_high_water:
+            raise TimestampRegression(
+                f"refusing to write {storage_key!r}: hlc={node_hlc} < high_water={self._hlc_high_water}"
+            )
 
 
     def _remove_order_slot(self, idx: int) -> None:
@@ -280,13 +297,9 @@ class RustBrain:
         stale replays loudly fail.
         """
         ts = ts_ns if ts_ns is not None else _now_ns()
-        node_hlc = hlc if hlc is not None else _hlc.now()
         with self._lock:
-            existing = self._nodes.get(storage_key)
-            if existing is not None and self._enforce_monotonic and node_hlc < existing.hlc:
-                raise TimestampRegression(
-                    f"refusing to write {storage_key!r}: hlc={node_hlc} < stored={existing.hlc}"
-                )
+            node_hlc = hlc if hlc is not None else _hlc.now()
+            self._check_hlc_monotonic(node_hlc, storage_key, explicit=hlc is not None)
             node = MemoryNode(
                 key=key,
                 value=value,
@@ -299,6 +312,8 @@ class RustBrain:
                 for n in neighbours:
                     node.attach(kind, n)
             self._nodes[storage_key] = node
+            if self._hlc_high_water is None or node_hlc > self._hlc_high_water:
+                self._hlc_high_water = node_hlc
             if storage_key not in self._order_index:
                 self._order_index[storage_key] = len(self._order)
                 self._order.append(storage_key)
@@ -382,6 +397,10 @@ class RustBrain:
         """Apply many writes at once. Returns the number of writes applied."""
         n = 0
         for row in rows:
+            hlc_raw = row.get("hlc")
+            hlc = tuple(hlc_raw) if hlc_raw is not None else None
+            if hlc is not None:
+                self.update_hlc(hlc)
             self.remember(
                 key=row["key"],
                 value=row.get("value"),
@@ -389,6 +408,7 @@ class RustBrain:
                 tags=row.get("tags", ()),
                 edges=row.get("edges"),
                 ts_ns=row.get("ts_ns"),
+                hlc=hlc,
             )
             n += 1
         return n
@@ -508,11 +528,19 @@ class RustBrain:
         self._nodes.clear()
         self._order.clear()
         self._order_index.clear()
+        self._hlc_high_water = None
         for node_dict in nodes:
+            hlc_raw = node_dict.get("hlc")
+            if hlc_raw is not None:
+                hlc = tuple(hlc_raw)
+                self.update_hlc(hlc)
+            else:
+                hlc = _hlc.now()
             node = MemoryNode(
                 key=node_dict["key"],
                 value=node_dict["value"],
                 ts_ns=node_dict["ts_ns"],
+                hlc=hlc,
                 trust=node_dict.get("trust", 1.0),
                 tags=set(node_dict.get("tags", [])),
                 node_id=node_dict.get("id", uuid.uuid4().hex[:12]),

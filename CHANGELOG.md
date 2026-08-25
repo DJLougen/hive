@@ -5,6 +5,27 @@ All notable changes to Hive are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- `uv.lock`, `.pre-commit-config.yaml`, and Dependabot for reproducible dev tooling.
+- Optional extras: `server`, `mcp`, `agents`, `http` (FastAPI, MCP, httpx).
+- `hive/backend.py` with `HIVE_BACKEND=python|native|auto` wiring in `HiveStack`.
+- LinUCB contextual bandit policy in `hive/policy_updater.py`.
+- Async LLM client via `httpx` (`_OpenAICompatBackend.achat`).
+- Long-context compression eval: `scripts/hive_long_context_eval.py`.
+- HLC preservation tests for snapshot restore and gossip replay.
+
+### Changed
+- CI: Python 3.13 matrix, pip-audit, SBOM job, MCP smoke, long-context smoke, nightly GPU/Jetson.
+- `restore_from_file` and gossip `receive` preserve HLC timestamps.
+- Docker aarch64 base image bumped to L4T r36.4.0; numpy 2.x allowed.
+- Enterprise roadmap and improvement plan refreshed to reflect shipped features.
+
+### Fixed
+- `rust_brain`: snapshot restore now restores `hlc` fields and updates high-water mark.
+- `gossip.receive`: replays remote `hlc`/`ts_ns` instead of generating new timestamps.
+
 ## [0.6.1] - 2026-06-29
 
 ### Security
@@ -28,8 +49,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Replaced the catch-all corruption test with deterministic checks: content
   tamper → checksum `ValueError`, restore atomicity (existing data survives a
   failed restore), and truncated-file framing failure.
-
-## [Unreleased]
 
 ## [0.6.0] - 2026-06-11
 
