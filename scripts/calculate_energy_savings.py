@@ -7,7 +7,7 @@ Outputs a clean table for README inclusion.
 import json
 
 # Load measured data
-with open('results/energy_real.json', 'r') as f:
+with open('results/energy_real.json') as f:
     data = json.load(f)
 
 baseline_j_per_token = data['measured']['gpt2_baseline_joules_per_token']
