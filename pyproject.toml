@@ -88,6 +88,10 @@ mcp = ["mcp>=1.0"]
 agents = ["fastapi>=0.115", "uvicorn[standard]>=0.32", "mcp>=1.0"]
 http = ["httpx>=0.28"]
 
+[project.scripts]
+hive-mcp = "hive.mcp_server:main"
+hive-mcp-install = "hive.mcp_install:main"
+
 [tool.uv.sources]
 hive-cpp = { path = "hive-cpp", editable = true }
 

@@ -40,12 +40,15 @@ except Exception:
 
 try:
     from hive import HiveStack
+    from hive.harness import load_routing_policy, policy_label
     from hive.rule_fast import RuleFastHoneyComb
     from hive.rust_brain import RustBrain
     _HAS_HIVE = True
 except Exception as e:
     _log.warning("Hive not available: %s", e)
     _HAS_HIVE = False
+    load_routing_policy = None  # type: ignore[assignment,misc]
+    policy_label = None  # type: ignore[assignment,misc]
 
 try:
     from datasets import load_dataset
@@ -61,46 +64,6 @@ try:
 except Exception as e:
     _log.warning("torch/transformers not available: %s", e)
     _HAS_TORCH = False
-
-# ---------------------------------------------------------------------------
-# Real busybee policy (rule-based routing)
-# ---------------------------------------------------------------------------
-
-
-class SimpleBusybeePolicy:
-    """Rule-based policy that routes mechanical decisions to CPU.
-
-    Exposes ``.predict(state) -> dict`` matching the HiveStack interface.
-    Routes to CPU when state contains obvious mechanical actions.
-    """
-
-    def __init__(self) -> None:
-        self.stats = {"routed": 0, "escalated": 0}
-
-    def predict(self, state: dict[str, Any]) -> dict[str, Any]:
-        """Route based on state patterns. Returns dict matching HiveStack.route contract."""
-        goal = str(state.get("goal", "")).lower()
-        action_hint = str(state.get("action_hint", "")).lower()
-        combined = f"{goal} {action_hint}"
-
-        # Mechanical actions → CPU
-        if any(kw in combined for kw in ["read file", "read_file", "list dir", "grep", "search file", "view code"]):
-            self.stats["routed"] += 1
-            return {"tool": "read_file", "args": {}, "confidence": 0.95, "escalated": False}
-        if any(kw in combined for kw in ["run test", "pytest", "execute test", "check test"]):
-            self.stats["routed"] += 1
-            return {"tool": "run_tests", "args": {}, "confidence": 0.95, "escalated": False}
-        if any(kw in combined for kw in ["apply patch", "git apply", "apply diff", "write fix", "edit file"]):
-            self.stats["routed"] += 1
-            return {"tool": "apply_patch", "args": {}, "confidence": 0.95, "escalated": False}
-        if any(kw in combined for kw in ["install", "pip install", "setup"]):
-            self.stats["routed"] += 1
-            return {"tool": "run_command", "args": {}, "confidence": 0.90, "escalated": False}
-
-        # Complex reasoning → escalate
-        self.stats["escalated"] += 1
-        return {"tool": "escalate", "args": {"reason": "complex reasoning"}, "confidence": 0.5, "escalated": True}
-
 
 # ---------------------------------------------------------------------------
 # Real LLM backend (transformers-based)
@@ -280,17 +243,21 @@ class SWEBenchHarness:
         model: str = "gpt2",
         max_turns: int = 50,
         seed: int = 42,
+        busybee_model: str | None = None,
     ) -> None:
         self.hive_enabled = hive_enabled
         self.model_name = model
         self.max_turns = max_turns
         self.seed = seed
+        self.busybee_model = busybee_model
         self.llm = TransformersLLMBackend(model)
         self.stack: HiveStack | None = None
-        self.policy: SimpleBusybeePolicy | None = None
+        self.policy: Any | None = None
+        self.policy_name = "none"
 
-        if hive_enabled and _HAS_HIVE:
-            self.policy = SimpleBusybeePolicy()
+        if hive_enabled and _HAS_HIVE and load_routing_policy is not None:
+            self.policy = load_routing_policy(model_path=busybee_model)
+            self.policy_name = policy_label(self.policy) if policy_label else "unknown"
             self.stack = HiveStack(
                 busybee_policy=self.policy,
                 honey_comb=RuleFastHoneyComb(),
@@ -459,6 +426,7 @@ def run_eval(
     model: str = "gpt2",
     seed: int = 42,
     max_turns: int = 50,
+    busybee_model: str | None = None,
 ) -> EvalReport:
     """Run evaluation on instances with or without Hive."""
     harness = SWEBenchHarness(
@@ -466,6 +434,7 @@ def run_eval(
         model=model,
         max_turns=max_turns,
         seed=seed,
+        busybee_model=busybee_model,
     )
 
     results: list[AgentResult] = []
@@ -506,6 +475,7 @@ def run_eval(
         "python_version": platform.python_version(),
         "hive_enabled": hive_enabled,
         "model": model,
+        "routing_policy": harness.policy_name if hive_enabled else "none",
     }
 
     return EvalReport(
@@ -585,6 +555,12 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--model", type=str, default="gpt2", help="LLM model to use")
     p.add_argument("--seed", type=int, default=42, help="Random seed")
     p.add_argument("--max-turns", type=int, default=50, help="Max turns per instance")
+    p.add_argument(
+        "--busybee-model",
+        type=str,
+        default=None,
+        help="Path to trained busybee_cpu CpuActionPolicy .joblib (falls back to rules)",
+    )
     p.add_argument("--output-dir", type=str, default="docs/benchmarks/swebench-lite", help="Output directory")
     p.add_argument("--quiet", action="store_true", help="Suppress table output")
     args = p.parse_args(argv)
@@ -599,11 +575,24 @@ def main(argv: list[str] | None = None) -> int:
 
     # Run baseline (Hive disabled)
     _log.info("Running baseline (Hive disabled)...")
-    baseline = run_eval(instances, hive_enabled=False, model=args.model, seed=args.seed, max_turns=args.max_turns)
+    baseline = run_eval(
+        instances,
+        hive_enabled=False,
+        model=args.model,
+        seed=args.seed,
+        max_turns=args.max_turns,
+    )
 
     # Run Hive (Hive enabled)
     _log.info("Running Hive (Hive enabled)...")
-    hive = run_eval(instances, hive_enabled=True, model=args.model, seed=args.seed, max_turns=args.max_turns)
+    hive = run_eval(
+        instances,
+        hive_enabled=True,
+        model=args.model,
+        seed=args.seed,
+        max_turns=args.max_turns,
+        busybee_model=args.busybee_model,
+    )
 
     # Print comparison
     if not args.quiet:

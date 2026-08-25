@@ -20,7 +20,7 @@ Four-tier modernization, validated locally with **200 tests** (`pytest`) and CI 
 | Outcome | What shipped |
 |---|---|
 | **HLC correctness** | `restore_from_file` and gossip replay preserve `hlc`/`ts_ns` — causal ordering survives snapshot restore |
-| **MCP server** | `pip install "hive-agent-memory[agents]"` → run `scripts/hive_mcp_server.py`; exposes `hive_route`, `hive_compress`, `hive_remember`, `hive_recall`, `hive_search` over MCP (stdio/SSE) |
+| **MCP server** | `pip install "hive-agent-memory[agents]"` → `hive-mcp` console command; project config at `.cursor/mcp.json`; setup for Cursor, Claude Desktop, and Codex via [docs/MCP_SETUP.md](docs/MCP_SETUP.md) |
 | **Long-context proof** | `python scripts/hive_long_context_eval.py --smoke` — up to **153×** compression on 50k+ char synthetic logs (short SWE-bench turns stay at 1.0×; routing is the win there) |
 | **`HIVE_BACKEND`** | `python` \| `native` \| `auto` — route/compress via hive-cpp when installed |
 | **LinUCB** | sklearn-free contextual bandit in `hive.policy_updater` for online routing updates |
@@ -401,7 +401,8 @@ Wheels for Linux / macOS / Windows (x86_64 + aarch64) are built by the `rust-whe
 Hive ships container and orchestration assets:
 
 - **HTTP server** — [`scripts/hive_api_server.py`](scripts/hive_api_server.py) (FastAPI). Endpoints: `POST /route`, `POST /compress`, `POST /remember`, `GET /recall`, plus `GET /health` and `GET /ready` probes. Install with `pip install "hive-agent-memory[server]"`. `AsyncHiveStack` backs high-throughput deployments.
-- **MCP server** — [`scripts/hive_mcp_server.py`](scripts/hive_mcp_server.py). Exposes `hive_route`, `hive_compress`, `hive_remember`, `hive_recall`, `hive_search` over MCP (stdio or SSE). Install with `pip install "hive-agent-memory[agents]"`. No bundled client config yet — point your MCP-capable agent at the server yourself.
+- **MCP server** — [`hive-mcp`](hive/mcp_server.py) (stdio or SSE). Install with `pip install "hive-agent-memory[agents]"`. Wired configs for **Cursor**, **Claude Desktop**, and **Codex** — see [docs/MCP_SETUP.md](docs/MCP_SETUP.md). Quick install: `python -m hive.mcp_install --all`.
+- **Harness integration** — Hermes, OpenClaw, SWE-bench eval, and MCP bridge — see [docs/HARNESS_SETUP.md](docs/HARNESS_SETUP.md).
 - **Helm chart** — [`deploy/helm/`](deploy/helm/) (chart `0.6.1`).
 - **Raw K8s manifests** — [`deploy/k8s/`](deploy/k8s/) (Deployment, Service, ConfigMap).
 - **ARM64 image** — [`docker/Dockerfile.aarch64`](docker/Dockerfile.aarch64) for Jetson / Grace.

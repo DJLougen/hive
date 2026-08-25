@@ -2,16 +2,18 @@
 
 from __future__ import annotations
 
-import importlib.util
-import sys
-from pathlib import Path
+import pytest
+
+from hive.mcp_server import HIVE_MCP_TOOLS, main
 
 
-def test_mcp_server_module_importable():
-    script = Path(__file__).resolve().parent.parent / "scripts" / "hive_mcp_server.py"
-    spec = importlib.util.spec_from_file_location("hive_mcp_server", script)
-    assert spec is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules["hive_mcp_server"] = module
-    spec.loader.exec_module(module)  # type: ignore[union-attr]
-    assert hasattr(module, "_make_server") or hasattr(module, "_HAS_MCP")
+def test_mcp_module_importable():
+    from hive import mcp_server
+
+    assert hasattr(mcp_server, "make_server")
+    assert len(HIVE_MCP_TOOLS) == 5
+
+
+def test_mcp_main_requires_mcp_package(monkeypatch):
+    monkeypatch.setattr("hive.mcp_server._HAS_MCP", False)
+    assert main([]) == 1
