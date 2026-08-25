@@ -2,12 +2,11 @@
 
 from __future__ import annotations
 
-
 import pytest
 
 from hive import HiveStack
 from hive.rule_fast import RuleFastHoneyComb
-from hive.streaming import StreamRouter, StreamCompressor, SSETransport
+from hive.streaming import SSETransport, StreamCompressor, StreamRouter
 
 
 @pytest.mark.asyncio

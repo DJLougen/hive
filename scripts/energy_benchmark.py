@@ -12,19 +12,19 @@ Usage:
     python scripts/energy_benchmark.py --prompts 10 --output results.json
 """
 
-import sys
-import json
 import argparse
+import json
+import sys
 from pathlib import Path
 
 # Add parent to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from energy_tracker import measure_energy
+
 from hive import Hive
 from hive.busybee import busybee_cpu
 from hive.honeycomb import honeycomb
-
 
 # Realistic agentic prompts (representative workloads)
 SAMPLE_PROMPTS = [

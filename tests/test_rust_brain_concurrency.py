@@ -7,8 +7,8 @@ threads/processes write concurrently.
 import threading
 import time
 
-
 import pytest
+
 from hive.rust_brain import RustBrain, TimestampRegression
 
 
