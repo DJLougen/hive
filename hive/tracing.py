@@ -45,7 +45,7 @@ class TraceContext:
         return f"00-{self.trace_id}-{self.parent_id}-{self.trace_flags}"
 
     @classmethod
-    def from_header(cls, header: str | None) -> "TraceContext":
+    def from_header(cls, header: str | None) -> TraceContext:
         if not header:
             return cls()
         parts = header.split("-")
@@ -57,7 +57,7 @@ class TraceContext:
             trace_flags=parts[3],
         )
 
-    def child(self) -> "TraceContext":
+    def child(self) -> TraceContext:
         """Create a child span context."""
         return TraceContext(
             trace_id=self.trace_id,
@@ -75,7 +75,7 @@ class Span:
         self.started: float | None = None
         self.ended: float | None = None
 
-    def __enter__(self) -> "Span":
+    def __enter__(self) -> Span:
         self.started = time.perf_counter()
         return self
 
@@ -99,4 +99,4 @@ class Span:
         }
 
 
-__all__ = ["TraceContext", "Span"]
+__all__ = ["Span", "TraceContext"]

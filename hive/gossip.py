@@ -122,12 +122,19 @@ class GossipProtocol:
         applied = 0
         for ev in events:
             try:
-                self._brain.remember(
-                    ev["key"],
-                    ev["value"],
-                    trust=ev.get("trust", 1.0),
-                    tags=set(ev.get("tags", [])),
-                )
+                hlc_raw = ev.get("hlc")
+                hlc = tuple(hlc_raw) if hlc_raw is not None else None
+                if hlc is not None and hasattr(self._brain, "update_hlc"):
+                    self._brain.update_hlc(hlc)
+                kwargs: dict[str, Any] = {
+                    "trust": ev.get("trust", 1.0),
+                    "tags": set(ev.get("tags", [])),
+                }
+                if ev.get("ts_ns") is not None:
+                    kwargs["ts_ns"] = ev["ts_ns"]
+                if hlc is not None:
+                    kwargs["hlc"] = hlc
+                self._brain.remember(ev["key"], ev["value"], **kwargs)
                 applied += 1
             except Exception as exc:
                 _log.warning("Failed to apply gossiped event: %s", exc)

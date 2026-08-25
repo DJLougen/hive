@@ -25,12 +25,11 @@ from typing import Any
 from hive import HiveStack
 from hive.rule_fast import RuleFastHoneyComb
 
-
 try:
-    from fastapi import FastAPI, HTTPException
+    import uvicorn
+    from fastapi import FastAPI
     from fastapi.responses import JSONResponse
     from pydantic import BaseModel, Field
-    import uvicorn
 
     _HAS_FASTAPI = True
 except Exception:  # pragma: no cover
