@@ -25,3 +25,25 @@ def test_hivestack_stats_includes_backend():
     stack = HiveStack(backend="python")
     stats = stack.stats()
     assert stats["backend"] == "python"
+
+
+def test_native_compress_with_telemetry_does_not_crash():
+    """Native compress path must record telemetry from result, not undefined out."""
+    from unittest.mock import patch
+
+    from hive.rust_brain import RustBrain
+    from hive.telemetry import Telemetry
+
+    mock_out = {
+        "role": "user",
+        "content": "compressed",
+        "label": "CORE",
+        "original_tokens": 10,
+        "compressed_tokens": 5,
+    }
+    with patch("hive.backend.native_compress", return_value=mock_out):
+        stack = HiveStack(backend="native", rust_brain=RustBrain(), telemetry=Telemetry())
+        result = stack.compress("user", "hello world")
+        assert result.content == "compressed"
+        assert stack.telemetry is not None
+        assert stack.telemetry.compression[-1].original_tokens == 10

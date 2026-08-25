@@ -307,10 +307,10 @@ class HiveStack:
             )
         if self.telemetry is not None:
             self.telemetry.record_compression(
-                role=out.role,
-                label=label,
-                original_tokens=out.original_tokens,
-                compressed_tokens=out.compressed_tokens,
+                role=result.role,
+                label=result.label,
+                original_tokens=result.original_tokens,
+                compressed_tokens=result.compressed_tokens,
                 latency_ms=elapsed_ms,
             )
         return result
