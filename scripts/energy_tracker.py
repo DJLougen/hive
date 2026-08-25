@@ -5,11 +5,10 @@ Measures both GPU and CPU energy consumption during code execution.
 Uses context manager pattern for clean measurement windows.
 """
 
-import time
 import threading
+import time
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Optional
 
 try:
     import pynvml
@@ -170,7 +169,7 @@ def measure_energy(sample_interval_ms: int = 10):
     tracker.start()
     
     class Result:
-        result: Optional[EnergyMeasurement] = None
+        result: EnergyMeasurement | None = None
     
     result = Result()
     
@@ -189,7 +188,7 @@ if __name__ == "__main__":
         import torch
         if torch.cuda.is_available():
             x = torch.randn(1000, 1000, device='cuda')
-            for i in range(100):
+            for _i in range(100):
                 x = torch.mm(x, x.T)
         
         # Simulate some CPU work
