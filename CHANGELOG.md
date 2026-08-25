@@ -26,6 +26,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `rust_brain`: snapshot restore now restores `hlc` fields and updates high-water mark.
 - `gossip.receive`: replays remote `hlc`/`ts_ns` instead of generating new timestamps.
 
+### Docs
+- README: August 2026 "What's new" section with outcome table (HLC fix, MCP, long-context eval, `HIVE_BACKEND`, LinUCB).
+- New `docs/WHATS_NEW.md` with tier summary and Twitter-ready copy.
+
 ## [0.6.1] - 2026-06-29
 
 ### Security

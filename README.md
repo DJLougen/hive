@@ -11,7 +11,23 @@
 
 Hive sits between an agent loop and its LLM. It answers the mechanical decisions on the CPU, compresses the context the LLM actually sees, and keeps a timestamped causal-memory graph so the agent stops re-deriving what it already learned. On a 20-instance SWE-bench-lite A/B (GPT-2 backend) this cut LLM calls by 91.7% and resolved 85% of instances versus 0% for the un-augmented agent — numbers below.
 
-> **Status:** v0.6.1 (Beta), with ongoing modernization on [`cursor/modernize-all-tiers-fda8`](https://github.com/DJLougen/hive/pull/62). The core stack plus enterprise, reliability, and observability modules are implemented and tested (**200 tests**). Routing-accuracy numbers are *in-distribution* — see the OOD caveat under [Components](#components). **PFN / busyBee-cpu training-mode integration** is in progress (see [busyBee-cpu](https://github.com/DJLougen/busyBee-cpu)).
+> **Status:** v0.6.1 (Beta). August 2026 modernization lands in [PR #62](https://github.com/DJLougen/hive/pull/62) — **200 tests** passing. Routing-accuracy numbers are *in-distribution* — see the OOD caveat under [Components](#components). **PFN / busyBee-cpu training-mode integration** is in progress (see [busyBee-cpu](https://github.com/DJLougen/busyBee-cpu)).
+
+## What's new (August 2026)
+
+Four-tier modernization, validated locally with **200 tests** (`pytest`) and CI on Python 3.10–3.13. Full detail: [`docs/WHATS_NEW.md`](docs/WHATS_NEW.md) · [CHANGELOG](CHANGELOG.md#unreleased).
+
+| Outcome | What shipped |
+|---|---|
+| **HLC correctness** | `restore_from_file` and gossip replay preserve `hlc`/`ts_ns` — causal ordering survives snapshot restore |
+| **MCP in one line** | `pip install "hive-agent-memory[agents]"` → `hive_route`, `hive_compress`, `hive_remember`, `hive_recall`, `hive_search` in Cursor / Claude Desktop |
+| **Long-context proof** | `python scripts/hive_long_context_eval.py --smoke` — up to **153×** compression on 50k+ char synthetic logs (short SWE-bench turns stay at 1.0×; routing is the win there) |
+| **`HIVE_BACKEND`** | `python` \| `native` \| `auto` — route/compress via hive-cpp when installed |
+| **LinUCB** | sklearn-free contextual bandit in `hive.policy_updater` for online routing updates |
+| **Async LLM** | `httpx`-backed `_OpenAICompatBackend.achat` (`[http]` extra) |
+| **Dev + supply chain** | `uv.lock`, pre-commit, Dependabot, ruff, pip-audit + SBOM CI, Docker L4T r36.4.0 bump |
+
+*Not in this release:* PFN-based busyBee training mode — tracked on the [roadmap](#roadmap).
 
 ---
 
@@ -146,7 +162,7 @@ External siblings (developed in their own repos, all optional):
 pip install hive-agent-memory
 ```
 
-Full stack (trained CPU router + ML compressor, when sibling packages are on PyPI):
+Full stack (trained CPU router + ML compressor — siblings via git until published on PyPI):
 
 ```bash
 pip install "hive-agent-memory[full]"
@@ -163,12 +179,6 @@ pip install "hive-agent-memory[agents]"          # FastAPI server + MCP (Cursor 
 pip install "hive-agent-memory[http]"            # httpx async LLM client
 pip install "hive-agent-memory[server]"          # FastAPI + uvicorn only
 pip install "hive-agent-memory[mcp]"             # MCP server only
-```
-
-Full stack (trained CPU router + ML compressor — siblings via git until PyPI):
-
-```bash
-pip install "hive-agent-memory[full]"
 ```
 
 From source (development — reproducible lockfile + siblings for full-stack work):
