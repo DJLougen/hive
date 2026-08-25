@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Model Context Protocol (MCP) server for Hive.
 
-Exposes Hive operations as MCP tools so Claude Desktop, Cursor, Codex, and other
-MCP-compatible clients can call Hive directly.
+Exposes Hive operations as MCP tools over stdio or SSE.
+
+Any MCP-capable client can connect if you add the server to that client's
+config — there is no bundled Cursor, Codex, or Claude Desktop integration yet.
 
 Usage::
 

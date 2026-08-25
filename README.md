@@ -20,7 +20,7 @@ Four-tier modernization, validated locally with **200 tests** (`pytest`) and CI 
 | Outcome | What shipped |
 |---|---|
 | **HLC correctness** | `restore_from_file` and gossip replay preserve `hlc`/`ts_ns` — causal ordering survives snapshot restore |
-| **MCP in one line** | `pip install "hive-agent-memory[agents]"` → `hive_route`, `hive_compress`, `hive_remember`, `hive_recall`, `hive_search` in Cursor, Claude Desktop, or Codex |
+| **MCP server** | `pip install "hive-agent-memory[agents]"` → run `scripts/hive_mcp_server.py`; exposes `hive_route`, `hive_compress`, `hive_remember`, `hive_recall`, `hive_search` over MCP (stdio/SSE) |
 | **Long-context proof** | `python scripts/hive_long_context_eval.py --smoke` — up to **153×** compression on 50k+ char synthetic logs (short SWE-bench turns stay at 1.0×; routing is the win there) |
 | **`HIVE_BACKEND`** | `python` \| `native` \| `auto` — route/compress via hive-cpp when installed |
 | **LinUCB** | sklearn-free contextual bandit in `hive.policy_updater` for online routing updates |
@@ -175,7 +175,7 @@ pip install "hive-agent-memory[observability]"   # Prometheus + OpenTelemetry
 pip install "hive-agent-memory[monitor]"         # NVML hardware monitoring
 pip install "hive-agent-memory[performance]"     # native Rust backend (hive-cpp)
 pip install "hive-agent-memory[gpu]"             # torch + transformers (examples / integration)
-pip install "hive-agent-memory[agents]"          # FastAPI server + MCP (Cursor, Claude Desktop, Codex)
+pip install "hive-agent-memory[agents]"          # FastAPI server + MCP server (stdio/SSE)
 pip install "hive-agent-memory[http]"            # httpx async LLM client
 pip install "hive-agent-memory[server]"          # FastAPI + uvicorn only
 pip install "hive-agent-memory[mcp]"             # MCP server only
@@ -401,7 +401,7 @@ Wheels for Linux / macOS / Windows (x86_64 + aarch64) are built by the `rust-whe
 Hive ships container and orchestration assets:
 
 - **HTTP server** — [`scripts/hive_api_server.py`](scripts/hive_api_server.py) (FastAPI). Endpoints: `POST /route`, `POST /compress`, `POST /remember`, `GET /recall`, plus `GET /health` and `GET /ready` probes. Install with `pip install "hive-agent-memory[server]"`. `AsyncHiveStack` backs high-throughput deployments.
-- **MCP server** — [`scripts/hive_mcp_server.py`](scripts/hive_mcp_server.py). Exposes `hive_route`, `hive_compress`, `hive_remember`, `hive_recall`, `hive_search` to Cursor, Claude Desktop, and Codex. Install with `pip install "hive-agent-memory[agents]"`.
+- **MCP server** — [`scripts/hive_mcp_server.py`](scripts/hive_mcp_server.py). Exposes `hive_route`, `hive_compress`, `hive_remember`, `hive_recall`, `hive_search` over MCP (stdio or SSE). Install with `pip install "hive-agent-memory[agents]"`. No bundled client config yet — point your MCP-capable agent at the server yourself.
 - **Helm chart** — [`deploy/helm/`](deploy/helm/) (chart `0.6.1`).
 - **Raw K8s manifests** — [`deploy/k8s/`](deploy/k8s/) (Deployment, Service, ConfigMap).
 - **ARM64 image** — [`docker/Dockerfile.aarch64`](docker/Dockerfile.aarch64) for Jetson / Grace.

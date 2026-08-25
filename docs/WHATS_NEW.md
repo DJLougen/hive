@@ -6,7 +6,7 @@ Branch: [`cursor/modernize-all-tiers-fda8`](https://github.com/DJLougen/hive/pul
 
 - **200 tests passing** — full `pytest` suite green after modernization
 - **HLC bug fixed** — snapshot restore and gossip replay preserve causal timestamps (`hlc` / `ts_ns`)
-- **MCP one-liner** — `pip install "hive-agent-memory[agents]"` exposes Hive to Cursor, Claude Desktop, and Codex
+- **MCP server** — `pip install "hive-agent-memory[agents]"` runs `scripts/hive_mcp_server.py` (stdio/SSE); wire it to your MCP client via its config
 - **Long-context eval** — `scripts/hive_long_context_eval.py --smoke` shows up to **153×** compression on 50k+ char logs
 - **`HIVE_BACKEND`** — switch route/compress between Python and native hive-cpp (`python` | `native` | `auto`)
 - **LinUCB** — contextual bandit routing without sklearn
@@ -45,7 +45,7 @@ Branch: [`cursor/modernize-all-tiers-fda8`](https://github.com/DJLougen/hive/pul
 **Short (≤280 chars)**
 
 ```
-Hive update: fixes memory ordering when agents sync across machines, 200 tests green, plug into Cursor, Claude, or Codex via MCP, better compression on long logs, faster native backend option. github.com/DJLougen/hive/pull/62
+Hive update: fixes memory ordering when agents sync across machines, 200 tests green, MCP server for agent tool hooks (bring your own client config), better compression on long logs, faster native backend option. github.com/DJLougen/hive/pull/62
 ```
 
 **Plain English (thread-friendly)**
@@ -56,7 +56,7 @@ We updated Hive — the layer that lets AI agents handle boring steps on the CPU
 What's new:
 • Memory keeps the right order when saving/restoring or syncing between servers
 • 200 automated tests passing
-• One install line to hook Hive into Cursor, Claude Desktop, or Codex
+• MCP server ships with the package — connect it from whatever agent client you use
 • Long chat logs compress much harder (tested on 50k+ character dumps)
 • Optional faster Rust backend when you need speed
 
@@ -76,7 +76,7 @@ Shipped a four-tier modernization of Hive — the CPU orchestration layer that r
 
 ✅ HLC fix: causal timestamps survive snapshot restore + gossip replay
 ✅ 200 tests passing (pytest)
-✅ MCP: pip install "hive-agent-memory[agents]" → Cursor / Claude Desktop / Codex tools
+✅ MCP: `pip install "hive-agent-memory[agents]"` → `hive_route`, `hive_compress`, `hive_remember`, etc.
 ✅ Long-context eval: up to 153× compression on 50k+ char logs
 ✅ HIVE_BACKEND=python|native|auto for hive-cpp hot paths
 ✅ LinUCB contextual bandit + httpx async LLM
