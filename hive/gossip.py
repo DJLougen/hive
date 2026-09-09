@@ -122,11 +122,28 @@ class GossipProtocol:
         applied = 0
         for ev in events:
             try:
+                key = ev["key"]
+                raw_hlc = ev.get("hlc")
+                if raw_hlc is None:
+                    # Without an HLC we cannot establish causal order for updates.
+                    if self._brain.get(key) is not None:
+                        _log.debug(
+                            "Skipping gossip update for %r: missing hlc on existing key",
+                            key,
+                        )
+                        continue
+                    hlc = None
+                else:
+                    hlc = tuple(raw_hlc)
+                    self._brain.update_hlc(hlc)
+
                 self._brain.remember(
-                    ev["key"],
+                    key,
                     ev["value"],
                     trust=ev.get("trust", 1.0),
                     tags=set(ev.get("tags", [])),
+                    ts_ns=ev.get("ts_ns"),
+                    hlc=hlc,
                 )
                 applied += 1
             except Exception as exc:
