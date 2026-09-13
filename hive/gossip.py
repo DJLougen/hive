@@ -159,7 +159,16 @@ class GossipProtocol:
                         str(k) for k in caused_by
                     )
                 hlc = ev.get("hlc")
-                node_hlc = tuple(hlc) if hlc is not None else None
+                node_hlc: tuple[int, int, str] | None = None
+                if hlc is not None:
+                    if (
+                        not isinstance(hlc, (list, tuple))
+                        or len(hlc) != 3
+                    ):
+                        raise ValueError(
+                            f"gossip event hlc must be a 3-tuple, got {hlc!r}"
+                        )
+                    node_hlc = (int(hlc[0]), int(hlc[1]), str(hlc[2]))
                 self._brain.remember(
                     ev["key"],
                     ev.get("value"),

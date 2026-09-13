@@ -442,16 +442,25 @@ class HiveStack:
                 outcome_type = OutcomeType.UNKNOWN
 
         match: tuple[dict[str, Any], RouteDecision] | None = None
+        # Prefer object identity so structurally identical fallback decisions
+        # (common when busybee is absent) bind to the correct route state.
         for pending_state, pending_decision in self._pending_decisions:
-            if (
-                decision.tool == pending_decision.tool
-                and decision.args == pending_decision.args
-                and decision.source == pending_decision.source
-                and decision.confidence == pending_decision.confidence
-                and decision.escalated == pending_decision.escalated
-            ):
+            if pending_decision is decision:
                 match = (pending_state, pending_decision)
                 break
+        if match is None:
+            # Fallback for callers that reconstructed a RouteDecision: scan
+            # newest-first so the most recent matching route wins.
+            for pending_state, pending_decision in reversed(self._pending_decisions):
+                if (
+                    decision.tool == pending_decision.tool
+                    and decision.args == pending_decision.args
+                    and decision.source == pending_decision.source
+                    and decision.confidence == pending_decision.confidence
+                    and decision.escalated == pending_decision.escalated
+                ):
+                    match = (pending_state, pending_decision)
+                    break
         if match is None:
             _log.warning(
                 "record_outcome decision does not match a recent route(); "

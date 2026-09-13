@@ -87,10 +87,14 @@ class AsyncHiveStack:
     async def compress_many(
         self, turns: Sequence[tuple[str, str]]
     ) -> list[CompressedTurn]:
-        # Parallel compression across messages
-        return await asyncio.gather(
-            *(self.compress(r, c) for r, c in turns)
-        )
+        # Delegate to the sync stack so total-batch size limits match
+        # HiveStack.compress_many (parallel per-turn compress bypassed the cap).
+        async with self._lock:
+            loop = asyncio.get_running_loop()
+            return await loop.run_in_executor(
+                None,
+                functools.partial(self._stack.compress_many, turns),
+            )
 
     async def remember(
         self,
