@@ -323,7 +323,11 @@ class RustBrain:
         ts = ts_ns if ts_ns is not None else _now_ns()
         with self._lock:
             node_hlc = hlc if hlc is not None else _hlc.now()
-            self._check_hlc_monotonic(node_hlc, storage_key, explicit=hlc is not None)
+            # A synthesized "legacy" HLC (ts_ns-only snapshot/import rows) is
+            # not caller-asserted causality: it must pass the per-key ordering
+            # check but must not trip the global high-water replay guard.
+            explicit = hlc is not None and hlc[-1] != "legacy"
+            self._check_hlc_monotonic(node_hlc, storage_key, explicit=explicit)
             node = MemoryNode(
                 key=key,
                 value=value,
@@ -492,14 +496,15 @@ class RustBrain:
         if self._default_ttl_s is None:
             return 0
         removed = 0
-        for storage_key in list(self._nodes):
-            node = self._nodes[storage_key]
-            age_s = (_now_ns() - node.ts_ns) / 1e9
-            if age_s > self._default_ttl_s:
-                self._nodes.pop(storage_key, None)
-                self._history.pop(storage_key, None)
-                self._remove_from_order(storage_key)
-                removed += 1
+        with self._lock:
+            for storage_key in list(self._nodes):
+                node = self._nodes[storage_key]
+                age_s = (_now_ns() - node.ts_ns) / 1e9
+                if age_s > self._default_ttl_s:
+                    self._nodes.pop(storage_key, None)
+                    self._history.pop(storage_key, None)
+                    self._remove_from_order(storage_key)
+                    removed += 1
         return removed
 
 

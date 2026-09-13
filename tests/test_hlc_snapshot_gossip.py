@@ -202,3 +202,21 @@ def test_gossip_receive_skips_missing_hlc_on_existing_key():
     applied = gossip.receive([{"key": "k", "value": "no_hlc_update"}])
     assert applied == 0
     assert brain.recall("k") == "original"
+
+
+def test_bulk_write_imports_legacy_ts_ns_rows_into_warm_brain():
+    """Pre-HLC rows (ts_ns only) must import without tripping the high-water guard."""
+    brain = RustBrain()
+    brain.remember("warm", "x")  # a current write raises the high-water mark
+
+    n = brain.bulk_write(
+        [
+            {"key": "a", "value": 1, "ts_ns": 2000},
+            {"key": "b", "value": 2, "ts_ns": 1000},
+        ]
+    )
+    assert n == 2
+    assert brain.recall("a") == 1
+    assert brain.recall("b") == 2
+    # Legacy ordering from ts_ns is preserved: b is older than a.
+    assert brain.get("b").hlc < brain.get("a").hlc
