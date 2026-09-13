@@ -131,6 +131,19 @@ def _now_ns() -> int:
     return time.time_ns() - HIVE_EPOCH_NS
 
 
+def _parse_hlc(raw: Any, *, ts_ns: int | None = None) -> tuple[int, int, str]:
+    """Normalise an HLC from wire/snapshot form (list or tuple).
+
+    Falls back to a synthetic HLC from ``ts_ns`` for pre-v0.6.0 snapshots.
+    """
+    if raw is not None:
+        wall, logical, node_id = raw
+        return (int(wall), int(logical), str(node_id))
+    if ts_ns is not None:
+        return (ts_ns + HIVE_EPOCH_NS, 0, "legacy")
+    return _hlc.now()
+
+
 # ---------------------------------------------------------------------------
 # Edge / node model
 # ---------------------------------------------------------------------------
@@ -413,7 +426,9 @@ class RustBrain:
                 tags=row.get("tags", ()),
                 edges=row.get("edges"),
                 ts_ns=row.get("ts_ns"),
-                hlc=hlc,
+                hlc=_parse_hlc(row.get("hlc"), ts_ns=row.get("ts_ns"))
+                if row.get("hlc") is not None or row.get("ts_ns") is not None
+                else None,
             )
             n += 1
         return n
@@ -530,33 +545,31 @@ class RustBrain:
                 raise ValueError(
                     "snapshot checksum mismatch: file is corrupt or tampered"
                 )
-        self._nodes.clear()
-        self._order.clear()
-        self._order_index.clear()
-        self._hlc_high_water = None
-        for node_dict in nodes:
-            hlc_raw = node_dict.get("hlc")
-            if hlc_raw is not None:
-                hlc = tuple(hlc_raw)
-                self.update_hlc(hlc)
-            else:
-                hlc = _hlc.now()
-            node = MemoryNode(
-                key=node_dict["key"],
-                value=node_dict["value"],
-                ts_ns=node_dict["ts_ns"],
-                hlc=hlc,
-                trust=node_dict.get("trust", 1.0),
-                tags=set(node_dict.get("tags", [])),
-                node_id=node_dict.get("id", uuid.uuid4().hex[:12]),
-            )
-            for kind, neighbours in node_dict.get("edges", {}).items():
-                for n in neighbours:
-                    node.attach(kind, n)
-            storage_key = self._prefix(node.key)
-            self._nodes[storage_key] = node
-            self._order_index[storage_key] = len(self._order)
-            self._order.append(storage_key)
+        with self._lock:
+            self._nodes.clear()
+            self._order.clear()
+            self._order_index.clear()
+            self._hlc_high_water = None
+            for node_dict in nodes:
+                ts_ns = node_dict["ts_ns"]
+                node_hlc = _parse_hlc(node_dict.get("hlc"), ts_ns=ts_ns)
+                self.update_hlc(node_hlc)
+                node = MemoryNode(
+                    key=node_dict["key"],
+                    value=node_dict["value"],
+                    ts_ns=ts_ns,
+                    hlc=node_hlc,
+                    trust=node_dict.get("trust", 1.0),
+                    tags=set(node_dict.get("tags", [])),
+                    node_id=node_dict.get("id", uuid.uuid4().hex[:12]),
+                )
+                for kind, neighbours in node_dict.get("edges", {}).items():
+                    for n in neighbours:
+                        node.attach(kind, n)
+                storage_key = self._prefix(node.key)
+                self._nodes[storage_key] = node
+                self._order_index[storage_key] = len(self._order)
+                self._order.append(storage_key)
         return len(nodes)
 
     def __repr__(self) -> str:

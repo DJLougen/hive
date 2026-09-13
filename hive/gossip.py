@@ -122,19 +122,30 @@ class GossipProtocol:
         applied = 0
         for ev in events:
             try:
-                hlc_raw = ev.get("hlc")
-                hlc = tuple(hlc_raw) if hlc_raw is not None else None
-                if hlc is not None and hasattr(self._brain, "update_hlc"):
-                    self._brain.update_hlc(hlc)
-                kwargs: dict[str, Any] = {
-                    "trust": ev.get("trust", 1.0),
-                    "tags": set(ev.get("tags", [])),
-                }
-                if ev.get("ts_ns") is not None:
-                    kwargs["ts_ns"] = ev["ts_ns"]
-                if hlc is not None:
-                    kwargs["hlc"] = hlc
-                self._brain.remember(ev["key"], ev["value"], **kwargs)
+                key = ev["key"]
+                raw_hlc = ev.get("hlc")
+                if raw_hlc is None:
+                    # Without an HLC we cannot establish causal order for updates.
+                    if self._brain.get(key) is not None:
+                        _log.debug(
+                            "Skipping gossip update for %r: missing hlc on existing key",
+                            key,
+                        )
+                        continue
+                    hlc = None
+                else:
+                    hlc = tuple(raw_hlc)
+                    if hasattr(self._brain, "update_hlc"):
+                        self._brain.update_hlc(hlc)
+
+                self._brain.remember(
+                    key,
+                    ev["value"],
+                    trust=ev.get("trust", 1.0),
+                    tags=set(ev.get("tags", [])),
+                    ts_ns=ev.get("ts_ns"),
+                    hlc=hlc,
+                )
                 applied += 1
             except Exception as exc:
                 _log.warning("Failed to apply gossiped event: %s", exc)
