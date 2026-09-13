@@ -332,7 +332,21 @@ def test_record_outcome_accepts_recent_non_latest_decision():
     stack.record_outcome(d1, "escalate", OutcomeType.CORRECT)
     stack.record_outcome(d2, "escalate", OutcomeType.CORRECT)
     assert len(fb) == 2
-    assert fb.get_outcomes()[0].state["goal"] == "g1"
+    outcomes = fb.get_outcomes()
+    assert outcomes[0].state["goal"] == "g1"
+    assert outcomes[1].state["goal"] == "g2"
+
+
+def test_record_outcome_binds_identical_decisions_by_object_identity():
+    from hive.feedback import FeedbackBuffer, OutcomeType
+
+    fb = FeedbackBuffer(capacity=10)
+    stack = HiveStack(honey_comb=RuleFastHoneyComb(), feedback_buffer=fb)
+    d1 = stack.route({"goal": "g1"})
+    d2 = stack.route({"goal": "g2"})
+    assert d1 == d2  # default fallback produces identical fields
+    stack.record_outcome(d2, "escalate", OutcomeType.CORRECT)
+    assert fb.get_outcomes()[-1].state["goal"] == "g2"
 
 
 # ---------------------------------------------------------------------------
