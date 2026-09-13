@@ -233,9 +233,17 @@ stack = HiveStack(
     config=None,              # HiveConfig
     rate_limiter=None,        # RateLimiter (per-tenant)
     circuit_breaker=None,     # CircuitBreaker for the LLM path
+    gossip=None,              # GossipProtocol — remember() publishes each node
+                              #   to peers when attached
     max_content_bytes=1_048_576,
 )
 ```
+
+With `config=HiveConfig(audit_enabled=True)` the stack also keeps a bounded
+(10k) in-memory audit trail of `route` / `remember` / `record_outcome` calls —
+including rejected feedback, which is the policy-poisoning signal. Read it with
+`stack.audit_events()` and ship it to your SIEM via
+`hive.audit_export.AuditExporter`.
 
 Methods: `route`, `compress`, `compress_many`, `remember`, `recall`, `record_outcome`, `should_update_policy`, `update_policy`, `step`, `stats`. The causal store is exposed directly as `stack.brain`.
 
@@ -388,7 +396,7 @@ Enterprise concerns are first-class modules, documented in [docs/USAGE.md](docs/
 | AuthN / AuthZ | `hive.auth` — JWT + RBAC |
 | Encryption at rest | `hive.encryption` |
 | Untrusted-model safety | `hive.model_registry` — Ed25519-signed `.joblib` (`sign_model()`), blocks pickle RCE |
-| Audit / SIEM | `hive.audit_export` |
+| Audit / SIEM | `HiveConfig(audit_enabled=True)` + `hive.audit_export` |
 | Rate limiting | `hive.ratelimit` — per-tenant token bucket |
 | Circuit breaking | `hive.circuitbreaker` |
 | Multi-tenancy | `RustBrain(tenant_id=…, tenant_isolation=True)` — supports `revoke_tenant()` for GDPR Article 17 mass-erase |
