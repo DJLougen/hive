@@ -36,16 +36,17 @@ import threading
 import time
 import uuid
 from collections import defaultdict
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
-from typing import Any, Iterable, Mapping
+from typing import Any
 
 __all__ = [
+    "HIVE_EPOCH_NS",
     "EdgeKind",
+    "HermesBackend",
+    "HybridLogicalClock",
     "MemoryNode",
     "RustBrain",
-    "HermesBackend",
-    "HIVE_EPOCH_NS",
-    "HybridLogicalClock",
 ]
 
 # ---------------------------------------------------------------------------

@@ -97,3 +97,9 @@ include-package-data = true
 "hive" = ["py.typed"]
 "hive.rust_brain" = ["py.typed"]
 "hive.rule_fast" = ["py.typed"]
+
+[tool.ruff.lint]
+# The repo was authored when bare `ruff check` meant E4/E7/E9/F. Newer ruff
+# releases enable many more families by default, which turned CI red without
+# any code changes. Pin the intended contract; relax incrementally.
+select = ["E4", "E7", "E9", "F", "I", "UP"]

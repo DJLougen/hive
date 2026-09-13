@@ -148,4 +148,4 @@ class ABTestHarness:
         self._active_arm = "control"
 
 
-__all__ = ["ABTestHarness", "ABOutcome"]
+__all__ = ["ABOutcome", "ABTestHarness"]

@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import time
 
-from hive.ratelimit import TokenBucket, RateLimiter
 from hive import HiveStack
+from hive.ratelimit import RateLimiter, TokenBucket
 from hive.rule_fast import RuleFastHoneyComb
 
 

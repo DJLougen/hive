@@ -58,7 +58,6 @@ except Exception:  # pragma: no cover
 class UnsignedModelError(RuntimeError):
     """Raised when a model lacks a valid signature in strict mode."""
 
-    pass
 
 
 def _public_key_fingerprint(public_key: Ed25519PublicKey) -> tuple[str, bytes]:

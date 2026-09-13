@@ -2,15 +2,14 @@
 
 from __future__ import annotations
 
-
 from hive.plugins import (
     CompressorPlugin,
     RouterPlugin,
-    register_compressor,
-    register_router,
     get_compressor,
     get_router,
     list_plugins,
+    register_compressor,
+    register_router,
 )
 from hive.stack import CompressedTurn, RouteDecision
 

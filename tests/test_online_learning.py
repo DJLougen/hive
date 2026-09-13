@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-
-from hive.telemetry import Telemetry
-from hive.feedback import FeedbackBuffer, RoutingOutcome, OutcomeType
+from hive.feedback import FeedbackBuffer, OutcomeType, RoutingOutcome
 from hive.policy_updater import PolicyUpdater
+from hive.telemetry import Telemetry
 
 
 class MockPolicy:

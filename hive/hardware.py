@@ -17,8 +17,8 @@ from __future__ import annotations
 import logging
 import os
 import time
+from collections.abc import Iterator
 from contextlib import contextmanager
-from typing import Iterator
 
 _log = logging.getLogger("hive.hardware")
 

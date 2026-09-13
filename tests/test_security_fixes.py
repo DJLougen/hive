@@ -13,9 +13,8 @@ import pytest
 
 from hive import HiveStack
 from hive.feedback import FeedbackBuffer, OutcomeType, RoutingOutcome
-from hive.rust_brain import RustBrain
 from hive.rule_fast import RuleFastHoneyComb
-
+from hive.rust_brain import RustBrain
 
 # ---------------------------------------------------------------------------
 # 1. HIGH — Policy poisoning

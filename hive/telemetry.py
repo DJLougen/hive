@@ -308,8 +308,7 @@ class Telemetry:
             return 0
 
         with open(path, "w", encoding="utf-8") as fh:
-            for record in events:
-                fh.write(json.dumps(record, default=str) + "\n")
+            fh.writelines(json.dumps(record, default=str) + "\n" for record in events)
 
         _log.info("Exported %d events to %s", len(events), path)
         return len(events)
@@ -322,7 +321,13 @@ class Telemetry:
     def start_prometheus_server(self, port: int = 9090) -> None:
         """Start a Prometheus metrics HTTP endpoint (blocking; run in thread)."""
         try:
-            from prometheus_client import start_http_server, Gauge, Counter, Histogram, CollectorRegistry
+            from prometheus_client import (
+                CollectorRegistry,
+                Counter,
+                Gauge,
+                Histogram,
+                start_http_server,
+            )
 
             # Use a fresh registry so multiple Telemetry instances don't collide
             registry = CollectorRegistry()
@@ -345,8 +350,8 @@ class Telemetry:
         """Enable OpenTelemetry span creation for every recorded event."""
         try:
             from opentelemetry import trace
-            from opentelemetry.sdk.trace import TracerProvider
             from opentelemetry.sdk.resources import Resource
+            from opentelemetry.sdk.trace import TracerProvider
 
             resource = Resource.create({"service.name": "hive"})
             provider = TracerProvider(resource=resource)

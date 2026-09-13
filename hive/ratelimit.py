@@ -95,4 +95,4 @@ class RateLimiter:
                     del self._buckets[key]
 
 
-__all__ = ["TokenBucket", "RateLimiter"]
+__all__ = ["RateLimiter", "TokenBucket"]

@@ -24,7 +24,9 @@ from base64 import b64decode, b64encode
 from typing import Any
 
 try:
-    from cryptography.hazmat.primitives.ciphers.aead import AESGCM  # type: ignore[import]
+    from cryptography.hazmat.primitives.ciphers.aead import (
+        AESGCM,  # type: ignore[import]
+    )
 
     _HAS_CRYPTO = True
 except Exception:  # pragma: no cover
@@ -41,7 +43,7 @@ class Encryptor:
         self._enabled = True
 
     @classmethod
-    def from_env(cls, env_var: str = "HIVE_ENCRYPTION_KEY") -> "Encryptor":
+    def from_env(cls, env_var: str = "HIVE_ENCRYPTION_KEY") -> Encryptor:
         """Create an encryptor from an environment variable.
 
         If the variable is absent or empty, encryption is disabled
@@ -56,7 +58,7 @@ class Encryptor:
         return cls(key)
 
     @classmethod
-    def _disabled(cls) -> "Encryptor":
+    def _disabled(cls) -> Encryptor:
         """No-op encryptor for backward compatibility."""
         inst = cls.__new__(cls)
         inst._key = b""

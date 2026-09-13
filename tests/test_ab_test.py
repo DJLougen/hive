@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-
 from hive.ab_test import ABTestHarness
 from hive.feedback import OutcomeType
 

@@ -19,27 +19,28 @@ import itertools
 import logging
 import time
 from collections import deque
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from typing import Any, Mapping, Sequence
+from typing import Any
 
-from hive.rust_brain import EdgeKind, MemoryNode, RustBrain
-from hive.telemetry import Telemetry
-from hive.feedback import FeedbackBuffer, RoutingOutcome, OutcomeType
-from hive.policy_updater import PolicyUpdater
-from hive.schemas import validate_state, validate_memory
-from hive.config import HiveConfig
-from hive.ratelimit import RateLimiter
 from hive.circuitbreaker import CircuitBreaker
+from hive.config import HiveConfig
+from hive.feedback import FeedbackBuffer, OutcomeType, RoutingOutcome
+from hive.policy_updater import PolicyUpdater
+from hive.ratelimit import RateLimiter
+from hive.rust_brain import EdgeKind, MemoryNode, RustBrain
+from hive.schemas import validate_memory, validate_state
+from hive.telemetry import Telemetry
 
 __all__ = [
-    "HiveStack",
-    "RouteDecision",
     "CompressedTurn",
-    "HiveUnavailable",
-    "Telemetry",
     "FeedbackBuffer",
-    "RoutingOutcome",
+    "HiveStack",
+    "HiveUnavailable",
     "OutcomeType",
+    "RouteDecision",
+    "RoutingOutcome",
+    "Telemetry",
 ]
 
 _log = logging.getLogger("hive.stack")
@@ -409,7 +410,7 @@ class HiveStack:
 
     def record_outcome(
         self,
-        decision: "RouteDecision | None",
+        decision: RouteDecision | None,
         actual_action: str | None,
         outcome_type: OutcomeType | str,
     ) -> None:

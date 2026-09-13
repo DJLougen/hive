@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from hive.rust_brain import RustBrain
 from hive import HiveStack
 from hive.rule_fast import RuleFastHoneyComb
+from hive.rust_brain import RustBrain
 
 
 def test_tenant_a_cannot_read_tenant_b():

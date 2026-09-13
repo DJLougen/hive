@@ -11,8 +11,8 @@ import json
 import logging
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from typing import Any
 from pathlib import Path
+from typing import Any
 
 from busybee_cpu.policy import CpuActionPolicy
 from busybee_cpu.rows import tool_names as _tool_names
@@ -33,7 +33,7 @@ CORS_ORIGINS = "*"
 class SessionTracker:
     """Tracks per-session prediction history for workflow awareness."""
 
-    __slots__ = ("_sessions", "_max_history")
+    __slots__ = ("_max_history", "_sessions")
 
     def __init__(self, max_history: int = 20) -> None:
         self._sessions: dict[str, list[dict[str, Any]]] = {}

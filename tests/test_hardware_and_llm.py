@@ -6,10 +6,10 @@ behaviour we test is the graceful-degradation contract.
 
 from __future__ import annotations
 
-
 import pytest
 
-from hive import hardware, llm as llm_mod
+from hive import hardware
+from hive import llm as llm_mod
 
 
 def test_hardware_init_returns_string(monkeypatch):

@@ -16,15 +16,16 @@ from __future__ import annotations
 
 import asyncio
 import functools
-from typing import Any, Mapping, Sequence
+from collections.abc import Mapping, Sequence
+from typing import Any
 
 from hive import HiveStack
-from hive.config import HiveConfig
-from hive.ratelimit import RateLimiter
-from hive.telemetry import Telemetry
-from hive.feedback import FeedbackBuffer
-from hive.stack import CompressedTurn, RouteDecision
 from hive.circuitbreaker import CircuitBreaker
+from hive.config import HiveConfig
+from hive.feedback import FeedbackBuffer
+from hive.ratelimit import RateLimiter
+from hive.stack import CompressedTurn, RouteDecision
+from hive.telemetry import Telemetry
 
 
 class AsyncHiveStack:
