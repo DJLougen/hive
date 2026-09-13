@@ -152,6 +152,7 @@ class HiveStack:
         rate_limiter: RateLimiter | None = None,
         max_content_bytes: int = 1_048_576,
         circuit_breaker: CircuitBreaker | None = None,
+        gossip: Any | None = None,
     ) -> None:
         self.config = config or HiveConfig()
         self.busybee = busybee_policy
@@ -200,6 +201,11 @@ class HiveStack:
         # Monotonic fallback for step() when the caller's state carries no
         # explicit "step" key — avoids clobbering decision:0 every call.
         self._auto_step = itertools.count()
+        # Optional cross-node replication: remember() publishes each node.
+        self.gossip = gossip
+        # In-memory audit trail (bounded), populated when config.audit_enabled.
+        # Hand entries to hive.audit_export.AuditExporter for SIEM delivery.
+        self._audit_events: deque[dict[str, Any]] = deque(maxlen=10_000)
 
     @property
     def feedback_buffer(self) -> FeedbackBuffer | None:
@@ -241,6 +247,12 @@ class HiveStack:
                 )
             self._last_decision = decision
             self._pending_decisions.append((self._last_state, decision))
+            self._audit(
+                "route",
+                tool=decision.tool,
+                source=decision.source,
+                escalated=decision.escalated,
+            )
             return decision
         t0 = time.perf_counter()
         action = self.busybee.predict(dict(state))
@@ -263,6 +275,12 @@ class HiveStack:
             )
         self._last_decision = decision
         self._pending_decisions.append((self._last_state or {}, decision))
+        self._audit(
+            "route",
+            tool=decision.tool,
+            source=decision.source,
+            escalated=decision.escalated,
+        )
         return decision
 
     # -- honey-comb ---------------------------------------------------------
@@ -391,6 +409,18 @@ class HiveStack:
                 has_tags=bool(tags),
                 latency_ms=elapsed_ms,
             )
+        if self.gossip is not None:
+            try:
+                self.gossip.publish(node.to_dict())
+            except Exception:
+                _log.debug("gossip publish failed for %r", key, exc_info=True)
+        self._audit(
+            "remember",
+            key=key,
+            trust=trust,
+            tags=list(tags or ()),
+            caused_by=list(caused_by or ()),
+        )
         return node
 
     def recall(self, key: str, default: Any = None) -> Any:
@@ -457,6 +487,11 @@ class HiveStack:
                 "record_outcome decision does not match a recent route(); "
                 "rejected — possible policy poisoning attempt"
             )
+            self._audit(
+                "record_outcome_rejected",
+                tool=decision.tool,
+                actual_action=actual_action,
+            )
             return  # Reject forged feedback to prevent policy poisoning
 
         state = dict(match[0])
@@ -468,6 +503,12 @@ class HiveStack:
             outcome_type=outcome_type,
         )
 
+        self._audit(
+            "record_outcome",
+            tool=decision.tool,
+            actual_action=actual_action,
+            outcome_type=outcome_type.value,
+        )
         self.feedback.add(outcome)
         _log.debug(
             "Recorded %s outcome for %s (buffer: %d/%d)",
@@ -550,6 +591,26 @@ class HiveStack:
             "compressed": compressed,
             "stats": self.stats(),
         }
+
+    # -- audit ---------------------------------------------------------------
+
+    def _audit(self, action: str, **detail: Any) -> None:
+        """Append an audit event when ``config.audit_enabled`` is set."""
+        if not self.config.audit_enabled:
+            return
+        self._audit_events.append(
+            {
+                "ts": time.time(),
+                "id": f"{time.time_ns()}-{self._tenant_id}",
+                "tenant_id": self._tenant_id,
+                "action": action,
+                **detail,
+            }
+        )
+
+    def audit_events(self) -> list[dict[str, Any]]:
+        """Captured audit events (bounded). Feed to AuditExporter for SIEM."""
+        return list(self._audit_events)
 
     # -- telemetry ----------------------------------------------------------
 

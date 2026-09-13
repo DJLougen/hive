@@ -364,3 +364,77 @@ async def test_stream_router_reports_real_source():
     assert "source" not in routing  # no fabricated source pre-decision
     decision = next(c for c in chunks if c["stage"] == "decision")
     assert decision["source"] == "fallback"  # no busybee policy → fallback
+
+
+# ---------------------------------------------------------------------------
+# gossip: remember() publishes to attached GossipProtocol
+# ---------------------------------------------------------------------------
+
+def test_remember_publishes_to_gossip():
+    from hive.gossip import GossipProtocol
+
+    src = RustBrain()
+    dst = RustBrain()
+    g_src = GossipProtocol(src, peers=[])
+    g_dst = GossipProtocol(dst, peers=[])
+    stack = HiveStack(
+        honey_comb=RuleFastHoneyComb(), rust_brain=src, gossip=g_src
+    )
+
+    stack.remember("k", {"v": 1}, trust=0.5, tags=("t",), caused_by=("root",))
+    batch = [g_src._queue.get_nowait()]
+    assert g_dst.receive(batch) == 1
+    node = dst.get("k")
+    assert node.value == {"v": 1}
+    assert node.trust == pytest.approx(0.5)
+    assert node.tags == {"t"}
+    assert "root" in node.edges["caused_by"]
+
+
+def test_remember_works_when_gossip_publish_fails():
+    class BrokenGossip:
+        def publish(self, event):
+            raise RuntimeError("peer down")
+
+    stack = HiveStack(
+        honey_comb=RuleFastHoneyComb(), gossip=BrokenGossip()
+    )
+    node = stack.remember("k", "v")
+    assert node.key == "k"
+
+
+# ---------------------------------------------------------------------------
+# audit_enabled: stack captures an auditable event trail
+# ---------------------------------------------------------------------------
+
+def test_audit_events_captured_when_enabled():
+    from hive.config import HiveConfig
+    from hive.feedback import FeedbackBuffer, OutcomeType
+    from hive.stack import RouteDecision
+
+    stack = HiveStack(
+        honey_comb=RuleFastHoneyComb(),
+        feedback_buffer=FeedbackBuffer(capacity=4),
+        config=HiveConfig(audit_enabled=True),
+        tenant_id="acme",
+    )
+    assert stack.audit_events() == []
+    d = stack.route({"goal": "g"})
+    stack.remember("k", "v")
+    stack.record_outcome(d, "escalate", OutcomeType.CORRECT)
+    # A forged decision also lands in the trail (policy-poisoning signal).
+    fake = RouteDecision(tool="x", args={}, confidence=1.0, escalated=False, source="busybee")
+    stack.record_outcome(fake, "x", OutcomeType.CORRECT)
+
+    actions = [e["action"] for e in stack.audit_events()]
+    assert actions == [
+        "route", "remember", "record_outcome", "record_outcome_rejected"
+    ]
+    assert all(e["tenant_id"] == "acme" for e in stack.audit_events())
+
+
+def test_audit_disabled_by_default():
+    stack = HiveStack(honey_comb=RuleFastHoneyComb())
+    stack.route({"goal": "g"})
+    stack.remember("k", "v")
+    assert stack.audit_events() == []

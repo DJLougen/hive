@@ -49,6 +49,7 @@ class AsyncHiveStack:
         config: HiveConfig | None = None,
         rate_limiter: RateLimiter | None = None,
         circuit_breaker: CircuitBreaker | None = None,
+        gossip: Any | None = None,
     ) -> None:
         self._lock = asyncio.Lock()
         self._stack = HiveStack(
@@ -62,6 +63,7 @@ class AsyncHiveStack:
             config=config,
             rate_limiter=rate_limiter,
             circuit_breaker=circuit_breaker,
+            gossip=gossip,
         )
 
 
