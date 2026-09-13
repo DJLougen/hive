@@ -28,10 +28,11 @@ from __future__ import annotations
 import argparse
 import json
 import logging
-from typing import Any, Iterable
+from collections.abc import Iterable
+from typing import Any
 
-from hive import HiveStack
-from hive import hardware, llm as llm_mod
+from hive import HiveStack, hardware
+from hive import llm as llm_mod
 from hive.rust_brain import EdgeKind
 
 _log = logging.getLogger("hive.integration")

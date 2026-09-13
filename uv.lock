@@ -1933,6 +1933,22 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
+agents = [
+    { name = "fastapi" },
+    { name = "mcp" },
+    { name = "uvicorn", extra = ["standard"] },
+]
+dev = [
+    { name = "build" },
+    { name = "mypy" },
+    { name = "pip-audit" },
+    { name = "pre-commit" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "pytest-cov" },
+    { name = "ruff" },
+    { name = "twine" },
+]
 full = [
     { name = "busybee-cpu" },
     { name = "honey-comb" },
@@ -1940,6 +1956,12 @@ full = [
 gpu = [
     { name = "torch" },
     { name = "transformers" },
+]
+http = [
+    { name = "httpx" },
+]
+mcp = [
+    { name = "mcp" },
 ]
 monitor = [
     { name = "pynvml" },
@@ -1951,6 +1973,10 @@ observability = [
 ]
 performance = [
     { name = "hive-cpp" },
+]
+server = [
+    { name = "fastapi" },
+    { name = "uvicorn", extra = ["standard"] },
 ]
 vllm = [
     { name = "vllm" },
@@ -1971,24 +1997,40 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "build", marker = "extra == 'dev'", specifier = ">=1.2" },
     { name = "busybee-cpu", marker = "extra == 'full'", git = "https://github.com/DJLougen/busyBee-cpu.git" },
     { name = "cryptography", specifier = ">=43.0" },
+    { name = "fastapi", marker = "extra == 'agents'", specifier = ">=0.115" },
+    { name = "fastapi", marker = "extra == 'server'", specifier = ">=0.115" },
     { name = "hive-cpp", marker = "extra == 'performance'", editable = "hive-cpp" },
     { name = "honey-comb", marker = "extra == 'full'", git = "https://github.com/DJLougen/honey-comb.git" },
+    { name = "httpx", marker = "extra == 'http'", specifier = ">=0.28" },
     { name = "joblib", specifier = ">=1.4" },
+    { name = "mcp", marker = "extra == 'agents'", specifier = ">=1.0" },
+    { name = "mcp", marker = "extra == 'mcp'", specifier = ">=1.0" },
+    { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.13" },
     { name = "numpy", specifier = ">=1.26" },
     { name = "opentelemetry-api", marker = "extra == 'observability'", specifier = ">=1.27" },
     { name = "opentelemetry-sdk", marker = "extra == 'observability'", specifier = ">=1.27" },
+    { name = "pip-audit", marker = "extra == 'dev'", specifier = ">=2.7" },
+    { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=4.0" },
     { name = "prometheus-client", marker = "extra == 'observability'", specifier = ">=0.21" },
     { name = "pydantic", specifier = ">=2.10" },
     { name = "pyjwt", specifier = ">=2.10" },
     { name = "pynvml", marker = "extra == 'monitor'", specifier = ">=12.0" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.3" },
+    { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.24" },
+    { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=5.0" },
+    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.8,<0.17" },
     { name = "scikit-learn", specifier = ">=1.4" },
     { name = "torch", marker = "extra == 'gpu'", specifier = ">=2.5" },
     { name = "transformers", marker = "extra == 'gpu'", specifier = ">=4.46" },
+    { name = "twine", marker = "extra == 'dev'", specifier = ">=5.1" },
+    { name = "uvicorn", extras = ["standard"], marker = "extra == 'agents'", specifier = ">=0.32" },
+    { name = "uvicorn", extras = ["standard"], marker = "extra == 'server'", specifier = ">=0.32" },
     { name = "vllm", marker = "extra == 'vllm'", specifier = ">=0.6" },
 ]
-provides-extras = ["full", "gpu", "vllm", "monitor", "performance", "observability"]
+provides-extras = ["full", "gpu", "vllm", "monitor", "performance", "observability", "dev", "server", "mcp", "agents", "http"]
 
 [package.metadata.requires-dev]
 dev = [

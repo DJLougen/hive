@@ -79,7 +79,7 @@ class Span:
         self.started = time.perf_counter()
         return self
 
-    def __exit__(self, *exc: Any) -> None:
+    def __exit__(self, *exc: object) -> None:
         self.ended = time.perf_counter()
 
     @property

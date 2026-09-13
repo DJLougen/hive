@@ -16,7 +16,6 @@ from hive.mcp_config import (
 )
 from hive.mcp_server import HIVE_MCP_TOOLS, make_server
 
-
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 

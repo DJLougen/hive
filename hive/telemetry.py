@@ -108,6 +108,7 @@ class Telemetry:
 
     jsonl_path: str | None = None
     _otel_enabled: bool = field(default=False, repr=False)
+    _otel_tracer: Any = field(default=None, repr=False)
     _prom_enabled: bool = field(default=False, repr=False)
     _prom: dict[str, Any] = field(default_factory=dict, repr=False)
 
@@ -127,6 +128,16 @@ class Telemetry:
                     fh.write(json.dumps(record, default=str) + "\n")
             except OSError as exc:
                 _log.warning("jsonl export failed: %s", exc)
+        if self._otel_enabled and self._otel_tracer is not None:
+            try:
+                with self._otel_tracer.start_as_current_span(
+                    f"hive.{record.get('event', 'event')}"
+                ) as span:
+                    for k, v in record.items():
+                        if isinstance(v, (bool, int, float, str)):
+                            span.set_attribute(k, v)
+            except Exception as exc:  # pragma: no cover - exporter errors
+                _log.debug("otel span failed: %s", exc)
 
     # -- recording helpers (called by HiveStack) --------------------------
 
@@ -297,8 +308,7 @@ class Telemetry:
             return 0
 
         with open(path, "w", encoding="utf-8") as fh:
-            for record in events:
-                fh.write(json.dumps(record, default=str) + "\n")
+            fh.writelines(json.dumps(record, default=str) + "\n" for record in events)
 
         _log.info("Exported %d events to %s", len(events), path)
         return len(events)

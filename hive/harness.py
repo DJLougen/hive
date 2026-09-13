@@ -56,7 +56,7 @@ def load_routing_policy(*, model_path: str | Path | None = None) -> RoutingPolic
             _log.warning("Failed to load busyBee model %s: %s — using rule-based fallback", model_path, exc)
 
     try:
-        from busybee_cpu import CpuActionPolicy  # type: ignore[import-not-found]  # noqa: F401
+        from busybee_cpu import CpuActionPolicy  # type: ignore[import-not-found]
 
         _log.info("busyBee-cpu installed but no model path given — using rule-based fallback")
     except Exception:

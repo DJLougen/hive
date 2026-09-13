@@ -10,7 +10,11 @@ from __future__ import annotations
 from typing import Any
 
 try:
-    from pydantic import BaseModel, Field, ValidationError  # type: ignore[import-not-found]
+    from pydantic import (  # type: ignore[import-not-found]
+        BaseModel,
+        Field,
+        ValidationError,
+    )
 
     _HAS_PYDANTIC = True
 except Exception:  # pragma: no cover

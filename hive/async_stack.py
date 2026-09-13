@@ -15,6 +15,7 @@ Usage::
 from __future__ import annotations
 
 import asyncio
+import functools
 from collections.abc import Mapping, Sequence
 from typing import Any
 
@@ -48,6 +49,7 @@ class AsyncHiveStack:
         config: HiveConfig | None = None,
         rate_limiter: RateLimiter | None = None,
         circuit_breaker: CircuitBreaker | None = None,
+        gossip: Any | None = None,
     ) -> None:
         self._lock = asyncio.Lock()
         self._stack = HiveStack(
@@ -61,6 +63,7 @@ class AsyncHiveStack:
             config=config,
             rate_limiter=rate_limiter,
             circuit_breaker=circuit_breaker,
+            gossip=gossip,
         )
 
 
@@ -92,12 +95,28 @@ class AsyncHiveStack:
         )
 
     async def remember(
-        self, key: str, value: Any, *, trust: float = 1.0, tags: set[str] | None = None
+        self,
+        key: str,
+        value: Any,
+        *,
+        trust: float = 1.0,
+        tags: Sequence[str] | None = None,
+        caused_by: Sequence[str] | None = None,
     ) -> Any:
         async with self._lock:
             loop = asyncio.get_running_loop()
+            # functools.partial so the keyword-only args actually reach
+            # HiveStack.remember — run_in_executor forwards positionals only.
             return await loop.run_in_executor(
-                None, self._stack.remember, key, value,
+                None,
+                functools.partial(
+                    self._stack.remember,
+                    key,
+                    value,
+                    trust=trust,
+                    tags=tags,
+                    caused_by=caused_by,
+                ),
             )
 
     async def recall(self, key: str, default: Any = None) -> Any:
@@ -107,12 +126,14 @@ class AsyncHiveStack:
     async def step(
         self, state: Mapping[str, Any], transcript: Sequence[tuple[str, str]]
     ) -> dict[str, Any]:
-        decision = await self.route(state)
-        compressed = await self.compress_many(transcript)
-        return {
-            "decision": decision,
-            "compressed": compressed,
-        }
+        # Delegate the whole step so the result matches HiveStack.step()
+        # exactly: last-turn compression, decision persisted to the brain,
+        # and a stats payload.
+        loop = asyncio.get_running_loop()
+        return await loop.run_in_executor(
+            None,
+            functools.partial(self._stack.step, dict(state), transcript),
+        )
 
     async def stats(self) -> dict[str, Any]:
         async with self._lock:

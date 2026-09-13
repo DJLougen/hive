@@ -34,9 +34,15 @@ class StreamRouter:
         yield {"stage": "start", "state": state.get("goal", "")}
         await asyncio.sleep(0)  # yield control
 
-        yield {"stage": "routing", "source": "busybee"}
-        decision = self._stack.route(state)
-        yield {"stage": "decision", "tool": decision.tool, "confidence": decision.confidence}
+        yield {"stage": "routing"}
+        loop = asyncio.get_running_loop()
+        decision = await loop.run_in_executor(None, self._stack.route, state)
+        yield {
+            "stage": "decision",
+            "tool": decision.tool,
+            "confidence": decision.confidence,
+            "source": decision.source,
+        }
         yield {"stage": "done", "decision": {
             "tool": decision.tool,
             "args": decision.args,

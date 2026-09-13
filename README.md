@@ -133,7 +133,8 @@ hive/
 ├── health.py           # Kubernetes-style health & readiness probes
 │
 │   distributed
-├── gossip.py           # GossipProtocol — cross-node memory replication
+├── gossip.py           # GossipProtocol — cross-node replication preserving causal
+│                       #   edges + HLC, optional shared-token auth
 ├── deployment.py       # DeploymentMarker — blue-green / canary rollout markers
 │
 │   observability
@@ -249,14 +250,23 @@ stack = HiveStack(
     telemetry=None,           # Telemetry collector
     feedback_buffer=None,     # FeedbackBuffer for online learning
     tenant_id="default",      # multi-tenant memory isolation
-    validate=False,           # Pydantic validation of inputs
+    validate=False,           # Pydantic validation: normalizes route() state and
+                              #   rejects invalid remember() writes
     config=None,              # HiveConfig
     rate_limiter=None,        # RateLimiter (per-tenant)
     circuit_breaker=None,     # CircuitBreaker for the LLM path
+    gossip=None,              # GossipProtocol — remember() publishes each node
+                              #   to peers when attached
     max_content_bytes=1_048_576,
     backend=None,             # "python" | "native" | "auto"; or set HIVE_BACKEND env var
 )
 ```
+
+With `config=HiveConfig(audit_enabled=True)` the stack also keeps a bounded
+(10k) in-memory audit trail of `route` / `remember` / `record_outcome` calls —
+including rejected feedback, which is the policy-poisoning signal. Read it with
+`stack.audit_events()` and ship it to your SIEM via
+`hive.audit_export.AuditExporter`.
 
 Methods: `route`, `compress`, `compress_many`, `remember`, `recall`, `record_outcome`, `should_update_policy`, `update_policy`, `step`, `stats`. The causal store is exposed directly as `stack.brain`. `stats()` includes the active `backend` (`python` or `native`).
 
@@ -305,7 +315,7 @@ if stack.should_update_policy():     # True once the feedback buffer is full
     stack.update_policy()            # retrains busyBee (or LinUCB policy) in place; returns bool
 ```
 
-`record_outcome` rejects feedback that does not match the most recent `route()` call — an anti-policy-poisoning guard. For contextual-bandit routing without sklearn, pass a `LinUCBPolicy` from `hive.policy_updater` as `busybee_policy`.
+`record_outcome` matches feedback against a bounded window of recent `route()` calls (32 decisions) — out-of-order outcomes still land on the state that produced them, and feedback for an unknown decision is rejected as a possible policy-poisoning attempt. For contextual-bandit routing without sklearn, pass a `LinUCBPolicy` from `hive.policy_updater` as `busybee_policy`.
 
 ---
 
@@ -347,7 +357,10 @@ stack.brain.supersede(
 
 # Day 14 — same endpoint breaks again; walk the chain for provenance
 prior = stack.brain.neighbours("endpoint_health", "supersedes")
-# → ["endpoint_health"]: the original 500 / pool-exhausted observation.
+# → ["endpoint_health"]: the superseded link on the live node.
+history = stack.brain.history("endpoint_health")
+# → [MemoryNode(...)]: the original 500 / pool-exhausted observation itself,
+#   retained as a bounded supersession chain (also persisted in snapshots).
 #   The agent reconstructs "this was fixed two weeks ago by raising the pool" —
 #   something a pure vector store cannot recover from embeddings alone.
 ```
@@ -401,7 +414,7 @@ Wheels for Linux / macOS / Windows (x86_64 + aarch64) are built by the `rust-whe
 
 Hive ships container and orchestration assets:
 
-- **HTTP server** — [`scripts/hive_api_server.py`](scripts/hive_api_server.py) (FastAPI). Endpoints: `POST /route`, `POST /compress`, `POST /remember`, `GET /recall`, plus `GET /health` and `GET /ready` probes. Install with `pip install "hive-agent-memory[server]"`. `AsyncHiveStack` backs high-throughput deployments.
+- **HTTP server** — [`scripts/hive_api_server.py`](scripts/hive_api_server.py) (FastAPI). Endpoints: `POST /route`, `POST /compress`, `POST /remember`, `GET /recall`, plus `GET /health` and `GET /ready` probes. Set `HIVE_API_TOKEN` to require `Authorization: Bearer <token>` on the data endpoints (probes and OpenAPI stay public; unset = open for local dev). `AsyncHiveStack` backs high-throughput deployments.
 - **MCP server** — [`hive-mcp`](hive/mcp_server.py) (stdio or SSE). Install with `pip install "hive-agent-memory[agents]"`. Bundled configs for **Cursor**, **Claude Desktop**, and **Codex** — see [docs/MCP_SETUP.md](docs/MCP_SETUP.md). Quick install: `python -m hive.mcp install --all`.
 - **Harness integration** — Hermes, OpenClaw, SWE-bench eval, and MCP bridge — see [docs/HARNESS_SETUP.md](docs/HARNESS_SETUP.md).
 - **Helm chart** — [`deploy/helm/`](deploy/helm/) (chart `0.6.1`).
@@ -414,8 +427,8 @@ Enterprise concerns are first-class modules, documented in [docs/USAGE.md](docs/
 |---|---|
 | AuthN / AuthZ | `hive.auth` — JWT + RBAC |
 | Encryption at rest | `hive.encryption` |
-| Untrusted-model safety | `hive.model_registry` — signed `.joblib`, blocks pickle RCE |
-| Audit / SIEM | `hive.audit_export` |
+| Untrusted-model safety | `hive.model_registry` — Ed25519-signed `.joblib` (`sign_model()`), blocks pickle RCE |
+| Audit / SIEM | `HiveConfig(audit_enabled=True)` + `hive.audit_export` |
 | Rate limiting | `hive.ratelimit` — per-tenant token bucket |
 | Circuit breaking | `hive.circuitbreaker` |
 | Multi-tenancy | `RustBrain(tenant_id=…, tenant_isolation=True)` — supports `revoke_tenant()` for GDPR Article 17 mass-erase |

@@ -15,8 +15,10 @@ last-ditch fallback so the stack remains usable on a fresh checkout.
 
 from __future__ import annotations
 
+import itertools
 import logging
 import time
+from collections import deque
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any
@@ -28,7 +30,7 @@ from hive.feedback import FeedbackBuffer, OutcomeType, RoutingOutcome
 from hive.policy_updater import PolicyUpdater
 from hive.ratelimit import RateLimiter
 from hive.rust_brain import EdgeKind, MemoryNode, RustBrain
-from hive.schemas import validate_state
+from hive.schemas import validate_memory, validate_state
 from hive.telemetry import Telemetry
 
 __all__ = [
@@ -62,7 +64,7 @@ class RouteDecision:
     args: dict[str, Any]
     confidence: float
     escalated: bool
-    source: str  # "busybee" | "honeycomb-escalate" | "fallback"
+    source: str  # "busybee" | "fallback" | "ratelimit"
 
 
 @dataclass(slots=True)
@@ -152,6 +154,7 @@ class HiveStack:
         max_content_bytes: int = 1_048_576,
         circuit_breaker: CircuitBreaker | None = None,
         backend: str | None = None,
+        gossip: Any | None = None,
     ) -> None:
         self.config = config or HiveConfig()
         self._backend = resolve_backend(backend)  # type: ignore[arg-type]
@@ -165,19 +168,45 @@ class HiveStack:
             tenant_id=tenant_id,
             tenant_isolation=self.config.tenant_isolation,
             default_ttl_s=self.config.default_ttl_s,
+            max_nodes=self.config.max_memory_nodes,
         )
         self._tenant_id = tenant_id
         self._validate = validate or self.config.validate_inputs
+        if rate_limiter is None and self.config.rate_limit > 0:
+            # config.rate_limit is interpreted as requests/sec per operation
+            # per tenant, with burst capacity equal to the same value.
+            rate_limiter = RateLimiter(
+                default_capacity=self.config.rate_limit,
+                refill_rate=float(self.config.rate_limit),
+            )
         self.rate_limiter = rate_limiter
         self.circuit_breaker = circuit_breaker
         self._max_content_bytes = max_content_bytes
         self.telemetry = telemetry
+        if telemetry is not None:
+            if self.config.otel_endpoint:
+                telemetry.enable_otel_traces()
+            if self.config.prometheus_port:
+                telemetry.start_prometheus_server(self.config.prometheus_port)
         self.feedback = feedback_buffer
         self._policy_updater = PolicyUpdater() if feedback_buffer is not None else None
 
-        # Track last routing decision for feedback
+        # Recent (state, decision) pairs eligible for record_outcome feedback.
+        # Bounded so out-of-order feedback for the last few decisions is
+        # accepted, while arbitrary/forged decisions are still rejected.
+        self._pending_decisions: deque[tuple[dict[str, Any], RouteDecision]] = deque(
+            maxlen=32
+        )
         self._last_state: dict[str, Any] | None = None
         self._last_decision: RouteDecision | None = None
+        # Monotonic fallback for step() when the caller's state carries no
+        # explicit "step" key — avoids clobbering decision:0 every call.
+        self._auto_step = itertools.count()
+        # Optional cross-node replication: remember() publishes each node.
+        self.gossip = gossip
+        # In-memory audit trail (bounded), populated when config.audit_enabled.
+        # Hand entries to hive.audit_export.AuditExporter for SIEM delivery.
+        self._audit_events: deque[dict[str, Any]] = deque(maxlen=10_000)
 
     @property
     def feedback_buffer(self) -> FeedbackBuffer | None:
@@ -197,7 +226,7 @@ class HiveStack:
                 source="ratelimit",
             )
         if self._validate:
-            validate_state(state)
+            state = validate_state(dict(state))
         # Store state for later feedback
         self._last_state = dict(state)
 
@@ -218,6 +247,13 @@ class HiveStack:
                     escalated=True,
                 )
             self._last_decision = decision
+            self._pending_decisions.append((self._last_state, decision))
+            self._audit(
+                "route",
+                tool=decision.tool,
+                source=decision.source,
+                escalated=decision.escalated,
+            )
             return decision
         t0 = time.perf_counter()
         if self._native:
@@ -244,6 +280,13 @@ class HiveStack:
                 escalated=decision.escalated,
             )
         self._last_decision = decision
+        self._pending_decisions.append((self._last_state or {}, decision))
+        self._audit(
+            "route",
+            tool=decision.tool,
+            source=decision.source,
+            escalated=decision.escalated,
+        )
         return decision
 
     # -- honey-comb ---------------------------------------------------------
@@ -262,14 +305,10 @@ class HiveStack:
                 f"compress() content exceeds max_content_bytes ({self._max_content_bytes})"
             )
 
-        # The Message type lives in either honey-comb or rule_fast; we
-        # use whichever the active compressor expects. Both have the
-        # same constructor signature.
-        from dataclasses import fields
-
         # Sniff whether the active compressor's Message wants a
-        # ``content_type`` kwarg. If not, drop it.
-        msg_fields = {f.name for f in fields(self._message_cls())}
+        # ``content_type`` kwarg. If not, drop it. Field names are
+        # cached next to the class so the hot path skips reflection.
+        msg_fields = self._message_fields()
         kwargs: dict[str, Any] = {"role": role, "content": content}
         if "content_type" in msg_fields and content_type is not None:
             kwargs["content_type"] = content_type
@@ -348,6 +387,17 @@ class HiveStack:
         self._msg_cls = cached
         return cached
 
+    def _message_fields(self) -> frozenset[str]:
+        """Field names of the active compressor's Message class (cached)."""
+        cached = getattr(self, "_msg_fields", None)
+        if cached is not None:
+            return cached
+        from dataclasses import fields
+
+        cached = frozenset(f.name for f in fields(self._message_cls()))
+        self._msg_fields = cached
+        return cached
+
     # -- rust-brain ---------------------------------------------------------
 
     def remember(
@@ -360,6 +410,11 @@ class HiveStack:
         caused_by: Sequence[str] | None = None,
     ) -> MemoryNode:
         """Write a memory node, optionally causal-linked to earlier nodes."""
+        if self._validate:
+            validated = validate_memory(key, value, trust=trust)
+            key = validated["key"]
+            value = validated["value"]
+            trust = validated["trust"]
         edges = {EdgeKind.CAUSED_BY: list(caused_by)} if caused_by else None
         t0 = time.perf_counter()
         node = self.brain.remember(
@@ -378,6 +433,18 @@ class HiveStack:
                 has_tags=bool(tags),
                 latency_ms=elapsed_ms,
             )
+        if self.gossip is not None:
+            try:
+                self.gossip.publish(node.to_dict())
+            except Exception:
+                _log.debug("gossip publish failed for %r", key, exc_info=True)
+        self._audit(
+            "remember",
+            key=key,
+            trust=trust,
+            tags=list(tags or ()),
+            caused_by=list(caused_by or ()),
+        )
         return node
 
     def recall(self, key: str, default: Any = None) -> Any:
@@ -428,20 +495,30 @@ class HiveStack:
             except ValueError:
                 outcome_type = OutcomeType.UNKNOWN
 
-        if self._last_decision is None or not (
-            decision.tool == self._last_decision.tool
-            and decision.args == self._last_decision.args
-            and decision.source == self._last_decision.source
-            and decision.confidence == self._last_decision.confidence
-            and decision.escalated == self._last_decision.escalated
-        ):
+        match: tuple[dict[str, Any], RouteDecision] | None = None
+        for pending_state, pending_decision in self._pending_decisions:
+            if (
+                decision.tool == pending_decision.tool
+                and decision.args == pending_decision.args
+                and decision.source == pending_decision.source
+                and decision.confidence == pending_decision.confidence
+                and decision.escalated == pending_decision.escalated
+            ):
+                match = (pending_state, pending_decision)
+                break
+        if match is None:
             _log.warning(
-                "record_outcome decision does not match the most recent route(); "
+                "record_outcome decision does not match a recent route(); "
                 "rejected — possible policy poisoning attempt"
+            )
+            self._audit(
+                "record_outcome_rejected",
+                tool=decision.tool,
+                actual_action=actual_action,
             )
             return  # Reject forged feedback to prevent policy poisoning
 
-        state = dict(self._last_state) if self._last_state else {}
+        state = dict(match[0])
 
         outcome = RoutingOutcome(
             state=state,
@@ -450,6 +527,12 @@ class HiveStack:
             outcome_type=outcome_type,
         )
 
+        self._audit(
+            "record_outcome",
+            tool=decision.tool,
+            actual_action=actual_action,
+            outcome_type=outcome_type.value,
+        )
         self.feedback.add(outcome)
         _log.debug(
             "Recorded %s outcome for %s (buffer: %d/%d)",
@@ -512,8 +595,13 @@ class HiveStack:
         compressed = self.compress(last_role, last_content) if last_content else None
 
         # Persist the routing decision so downstream agents can audit it.
+        # When the caller supplies no explicit "step", fall back to a
+        # monotonic per-stack counter so calls don't overwrite decision:0.
+        step_no = state.get("step")
+        if step_no is None:
+            step_no = next(self._auto_step)
         self.remember(
-            key=f"decision:{state.get('step', 0)}",
+            key=f"decision:{step_no}",
             value={
                 "tool": decision.tool,
                 "args": decision.args,
@@ -527,6 +615,26 @@ class HiveStack:
             "compressed": compressed,
             "stats": self.stats(),
         }
+
+    # -- audit ---------------------------------------------------------------
+
+    def _audit(self, action: str, **detail: Any) -> None:
+        """Append an audit event when ``config.audit_enabled`` is set."""
+        if not self.config.audit_enabled:
+            return
+        self._audit_events.append(
+            {
+                "ts": time.time(),
+                "id": f"{time.time_ns()}-{self._tenant_id}",
+                "tenant_id": self._tenant_id,
+                "action": action,
+                **detail,
+            }
+        )
+
+    def audit_events(self) -> list[dict[str, Any]]:
+        """Captured audit events (bounded). Feed to AuditExporter for SIEM."""
+        return list(self._audit_events)
 
     # -- telemetry ----------------------------------------------------------
 

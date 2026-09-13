@@ -193,7 +193,7 @@ def measure_hive(
         
         ratio = original_tokens / processed_tokens if processed_tokens > 0 else 1.0
         print(f"  [{i+1}/{sample_count}] {original_tokens} -> {processed_tokens} tokens "
-              f"({ratio:.1f}×) — running inference...", end="", flush=True)
+              f"({ratio:.1f}×) — running inference...", end="", flush=True)  # noqa: RUF001
         
         m = run_one_inference(model, tokenizer, inference_text)
         
@@ -308,12 +308,12 @@ def main():
     print(f"  Baseline: {total_baseline_energy/args.prompts:.3f} J  ({avg_jtok_baseline:.4f} J/tok)")
     print(f"  Hive:     {total_hive_energy/args.prompts:.3f} J  ({avg_jtok_hive:.4f} J/tok)")
     print(f"  Savings:  {energy_saved_j/args.prompts:.3f} J  ({energy_saved_pct:.1f}%)")
-    print(f"  Avg compression ratio: {avg_compression:.2f}×")
+    print(f"  Avg compression ratio: {avg_compression:.2f}×")  # noqa: RUF001
     
     print("\n" + "=" * 60)
     print("SCALED TO REAL MODEL SIZES (FLOPs-linear projection)")
     print("=" * 60)
-    print("Transformer FLOPs/token = 2 × params -> energy scales linearly.\n")
+    print("Transformer FLOPs/token = 2 × params -> energy scales linearly.\n")  # noqa: RUF001
     print(f"{'Model':<20} {'Baseline J/tok':>14} {'Hive J/tok':>14} {'Savings %':>10}")
     print("-" * 60)
     

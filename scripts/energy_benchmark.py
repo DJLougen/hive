@@ -89,7 +89,7 @@ def measure_baseline(prompts: list, sample_count: int):
                     for _ in range(10):
                         x = torch.mm(x, x.T)
                     torch.cuda.synchronize()
-            except:
+            except Exception:
                 # No GPU, just CPU work
                 pass
         
@@ -151,7 +151,7 @@ def measure_hive(prompts: list, sample_count: int):
                     for _ in range(10):
                         x = torch.mm(x, x.T)
                     torch.cuda.synchronize()
-            except:
+            except Exception:
                 pass
         
         savings = ((original_tokens - compressed_tokens) / original_tokens * 100)

@@ -68,7 +68,7 @@ class EnergyTracker:
         """Background sampling loop."""
         try:
             process = psutil.Process() if PSUTIL_AVAILABLE else None
-        except:
+        except Exception:
             process = None
             
         while self.running:
@@ -92,7 +92,7 @@ class EnergyTracker:
                     # Rough estimate: CPU power = (percent/100) * 125W (typical TDP)
                     cpu_power_w = (cpu_percent / 100.0) * 125.0
                     self.cpu_samples.append((t, cpu_power_w))
-                except:
+                except Exception:
                     pass
             
             # Sleep until next sample

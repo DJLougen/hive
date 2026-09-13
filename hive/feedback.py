@@ -64,8 +64,12 @@ class FeedbackBuffer:
     def _append(self, outcome: RoutingOutcome) -> None:
         if len(self.buffer) >= self.capacity:
             self.buffer.pop(0)
-        # Truncate oversized state to prevent memory exhaustion DoS
-        state_size = len(json.dumps(outcome.state))
+        # Truncate oversized state to prevent memory exhaustion DoS.
+        # Non-JSON-serialisable state can't be sized — treat it as oversized.
+        try:
+            state_size = len(json.dumps(outcome.state))
+        except (TypeError, ValueError):
+            state_size = self.max_state_bytes + 1
         if state_size > self.max_state_bytes:
             outcome = RoutingOutcome(
                 state={},

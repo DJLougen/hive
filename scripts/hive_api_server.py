@@ -20,6 +20,7 @@ Endpoints:
 from __future__ import annotations
 
 import argparse
+import os
 from typing import Any
 
 from hive import HiveStack
@@ -27,7 +28,7 @@ from hive.rule_fast import RuleFastHoneyComb
 
 try:
     import uvicorn
-    from fastapi import FastAPI
+    from fastapi import Depends, FastAPI, HTTPException, Request
     from fastapi.responses import JSONResponse
     from pydantic import BaseModel, Field
 
@@ -41,6 +42,18 @@ if _HAS_FASTAPI:
 
     app = FastAPI(title="Hive Agent Memory", version=__version__)
     stack = HiveStack(honey_comb=RuleFastHoneyComb())
+
+    # Optional bearer-token auth on the data endpoints. Set HIVE_API_TOKEN
+    # to require ``Authorization: Bearer <token>`` on /route, /compress,
+    # /remember, /recall. /health, /ready and /openapi.json stay public so
+    # orchestrators and docs keep working. Unset = open (dev mode).
+    _API_TOKEN = os.environ.get("HIVE_API_TOKEN")
+
+    async def _require_auth(request: Request) -> None:
+        if _API_TOKEN is None:
+            return
+        if request.headers.get("authorization") != f"Bearer {_API_TOKEN}":
+            raise HTTPException(status_code=401, detail="invalid or missing bearer token")
 
     class RouteRequest(BaseModel):
         goal: str = Field(default="")
@@ -68,7 +81,7 @@ if _HAS_FASTAPI:
         value: Any
         trust: float = Field(default=1.0, ge=0.0, le=1.0)
 
-    @app.post("/route", response_model=RouteResponse)
+    @app.post("/route", response_model=RouteResponse, dependencies=[Depends(_require_auth)])
     async def route(req: RouteRequest) -> RouteResponse:
         d = stack.route(req.model_dump())
         return RouteResponse(
@@ -79,17 +92,17 @@ if _HAS_FASTAPI:
             source=d.source,
         )
 
-    @app.post("/compress", response_model=CompressResponse)
+    @app.post("/compress", response_model=CompressResponse, dependencies=[Depends(_require_auth)])
     async def compress(req: CompressRequest) -> CompressResponse:
         c = stack.compress(req.role, req.content)
         return CompressResponse(role=c.role, content=c.content, label=c.label)
 
-    @app.post("/remember")
+    @app.post("/remember", dependencies=[Depends(_require_auth)])
     async def remember(req: RememberRequest) -> dict:
         stack.remember(req.key, req.value, trust=req.trust)
         return {"status": "ok"}
 
-    @app.get("/recall")
+    @app.get("/recall", dependencies=[Depends(_require_auth)])
     async def recall(key: str) -> dict:
         val = stack.recall(key)
         return {"key": key, "value": val}

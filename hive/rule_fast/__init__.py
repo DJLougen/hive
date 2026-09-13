@@ -74,19 +74,19 @@ class ContentType:
 # Heuristics — cheap, regex-based, content-type inference
 # ---------------------------------------------------------------------------
 
-_RE_PATCH = re.compile(r"^[-+]{3} |^diff --git|^@@ ", re.M)
+_RE_PATCH = re.compile(r"^[-+]{3} |^diff --git|^@@ ", re.MULTILINE)
 _RE_TOOL_CALL = re.compile(
     r'"name"\s*:\s*"(?:read_file|run_tests|apply_patch|search|run_command)"'
 )
-_RE_TEST_LINE = re.compile(r"\b\d+\s*(?:passed|failed|errors?)\b", re.I)
+_RE_TEST_LINE = re.compile(r"\b\d+\s*(?:passed|failed|errors?)\b", re.IGNORECASE)
 _RE_CODE = re.compile(
-    r"^(class|def|import|from|export|function|pub |fn |struct |enum |impl )", re.M
+    r"^(class|def|import|from|export|function|pub |fn |struct |enum |impl )", re.MULTILINE
 )
 _RE_TRACEBACK = re.compile(
-    r"Traceback \(most recent call last\)|^\w+(?:Error|Exception): ", re.M
+    r"Traceback \(most recent call last\)|^\w+(?:Error|Exception): ", re.MULTILINE
 )
-_RE_FILE_LINE = re.compile(r"^[^\s:]+:\d+:", re.M)
-_RE_EXIT = re.compile(r"exit[= ]+\d+", re.M)
+_RE_FILE_LINE = re.compile(r"^[^\s:]+:\d+:", re.MULTILINE)
+_RE_EXIT = re.compile(r"exit[= ]+\d+", re.MULTILINE)
 
 
 def _infer_content_type(role: str, content: str) -> str:
@@ -151,7 +151,7 @@ def _classify(role: str, content_type: str, content: str = "") -> str:
 
 
 _TEST_LINE_RE = re.compile(
-    r"(?P<ok>\d+ passed|\d+ ok)|(?P<bad>\d+ failed|\d+ error)", re.I
+    r"(?P<ok>\d+ passed|\d+ ok)|(?P<bad>\d+ failed|\d+ error)", re.IGNORECASE
 )
 
 

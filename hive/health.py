@@ -46,18 +46,20 @@ class HealthStatus:
 
 
 class _HealthHandler(BaseHTTPRequestHandler):
-    """Minimal HTTP handler for /health and /ready."""
+    """Minimal HTTP handler for /health and /ready.
 
-    # Shared state injected by HealthServer
-    stack_ref: Any | None = None
-    start_time: float = 0.0
+    State is attached to the owning ``HTTPServer`` instance
+    (``self.server.stack_ref`` / ``self.server.start_time``) so multiple
+    HealthServers never share state through class attributes.
+    """
 
     def log_message(self, format: str, *args: Any) -> None:
         # Suppress default logging — too noisy for probes
         pass
 
     def do_GET(self) -> None:
-        uptime = time.perf_counter() - self.start_time
+        start_time = getattr(self.server, "start_time", time.perf_counter())
+        uptime = time.perf_counter() - start_time
         status = HealthStatus(
             status="healthy",
             uptime_s=uptime,
@@ -78,21 +80,22 @@ class _HealthHandler(BaseHTTPRequestHandler):
 
     def _check_backends(self) -> dict[str, str]:
         out: dict[str, str] = {}
-        if self.stack_ref is None:
+        stack_ref = getattr(self.server, "stack_ref", None)
+        if stack_ref is None:
             out["hive"] = "unknown"
             return out
         try:
             # RustBrain is alive if we can read its stats
-            _ = self.stack_ref.brain.stats()
+            _ = stack_ref.brain.stats()
             out["rust_brain"] = "ok"
         except Exception:
             out["rust_brain"] = "down"
 
         # Compressor is alive if it has a process method
-        out["compressor"] = "ok" if hasattr(self.stack_ref.comb, "process") else "missing"
+        out["compressor"] = "ok" if hasattr(stack_ref.comb, "process") else "missing"
 
         # Policy is optional — mark ok if present, degraded if absent
-        out["policy"] = "ok" if self.stack_ref.busybee is not None else "degraded"
+        out["policy"] = "ok" if stack_ref.busybee is not None else "degraded"
 
         return out
 
@@ -125,10 +128,9 @@ class HealthServer:
 
     def start_in_background(self) -> None:
         """Start the server in a daemon thread."""
-        _HealthHandler.stack_ref = self.stack
-        _HealthHandler.start_time = time.perf_counter()
-
         self._server = HTTPServer((self.bind_address, self.port), _HealthHandler)
+        self._server.stack_ref = self.stack  # type: ignore[attr-defined]
+        self._server.start_time = time.perf_counter()  # type: ignore[attr-defined]
         self._thread = threading.Thread(target=self._server.serve_forever, daemon=True)
         self._thread.start()
 
@@ -142,7 +144,7 @@ class HealthServer:
         self.start_in_background()
         return self
 
-    def __exit__(self, *exc: Any) -> None:
+    def __exit__(self, *exc: object) -> None:
         self.stop()
 
 

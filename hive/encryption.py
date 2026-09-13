@@ -24,7 +24,9 @@ from base64 import b64decode, b64encode
 from typing import Any
 
 try:
-    from cryptography.hazmat.primitives.ciphers.aead import AESGCM  # type: ignore[import]
+    from cryptography.hazmat.primitives.ciphers.aead import (
+        AESGCM,  # type: ignore[import]
+    )
 
     _HAS_CRYPTO = True
 except Exception:  # pragma: no cover

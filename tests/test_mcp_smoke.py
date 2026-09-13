@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
-
 from hive.mcp_server import HIVE_MCP_TOOLS, main
 
 

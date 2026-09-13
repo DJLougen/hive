@@ -25,18 +25,13 @@ except Exception:  # pragma: no cover
     _HAS_JWT = False
 
 
-try:
-    import requests  # type: ignore[import]
-
-    _HAS_REQUESTS = True
-except Exception:  # pragma: no cover
-    _HAS_REQUESTS = False
+import json as _json
+import urllib.request as _urllib
 
 
 class AuthError(Exception):
     """Raised when authentication or authorization fails."""
 
-    pass
 
 
 @dataclass
@@ -53,12 +48,13 @@ class JWTValidator:
 
     @classmethod
     def from_jwks(cls, url: str) -> JWTValidator:
-        """Fetch JWKS from a remote endpoint."""
-        if not _HAS_REQUESTS:
-            raise RuntimeError("requests library required for JWKS fetch")
-        resp = requests.get(url, timeout=10)
-        resp.raise_for_status()
-        return cls(jwks=resp.json(), jwks_url=url)
+        """Fetch JWKS from a remote endpoint (stdlib urllib; no extra deps)."""
+        if not url.startswith(("https://", "http://")):
+            raise AuthError(f"JWKS URL must use http/https scheme, got: {url!r}")
+        req = _urllib.Request(url, method="GET")
+        with _urllib.urlopen(req, timeout=10) as resp:  # nosec B310 - scheme checked above
+            body = _json.loads(resp.read().decode("utf-8"))
+        return cls(jwks=body, jwks_url=url)
 
     @classmethod
     def from_env(cls) -> JWTValidator:
