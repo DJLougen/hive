@@ -332,7 +332,21 @@ def test_record_outcome_accepts_recent_non_latest_decision():
     stack.record_outcome(d1, "escalate", OutcomeType.CORRECT)
     stack.record_outcome(d2, "escalate", OutcomeType.CORRECT)
     assert len(fb) == 2
-    assert fb.get_outcomes()[0].state["goal"] == "g1"
+    outcomes = fb.get_outcomes()
+    assert outcomes[0].state["goal"] == "g1"
+    assert outcomes[1].state["goal"] == "g2"
+
+
+def test_record_outcome_binds_identical_decisions_by_object_identity():
+    from hive.feedback import FeedbackBuffer, OutcomeType
+
+    fb = FeedbackBuffer(capacity=10)
+    stack = HiveStack(honey_comb=RuleFastHoneyComb(), feedback_buffer=fb)
+    d1 = stack.route({"goal": "g1"})
+    d2 = stack.route({"goal": "g2"})
+    assert d1 == d2  # default fallback produces identical fields
+    stack.record_outcome(d2, "escalate", OutcomeType.CORRECT)
+    assert fb.get_outcomes()[-1].state["goal"] == "g2"
 
 
 # ---------------------------------------------------------------------------
@@ -364,3 +378,31 @@ async def test_stream_router_reports_real_source():
     assert "source" not in routing  # no fabricated source pre-decision
     decision = next(c for c in chunks if c["stage"] == "decision")
     assert decision["source"] == "fallback"  # no busybee policy → fallback
+
+
+# ---------------------------------------------------------------------------
+# async compress_many: total batch limit must match sync stack
+# ---------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_async_compress_many_rejects_oversized_batch():
+    from hive.async_stack import AsyncHiveStack
+
+    stack = AsyncHiveStack(honey_comb=RuleFastHoneyComb())
+    turns = [("user", "x" * 40000)] * 30
+    with pytest.raises(ValueError, match="compress_many"):
+        await stack.compress_many(turns)
+
+
+# ---------------------------------------------------------------------------
+# gossip: malformed HLC must not partially apply
+# ---------------------------------------------------------------------------
+
+def test_gossip_rejects_malformed_hlc_without_writing():
+    from hive.gossip import GossipProtocol
+
+    dst = RustBrain()
+    g = GossipProtocol(dst, peers=[])
+    applied = g.receive([{"key": "k", "value": "bad", "hlc": [1, 2]}])
+    assert applied == 0
+    assert dst.get("k") is None
