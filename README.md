@@ -11,7 +11,7 @@
 
 Hive sits between an agent loop and its LLM. It answers the mechanical decisions on the CPU, compresses the context the LLM actually sees, and keeps a timestamped causal-memory graph so the agent stops re-deriving what it already learned. On a 20-instance SWE-bench-lite A/B (GPT-2 backend) this cut LLM calls by 91.7% and resolved 85% of instances versus 0% for the un-augmented agent — numbers below.
 
-> **Status:** v0.6.1 (Beta). The core stack plus the enterprise, reliability and observability modules are implemented and tested (34 test files). Routing-accuracy numbers are *in-distribution* — see the OOD caveat under [Components](#components).
+> **Status:** v0.6.1 (Beta). The core stack plus the enterprise, reliability and observability modules are implemented and tested (35 test files). Routing-accuracy numbers are *in-distribution* — see the OOD caveat under [Components](#components).
 
 ---
 
@@ -116,7 +116,8 @@ hive/
 ├── health.py           # Kubernetes-style health & readiness probes
 │
 │   distributed
-├── gossip.py           # GossipProtocol — cross-node memory replication
+├── gossip.py           # GossipProtocol — cross-node replication preserving causal
+│                       #   edges + HLC, optional shared-token auth
 ├── deployment.py       # DeploymentMarker — blue-green / canary rollout markers
 │
 │   observability
@@ -227,7 +228,8 @@ stack = HiveStack(
     telemetry=None,           # Telemetry collector
     feedback_buffer=None,     # FeedbackBuffer for online learning
     tenant_id="default",      # multi-tenant memory isolation
-    validate=False,           # Pydantic validation of inputs
+    validate=False,           # Pydantic validation: normalizes route() state and
+                              #   rejects invalid remember() writes
     config=None,              # HiveConfig
     rate_limiter=None,        # RateLimiter (per-tenant)
     circuit_breaker=None,     # CircuitBreaker for the LLM path
@@ -282,7 +284,7 @@ if stack.should_update_policy():     # True once the feedback buffer is full
     stack.update_policy()            # retrains busyBee in place; returns bool
 ```
 
-`record_outcome` rejects feedback that does not match the most recent `route()` call — an anti-policy-poisoning guard.
+`record_outcome` matches feedback against a bounded window of recent `route()` calls (32 decisions) — out-of-order outcomes still land on the state that produced them, and feedback for an unknown decision is rejected as a possible policy-poisoning attempt.
 
 ---
 
@@ -323,7 +325,10 @@ stack.brain.supersede(
 
 # Day 14 — same endpoint breaks again; walk the chain for provenance
 prior = stack.brain.neighbours("endpoint_health", "supersedes")
-# → ["endpoint_health"]: the original 500 / pool-exhausted observation.
+# → ["endpoint_health"]: the superseded link on the live node.
+history = stack.brain.history("endpoint_health")
+# → [MemoryNode(...)]: the original 500 / pool-exhausted observation itself,
+#   retained as a bounded supersession chain (also persisted in snapshots).
 #   The agent reconstructs "this was fixed two weeks ago by raising the pool" —
 #   something a pure vector store cannot recover from embeddings alone.
 ```
@@ -371,7 +376,7 @@ Wheels for Linux / macOS / Windows (x86_64 + aarch64) are built by the `rust-whe
 
 Hive ships container and orchestration assets:
 
-- **HTTP server** — [`scripts/hive_api_server.py`](scripts/hive_api_server.py) (FastAPI). Endpoints: `POST /route`, `POST /compress`, `POST /remember`, `GET /recall`, plus `GET /health` and `GET /ready` probes. `AsyncHiveStack` backs high-throughput deployments.
+- **HTTP server** — [`scripts/hive_api_server.py`](scripts/hive_api_server.py) (FastAPI). Endpoints: `POST /route`, `POST /compress`, `POST /remember`, `GET /recall`, plus `GET /health` and `GET /ready` probes. Set `HIVE_API_TOKEN` to require `Authorization: Bearer <token>` on the data endpoints (probes and OpenAPI stay public; unset = open for local dev). `AsyncHiveStack` backs high-throughput deployments.
 - **Helm chart** — [`deploy/helm/`](deploy/helm/) (chart `0.6.1`).
 - **Raw K8s manifests** — [`deploy/k8s/`](deploy/k8s/) (Deployment, Service, ConfigMap).
 - **ARM64 image** — [`docker/Dockerfile.aarch64`](docker/Dockerfile.aarch64) for Jetson / Grace.
@@ -382,7 +387,7 @@ Enterprise concerns are first-class modules, documented in [docs/USAGE.md](docs/
 |---|---|
 | AuthN / AuthZ | `hive.auth` — JWT + RBAC |
 | Encryption at rest | `hive.encryption` |
-| Untrusted-model safety | `hive.model_registry` — signed `.joblib`, blocks pickle RCE |
+| Untrusted-model safety | `hive.model_registry` — Ed25519-signed `.joblib` (`sign_model()`), blocks pickle RCE |
 | Audit / SIEM | `hive.audit_export` |
 | Rate limiting | `hive.ratelimit` — per-tenant token bucket |
 | Circuit breaking | `hive.circuitbreaker` |
@@ -398,7 +403,7 @@ Enterprise concerns are first-class modules, documented in [docs/USAGE.md](docs/
 ```bash
 pip install -e ".[dev]"
 
-# Run the suite (34 test files)
+# Run the suite (35 test files)
 pytest
 
 # Focused runs
