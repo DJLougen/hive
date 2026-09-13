@@ -29,7 +29,7 @@ def test_telemetry_jsonl_export():
     count = tel.export_jsonl(path)
     assert count >= 3  # routing + write + read (compress may or may not fire)
 
-    with open(path, "r", encoding="utf-8") as fh:
+    with open(path, encoding="utf-8") as fh:
         lines = [json.loads(line) for line in fh]
 
     event_types = {line["event"] for line in lines}
@@ -48,7 +48,7 @@ def test_telemetry_jsonl_append_mode():
     stack = HiveStack(honey_comb=RuleFastHoneyComb(), telemetry=tel)
     stack.route({"goal": "test", "available_tools": []})
 
-    with open(path, "r", encoding="utf-8") as fh:
+    with open(path, encoding="utf-8") as fh:
         lines = fh.readlines()
 
     assert len(lines) >= 1

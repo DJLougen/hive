@@ -6,7 +6,7 @@ import time
 
 import pytest
 
-from hive.auth import JWTValidator, AuthError
+from hive.auth import AuthError, JWTValidator
 
 
 def test_disabled_validator():

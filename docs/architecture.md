@@ -95,9 +95,16 @@ See `docs/future-cpp.md` for the full plan.
 
 ## 7. Consistency model (rust-brain)
 
-rust-brain uses a **Hybrid Logical Clock (HLC)** as its ordering primitive.
-Each write carries a tuple `(wall_clock_ns, logical_counter, node_id)` that
-provides a total order consistent with causality.
+### Why logical clocks?
+
+A logical clock is a better way to keep track of the sequence of what happened
+when — it focuses on the order and cause-and-effect relationships between events
+instead of the actual time of day. That way the memory stays correctly ordered
+even if messages arrive late or out of sequence.
+
+rust-brain implements this with a **Hybrid Logical Clock (HLC)**. Each write
+carries a tuple `(wall_clock_ns, logical_counter, node_id)` that provides a
+total order consistent with causality.
 
 ### Guarantees
 

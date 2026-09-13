@@ -15,7 +15,8 @@ from __future__ import annotations
 
 import asyncio
 import json
-from typing import Any, AsyncIterator
+from collections.abc import AsyncIterator
+from typing import Any
 
 from hive import HiveStack
 
@@ -76,4 +77,4 @@ class SSETransport:
         return "\n".join(lines) + "\n\n"
 
 
-__all__ = ["StreamRouter", "StreamCompressor", "SSETransport"]
+__all__ = ["SSETransport", "StreamCompressor", "StreamRouter"]

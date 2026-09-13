@@ -13,9 +13,8 @@ import sys
 
 import pytest
 
-from hive.llm import make_backend, probe_endpoint, discover_local_endpoints
 from hive.circuitbreaker import CircuitBreaker
-
+from hive.llm import discover_local_endpoints, make_backend, probe_endpoint
 
 RUN_INTEGRATION = "--run-integration" in sys.argv
 

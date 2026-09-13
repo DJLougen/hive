@@ -92,7 +92,7 @@ def main():
         
         # Start energy measurement
         monitor.reset()
-        t_start = time.perf_counter()
+        time.perf_counter()
         
         # Send to vLLM
         elapsed = send_to_vllm(text, args.endpoint)

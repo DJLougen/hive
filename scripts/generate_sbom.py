@@ -13,10 +13,7 @@ from __future__ import annotations
 import argparse
 import importlib.metadata
 import json
-import sys
-from pathlib import Path
 from typing import Any
-
 
 HIVE_DEPS = [
     "joblib",
@@ -47,7 +44,7 @@ def generate_sbom() -> dict[str, Any]:
     return {
         "bomFormat": "CycloneDX",
         "specVersion": "1.4",
-        "serialNumber": f"urn:uuid:hive-agent-memory",
+        "serialNumber": "urn:uuid:hive-agent-memory",
         "version": 1,
         "metadata": {
             "timestamp": "2026-06-02T00:00:00Z",

@@ -32,10 +32,10 @@ from dataclasses import dataclass, field
 from typing import Any
 
 __all__ = [
-    "Label",
-    "ContentType",
-    "Message",
     "CompressedMessage",
+    "ContentType",
+    "Label",
+    "Message",
     "RuleFastHoneyComb",
 ]
 
@@ -194,7 +194,7 @@ def _distill(content: str) -> str:
     """
     lines = content.splitlines()
     if len(lines) > 8:
-        return "\n".join(lines[:3] + ["..."] + lines[-3:])
+        return "\n".join([*lines[:3], "...", *lines[-3:]])
     if len(content) > 800:
         words = content.split()
         if len(words) > 80:
@@ -285,7 +285,7 @@ class RuleFastHoneyComb:
     label_hist: Counter = field(default_factory=Counter)
     type_hist: Counter = field(default_factory=Counter)
 
-    def process(self, message: Message) -> CompressedMessage:  # noqa: D401
+    def process(self, message: Message) -> CompressedMessage:
         """Process a single message through the rule-based hot loop."""
         self._turn += 1
         content_type = message.content_type or _infer_content_type(

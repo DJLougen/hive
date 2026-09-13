@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import pytest
 
-
 try:
     from fastapi.testclient import TestClient
 

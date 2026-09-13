@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
-
-from hive.semantic_search import SemanticIndex
 from hive.rust_brain import RustBrain
+from hive.semantic_search import SemanticIndex
 
 
 def test_semantic_index_no_model():

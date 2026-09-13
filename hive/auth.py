@@ -52,7 +52,7 @@ class JWTValidator:
     leeway_s: float = 30.0
 
     @classmethod
-    def from_jwks(cls, url: str) -> "JWTValidator":
+    def from_jwks(cls, url: str) -> JWTValidator:
         """Fetch JWKS from a remote endpoint."""
         if not _HAS_REQUESTS:
             raise RuntimeError("requests library required for JWKS fetch")
@@ -61,7 +61,7 @@ class JWTValidator:
         return cls(jwks=resp.json(), jwks_url=url)
 
     @classmethod
-    def from_env(cls) -> "JWTValidator":
+    def from_env(cls) -> JWTValidator:
         """Build validator from environment variables."""
         url = os.environ.get("HIVE_JWKS_URL")
         pubkey = os.environ.get("HIVE_JWT_PUBLIC_KEY")
@@ -126,7 +126,10 @@ class JWTValidator:
         """Resolve the signing key for ``token`` from JWKS (cached or remote)."""
         try:
             from jwt import PyJWKClient, PyJWKSet  # type: ignore[import-untyped]
-            from jwt.exceptions import PyJWKClientError, PyJWKSetError  # type: ignore[import-untyped]
+            from jwt.exceptions import (  # type: ignore[import-untyped]
+                PyJWKClientError,
+                PyJWKSetError,
+            )
         except ImportError as exc:
             raise AuthError("PyJWT JWKS support required for JWKS validation") from exc
 
@@ -157,4 +160,4 @@ class JWTValidator:
         raise AuthError("Invalid token: missing kid in token header")
 
 
-__all__ = ["JWTValidator", "AuthError"]
+__all__ = ["AuthError", "JWTValidator"]

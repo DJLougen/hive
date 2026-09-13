@@ -20,14 +20,13 @@ Usage:
     python scripts/energy_benchmark_real.py --prompts 10 --output results/energy_real.json
 """
 
-import sys
-import json
 import argparse
+import json
+import sys
 import time
 import warnings
-from pathlib import Path
 from dataclasses import dataclass
-from typing import List
+from pathlib import Path
 
 warnings.filterwarnings("ignore", message=".*pynvml.*deprecated.*")
 warnings.filterwarnings("ignore", message=".*FutureWarning.*pynvml.*")
@@ -36,9 +35,9 @@ sys.path.insert(0, str(Path(__file__).parent))
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM
-
 from energy_tracker import measure_energy
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
 import hive  # top-level meta-package (lazy imports)
 
 # ---------------------------------------------------------------------------
@@ -138,8 +137,8 @@ def run_one_inference(
 
 
 def measure_baseline(
-    model, tokenizer, prompts: List[str], sample_count: int
-) -> List[PathMeasurement]:
+    model, tokenizer, prompts: list[str], sample_count: int
+) -> list[PathMeasurement]:
     print("\nBASELINE (raw tokens, no Hive preprocessing)")
     print("=" * 60)
     measurements = []
@@ -168,9 +167,9 @@ def measure_baseline(
 
 
 def measure_hive(
-    model, tokenizer, prompts: List[str], sample_count: int,
-    baseline_measurements: List[PathMeasurement],
-) -> List[PathMeasurement]:
+    model, tokenizer, prompts: list[str], sample_count: int,
+    baseline_measurements: list[PathMeasurement],
+) -> list[PathMeasurement]:
     print("\nHIVE (with rule_fast preprocessing)")
     print("=" * 60)
     
@@ -273,8 +272,8 @@ def main():
     total_hive_energy = sum(h.actual_energy_j for h in hives)
     total_baseline_tokens = sum(b.measurement.total_tokens for b in baselines)
     total_hive_tokens = sum(h.measurement.total_tokens for h in hives)
-    total_original_tokens_baseline = sum(b.original_tokens for b in baselines)
-    total_original_tokens_hive = sum(h.original_tokens for h in hives)
+    sum(b.original_tokens for b in baselines)
+    sum(h.original_tokens for h in hives)
     
     avg_jtok_baseline = total_baseline_energy / total_baseline_tokens
     avg_jtok_hive = total_hive_energy / total_hive_tokens

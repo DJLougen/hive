@@ -19,7 +19,6 @@ import time
 from dataclasses import dataclass, field
 
 
-
 @dataclass
 class TokenBucket:
     """Simple token bucket."""
@@ -86,4 +85,4 @@ class RateLimiter:
                 del self._buckets[key]
 
 
-__all__ = ["TokenBucket", "RateLimiter"]
+__all__ = ["RateLimiter", "TokenBucket"]

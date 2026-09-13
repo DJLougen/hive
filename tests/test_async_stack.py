@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-
 import pytest
 
 from hive.async_stack import AsyncHiveStack

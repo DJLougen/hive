@@ -6,8 +6,8 @@ import os
 
 import pytest
 
-from hive.config import HiveConfig
 from hive import HiveStack
+from hive.config import HiveConfig
 from hive.rule_fast import RuleFastHoneyComb
 
 

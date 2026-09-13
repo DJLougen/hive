@@ -1,0 +1,6 @@
+# Append to ~/.codex/config.toml or .codex/config.toml in your project.
+# Requires: pip install "hive-agent-memory[agents]"  (installs hive-mcp)
+
+[mcp_servers.hive]
+command = "hive-mcp"
+args = []

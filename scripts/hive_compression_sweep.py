@@ -14,7 +14,7 @@ import json
 import logging
 import sys
 import time
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
@@ -32,7 +32,6 @@ _log = logging.getLogger("hive.compression_sweep")
 try:
     from hive import HiveStack
     from hive.rust_brain import RustBrain
-    from hive.rule_fast import RuleFastHoneyComb
     _HAS_HIVE = True
 except Exception as e:
     _log.warning("Hive not available: %s", e)
@@ -331,7 +330,7 @@ class TransformersLLMBackend:
             )
 
         output_ids = outputs[0][input_ids.shape[1]:]
-        output_tokens = int(len(output_ids))
+        output_tokens = len(output_ids)
 
         self.total_input_tokens += input_tokens
         self.total_output_tokens += output_tokens

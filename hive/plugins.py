@@ -102,13 +102,13 @@ def list_plugins() -> dict[str, list[str]]:
 
 __all__ = [
     "CompressorPlugin",
-    "RouterPlugin",
     "MemoryBackendPlugin",
-    "register_compressor",
-    "register_router",
-    "register_backend",
+    "RouterPlugin",
+    "get_backend",
     "get_compressor",
     "get_router",
-    "get_backend",
     "list_plugins",
+    "register_backend",
+    "register_compressor",
+    "register_router",
 ]

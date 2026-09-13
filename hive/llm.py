@@ -21,8 +21,9 @@ import logging
 import time
 import urllib.error
 import urllib.request
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from typing import Any, Mapping, Sequence
+from typing import Any
 
 from hive.circuitbreaker import CircuitBreaker
 
@@ -151,6 +152,58 @@ class _OpenAICompatBackend:
             finish_reason=choice.get("finish_reason", ""),
         )
 
+    async def achat(
+        self,
+        messages: Sequence[Mapping[str, str]],
+        *,
+        max_tokens: int = 256,
+        temperature: float = 0.0,
+    ) -> ModelResponse:
+        """Async chat via httpx (preferred for FastAPI / high-throughput)."""
+        try:
+            import httpx
+        except ImportError as exc:
+            raise RuntimeError(
+                "httpx is required for async LLM calls; pip install 'hive-agent-memory[http]'"
+            ) from exc
+
+        payload = {
+            "model": self.model_name,
+            "messages": [dict(m) for m in messages],
+            "max_tokens": max_tokens,
+            "temperature": temperature,
+            "stream": False,
+        }
+        t0 = time.perf_counter()
+        try:
+            if self.circuit_breaker is not None:
+                self.circuit_breaker._before_call()
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+                resp = await client.post(
+                    f"{self.endpoint}/v1/chat/completions",
+                    json=payload,
+                    headers={"Content-Type": "application/json"},
+                )
+                resp.raise_for_status()
+                body = resp.json()
+            if self.circuit_breaker is not None:
+                self.circuit_breaker._on_success()
+        except Exception as exc:
+            if self.circuit_breaker is not None:
+                self.circuit_breaker._on_failure()
+            raise RuntimeError(f"async chat failed against {self.endpoint}: {exc}") from exc
+        elapsed = time.perf_counter() - t0
+        choice = body["choices"][0]
+        usage = body.get("usage") or {}
+        return ModelResponse(
+            text=choice["message"]["content"],
+            prompt_tokens=int(usage.get("prompt_tokens", 0)),
+            completion_tokens=int(usage.get("completion_tokens", 0)),
+            duration_s=elapsed,
+            model=body.get("model", self.model_name),
+            finish_reason=choice.get("finish_reason", ""),
+        )
+
 
 class EchoBackend:
     """Deterministic stub. Returns a small echo of the last user message."""
@@ -199,3 +252,16 @@ def make_backend(
             endpoint=endpoint, model_name=model, circuit_breaker=circuit_breaker
         )
     raise ValueError(f"unknown backend {name!r}; choose vllm, llama.cpp, or echo")
+
+
+async def achat(
+    backend: Any,
+    messages: Sequence[Mapping[str, str]],
+    **kwargs: Any,
+) -> ModelResponse:
+    """Dispatch async chat to a backend that supports ``achat``."""
+    if hasattr(backend, "achat"):
+        return await backend.achat(messages, **kwargs)
+    if hasattr(backend, "chat"):
+        return backend.chat(messages, **kwargs)
+    raise TypeError(f"backend {type(backend)!r} has no chat/achat method")

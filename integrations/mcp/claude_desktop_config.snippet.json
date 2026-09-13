@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "hive": {
+      "command": "hive-mcp",
+      "args": []
+    }
+  }
+}
