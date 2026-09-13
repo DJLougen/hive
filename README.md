@@ -11,11 +11,11 @@
 
 Hive sits between an agent loop and its LLM. It answers the mechanical decisions on the CPU, compresses the context the LLM actually sees, and keeps a timestamped causal-memory graph so the agent stops re-deriving what it already learned. On a 20-instance SWE-bench-lite A/B (GPT-2 backend) this cut LLM calls by 91.7% and resolved 85% of instances versus 0% for the un-augmented agent — numbers below.
 
-> **Status:** v0.6.1 (Beta). The August 2026 modernization ([PR #62](https://github.com/DJLougen/hive/pull/62)), HLC preservation (PRs #71–#87), and the review-driven fixes ([PR #88](https://github.com/DJLougen/hive/pull/88)–[PR #91](https://github.com/DJLougen/hive/pull/91)) are merged on `main` — **244 tests** passing. Routing-accuracy numbers are *in-distribution* — see the OOD caveat under [Components](#components). **PFN / busyBee-cpu training-mode integration** is in progress (see [busyBee-cpu](https://github.com/DJLougen/busyBee-cpu)).
+> **Status:** v0.6.1 (Beta). The August 2026 modernization ([PR #62](https://github.com/DJLougen/hive/pull/62)), HLC preservation (PRs #71–#87), and the review-driven fixes ([PR #88](https://github.com/DJLougen/hive/pull/88)–[PR #91](https://github.com/DJLougen/hive/pull/91)) are merged on `main` — **245 tests** passing. Routing-accuracy numbers are *in-distribution* — see the OOD caveat under [Components](#components). **PFN / busyBee-cpu training-mode integration** is in progress (see [busyBee-cpu](https://github.com/DJLougen/busyBee-cpu)).
 
 ## What's new (August 2026)
 
-Four-tier modernization, validated locally with **244 tests** (`pytest`) and CI on Python 3.10–3.13. Full detail: [`docs/WHATS_NEW.md`](docs/WHATS_NEW.md) · [CHANGELOG](CHANGELOG.md#unreleased).
+Four-tier modernization, validated locally with **245 tests** (`pytest`) and CI on Python 3.10–3.13. Full detail: [`docs/WHATS_NEW.md`](docs/WHATS_NEW.md) · [CHANGELOG](CHANGELOG.md#unreleased).
 
 | Outcome | What shipped |
 |---|---|
@@ -448,7 +448,7 @@ pip install -e ".[dev]"    # includes ruff, mypy, pip-audit, pre-commit
 
 pre-commit install
 
-# Run the suite (244 tests)
+# Run the suite (245 tests)
 pytest
 
 # Focused runs

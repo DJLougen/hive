@@ -4,7 +4,7 @@ Merged: [PR #62](https://github.com/DJLougen/hive/pull/62) · HLC preservation: 
 
 ## Headline outcomes
 
-- **244 tests passing** — full `pytest` suite green after modernization
+- **245 tests passing** — full `pytest` suite green after modernization
 - **HLC bug fixed** — logical clocks preserve event order and cause-and-effect (not just time-of-day); snapshot restore and gossip replay keep `hlc`/`ts_ns` intact
 - **MCP server** — `pip install "hive-agent-memory[agents]"` → `hive-mcp`; configs for Cursor, Claude Desktop, and Codex ([MCP_SETUP.md](docs/MCP_SETUP.md))
 - **Harness integration** — SWE-bench eval + Hermes/OpenClaw guides + MCP bridge ([HARNESS_SETUP.md](docs/HARNESS_SETUP.md))
@@ -46,7 +46,7 @@ Merged: [PR #62](https://github.com/DJLougen/hive/pull/62) · HLC preservation: 
 **Short (≤280 chars)**
 
 ```
-Hive update: memory sync fix, 244 tests green, MCP server with bundled Cursor/Claude/Codex configs (hive-mcp), better compression on long logs. Setup: docs/MCP_SETUP.md — github.com/DJLougen/hive/pull/62
+Hive update: memory sync fix, 245 tests green, MCP server with bundled Cursor/Claude/Codex configs (hive-mcp), better compression on long logs. Setup: docs/MCP_SETUP.md — github.com/DJLougen/hive/pull/62
 ```
 
 **Plain English (thread-friendly)**
@@ -56,7 +56,7 @@ We updated Hive — the layer that lets AI agents handle boring steps on the CPU
 
 What's new:
 • Memory keeps the right order when saving/restoring or syncing between servers
-• 244 automated tests passing
+• 245 automated tests passing
 • MCP server + bundled configs for Cursor, Claude Desktop, and Codex — see docs/MCP_SETUP.md
 • Long chat logs compress much harder (tested on 50k+ character dumps)
 • Optional faster Rust backend when you need speed
@@ -67,7 +67,7 @@ PR: github.com/DJLougen/hive/pull/62
 **Technical (for dev audience)**
 
 ```
-Hive August 2026 refresh: HLC snapshot fix, 244 tests, MCP one-liner (pip install hive-agent-memory[agents]), 153× long-context compression eval, HIVE_BACKEND native/python, LinUCB + httpx async LLM. PR: github.com/DJLougen/hive/pull/62
+Hive August 2026 refresh: HLC snapshot fix, 245 tests, MCP one-liner (pip install hive-agent-memory[agents]), 153× long-context compression eval, HIVE_BACKEND native/python, LinUCB + httpx async LLM. PR: github.com/DJLougen/hive/pull/62
 ```
 
 **Longer (technical)**
@@ -76,7 +76,7 @@ Hive August 2026 refresh: HLC snapshot fix, 244 tests, MCP one-liner (pip instal
 Shipped a four-tier modernization of Hive — the CPU orchestration layer that routes mechanical agent work off the LLM.
 
 ✅ HLC fix: causal timestamps survive snapshot restore + gossip replay
-✅ 244 tests passing (pytest)
+✅ 245 tests passing (pytest)
 ✅ MCP: `pip install "hive-agent-memory[agents]"` → `hive-mcp`; Cursor / Claude Desktop / Codex configs in [MCP_SETUP.md](docs/MCP_SETUP.md)
 ✅ Harnesses: SWE-bench eval + Hermes/OpenClaw integration guide in [HARNESS_SETUP.md](docs/HARNESS_SETUP.md)
 ✅ Long-context eval: up to 153× compression on 50k+ char logs
@@ -97,7 +97,7 @@ PFN / busyBee training mode is next — not in this PR.
 
 ```bash
 pip install -e ".[dev]"
-pytest                    # 244 passed
+pytest                    # 245 passed
 ruff check hive/ tests/
 python scripts/hive_long_context_eval.py --smoke
 ```
