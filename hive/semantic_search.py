@@ -76,10 +76,15 @@ class SemanticIndex:
         return self._model.encode(text)
 
     def index_all(self) -> int:
-        """Build embeddings for all nodes in the brain."""
+        """Build embeddings for all nodes in the brain.
+
+        Rebuilds from scratch so vectors for forgotten/evicted/superseded
+        nodes don't linger in the index.
+        """
         if self._model is None:
             _log.warning("No embedding model; skipping semantic index")
             return 0
+        self._vectors.clear()
         count = 0
         for node in self._brain.search():
             key = f"{node.key}:{node.node_id}"
@@ -119,12 +124,24 @@ class SemanticIndex:
         return results
 
     def add(self, node: MemoryNode) -> None:
-        """Index a single node (call after remember)."""
+        """Index a single node (call after remember).
+
+        Drops vectors indexed under an older version of the same key so a
+        superseded node can't shadow the current one.
+        """
         if self._model is None:
             return
+        for stale in [k for k in self._vectors if k.rsplit(":", 1)[0] == node.key]:
+            if stale != f"{node.key}:{node.node_id}":
+                del self._vectors[stale]
         key = f"{node.key}:{node.node_id}"
         text = f"{node.key} {node.value} {' '.join(node.tags)}"
         self._vectors[key] = self.embed(text)
+
+    def remove(self, node: MemoryNode) -> None:
+        """Drop all indexed vectors for ``node``'s key (call after forget)."""
+        for stale in [k for k in self._vectors if k.rsplit(":", 1)[0] == node.key]:
+            del self._vectors[stale]
 
 
 __all__ = ["SemanticIndex"]

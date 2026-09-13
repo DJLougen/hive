@@ -15,9 +15,9 @@ Usage::
 
 from __future__ import annotations
 
+import threading
 import time
 from dataclasses import dataclass, field
-
 
 
 @dataclass
@@ -28,6 +28,7 @@ class TokenBucket:
     refill_rate: float  # tokens per second
     _tokens: float = field(default=0.0, repr=False)
     _last_refill: float = field(default_factory=time.monotonic, repr=False)
+    _lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
 
     def __post_init__(self) -> None:
         if self._tokens == 0.0:
@@ -41,16 +42,18 @@ class TokenBucket:
 
     def consume(self, n: int = 1) -> bool:
         """Try to consume ``n`` tokens. Returns True if allowed."""
-        self._refill()
-        if self._tokens >= n:
-            self._tokens -= n
-            return True
-        return False
+        with self._lock:
+            self._refill()
+            if self._tokens >= n:
+                self._tokens -= n
+                return True
+            return False
 
     def remaining(self) -> int:
         """Return current token count (floored to int)."""
-        self._refill()
-        return int(self._tokens)
+        with self._lock:
+            self._refill()
+            return int(self._tokens)
 
 
 class RateLimiter:
@@ -60,6 +63,7 @@ class RateLimiter:
         self.default_capacity = default_capacity
         self.refill_rate = refill_rate
         self._buckets: dict[tuple[str, str], TokenBucket] = {}
+        self._lock = threading.Lock()
 
     def _bucket(self, tenant_id: str, operation: str) -> TokenBucket:
         key = (tenant_id, operation)
@@ -73,17 +77,22 @@ class RateLimiter:
 
     def check(self, tenant_id: str, operation: str) -> bool:
         """Return True if the request is within the rate limit."""
-        return self._bucket(tenant_id, operation).consume(1)
+        with self._lock:
+            bucket = self._bucket(tenant_id, operation)
+        return bucket.consume(1)
 
     def get_remaining(self, tenant_id: str, operation: str) -> int:
         """Return remaining tokens for the tenant/operation pair."""
-        return self._bucket(tenant_id, operation).remaining()
+        with self._lock:
+            bucket = self._bucket(tenant_id, operation)
+        return bucket.remaining()
 
     def reset(self, tenant_id: str) -> None:
         """Clear all buckets for a tenant (useful in tests)."""
-        for key in list(self._buckets):
-            if key[0] == tenant_id:
-                del self._buckets[key]
+        with self._lock:
+            for key in list(self._buckets):
+                if key[0] == tenant_id:
+                    del self._buckets[key]
 
 
 __all__ = ["TokenBucket", "RateLimiter"]

@@ -10,7 +10,7 @@ Usage::
     cb = CircuitBreaker(failure_threshold=5, recovery_timeout=30.0)
 
     try:
-        with cb:
+        with cb.call():
             response = llm_client.call(prompt)
     except CircuitBreakerOpen:
         # LLM is down — return cached fallback or escalate

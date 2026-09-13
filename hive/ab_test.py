@@ -125,9 +125,15 @@ class ABTestHarness:
         }
 
     def is_winner(self) -> bool:
-        """Return True if the variant meets the promotion criteria."""
-        if self._active_arm:
+        """Return True if the variant meets the promotion criteria.
+
+        After a locked decision: True only when the variant was promoted;
+        False after rollback to control.
+        """
+        if self._active_arm == "variant":
             return True
+        if self._active_arm == "control":
+            return False
         s = self.stats()
         if s["variant_samples"] < self._min_samples:
             return False

@@ -68,8 +68,16 @@ class PolicyUpdater:
         outcome: Any,
     ) -> dict[str, Any]:
         """Convert a RoutingOutcome to the format expected by busybee-cpu."""
+        # CORRECT and ESCALATED_CORRECTLY both count as wins.
+        reward = (
+            1.0
+            if outcome.outcome_type
+            in (OutcomeType.CORRECT, OutcomeType.ESCALATED_CORRECTLY)
+            else 0.0
+        )
         return {
             "state": outcome.state,
             "action": outcome.routed_action,
-            "reward": 1.0 if outcome.outcome_type == OutcomeType.CORRECT else 0.0,
+            "actual_action": outcome.actual_action,
+            "reward": reward,
         }

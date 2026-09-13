@@ -206,7 +206,7 @@ class RustBrain:
     implementation lands.
     """
 
-    def __init__(self, *, tenant_id: str = "default", tenant_isolation: bool = True, enforce_monotonic: bool = True, default_ttl_s: float | None = None, max_nodes: int = 10_000) -> None:
+    def __init__(self, *, tenant_id: str = "default", tenant_isolation: bool = True, enforce_monotonic: bool = True, default_ttl_s: float | None = None, max_nodes: int = 10_000, max_history_per_key: int = 64) -> None:
         self._tenant_id = tenant_id
         self._tenant_isolation = tenant_isolation
         self._nodes: dict[str, MemoryNode] = {}
@@ -214,6 +214,11 @@ class RustBrain:
         self._enforce_monotonic = enforce_monotonic
         self._default_ttl_s = default_ttl_s
         self._max_nodes = max_nodes
+        self._max_history_per_key = max_history_per_key
+        # Superseded versions per storage key, oldest first. Kept outside
+        # _nodes so `get(key)` always returns the latest while the causal
+        # chain stays reachable via `history()` / `neighbours(key, "supersedes")`.
+        self._history: dict[str, list[MemoryNode]] = {}
         # Simple per-key counter so we can show "newest first" ordering
         # without re-sorting the whole store on every read.
         self._order: list[str] = []
@@ -247,6 +252,7 @@ class RustBrain:
         if oldest_key:
             self._nodes.pop(oldest_key, None)
             self._order_index.pop(oldest_key, None)
+            self._history.pop(oldest_key, None)
         self._order.pop(0)
         for k in list(self._order_index):
             self._order_index[k] -= 1
@@ -319,14 +325,28 @@ class RustBrain:
         with self._lock:
             previous = self._nodes.get(storage_key)
             node = self.remember(key, new_value, **kwargs)
-        if previous is not None and previous.node_id != node.node_id:
-            previous.attach(EdgeKind.SUPERSEDES, key)
+            if previous is not None and previous.node_id != node.node_id:
+                # Keep the old version reachable: the superseded node moves
+                # to _history and the new node carries a SUPERSEDES edge to
+                # the key, so `neighbours(key, "supersedes")` reports the
+                # prior version exists. `history(key)` returns the chain.
+                previous.attach(EdgeKind.SUPERSEDES, key)
+                node.attach(EdgeKind.SUPERSEDES, key)
+                chain = self._history.setdefault(storage_key, [])
+                chain.append(previous)
+                if len(chain) > self._max_history_per_key:
+                    del chain[: len(chain) - self._max_history_per_key]
         return node
+
+    def history(self, key: str) -> list[MemoryNode]:
+        """Return superseded versions of ``key``, oldest first."""
+        return list(self._history.get(self._prefix(key), ()))
 
     def forget(self, key: str) -> None:
         key = self._prefix(key)
         with self._lock:
             self._nodes.pop(key, None)
+            self._history.pop(key, None)
             self._remove_from_order(key)
 
     # -- read path ----------------------------------------------------------
@@ -437,6 +457,7 @@ class RustBrain:
             age_s = (_now_ns() - node.ts_ns) / 1e9
             if age_s > self._default_ttl_s:
                 self._nodes.pop(storage_key, None)
+                self._history.pop(storage_key, None)
                 self._remove_from_order(storage_key)
                 removed += 1
         return removed
@@ -453,6 +474,7 @@ class RustBrain:
             to_remove = [k for k in self._nodes if k.startswith(prefix)]
             for k in to_remove:
                 self._nodes.pop(k, None)
+                self._history.pop(k, None)
                 self._remove_from_order(k)
             return len(to_remove)
 
@@ -470,11 +492,20 @@ class RustBrain:
         # (not just returned) so restore_from_file can actually verify it.
         nodes_json = json.dumps(nodes, sort_keys=True, ensure_ascii=False)
         checksum = hashlib.sha256(nodes_json.encode("utf-8")).hexdigest()
+        with self._lock:
+            history = {
+                sk: [n.to_dict() for n in chain]
+                for sk, chain in self._history.items()
+                if chain
+            }
+        history_json = json.dumps(history, sort_keys=True, ensure_ascii=False)
         data = {
             "tenant_id": self._tenant_id,
             "tenant_isolation": self._tenant_isolation,
             "nodes": nodes,
             "sha256": checksum,
+            "history": history,
+            "history_sha256": hashlib.sha256(history_json.encode("utf-8")).hexdigest(),
             "version": "hive-snapshot-v1",
         }
         payload = json.dumps(data).encode("utf-8")
@@ -505,10 +536,18 @@ class RustBrain:
                 raise ValueError(
                     "snapshot checksum mismatch: file is corrupt or tampered"
                 )
-        self._nodes.clear()
-        self._order.clear()
-        self._order_index.clear()
-        for node_dict in nodes:
+        history = data.get("history", {})
+        expected_history = data.get("history_sha256")
+        if expected_history is not None:
+            actual_history = hashlib.sha256(
+                json.dumps(history, sort_keys=True, ensure_ascii=False).encode("utf-8")
+            ).hexdigest()
+            if actual_history != expected_history:
+                raise ValueError(
+                    "snapshot history checksum mismatch: file is corrupt or tampered"
+                )
+
+        def _node_from_dict(node_dict: Mapping[str, Any]) -> MemoryNode:
             node = MemoryNode(
                 key=node_dict["key"],
                 value=node_dict["value"],
@@ -517,13 +556,29 @@ class RustBrain:
                 tags=set(node_dict.get("tags", [])),
                 node_id=node_dict.get("id", uuid.uuid4().hex[:12]),
             )
+            if node_dict.get("hlc") is not None:
+                # Restore the persisted HLC so causal ordering survives a
+                # backup/restore round trip, then advance the process clock
+                # past it so new writes always dominate restored ones.
+                node.hlc = tuple(node_dict["hlc"])  # type: ignore[assignment]
+                _hlc.update(node.hlc)
             for kind, neighbours in node_dict.get("edges", {}).items():
                 for n in neighbours:
                     node.attach(kind, n)
+            return node
+
+        self._nodes.clear()
+        self._order.clear()
+        self._order_index.clear()
+        self._history.clear()
+        for node_dict in nodes:
+            node = _node_from_dict(node_dict)
             storage_key = self._prefix(node.key)
             self._nodes[storage_key] = node
             self._order_index[storage_key] = len(self._order)
             self._order.append(storage_key)
+        for storage_key, chain in history.items():
+            self._history[storage_key] = [_node_from_dict(d) for d in chain]
         return len(nodes)
 
     def __repr__(self) -> str:

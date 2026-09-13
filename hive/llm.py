@@ -57,6 +57,7 @@ def probe_endpoint(endpoint: str, *, timeout: float = 2.0) -> dict[str, Any]:
     :class:`RuntimeError` on any failure with a one-line diagnostic.
     """
     url = f"{endpoint.rstrip('/')}/v1/models"
+    _validate_url(url)
     req = urllib.request.Request(url=url, method="GET")
     try:
         with urllib.request.urlopen(req, timeout=timeout) as resp:  # nosec B310 — validated by _validate_url
@@ -130,14 +131,14 @@ class _OpenAICompatBackend:
         t0 = time.perf_counter()
         try:
             if self.circuit_breaker is not None:
-                self.circuit_breaker._before_call()
-            with urllib.request.urlopen(req, timeout=self.timeout) as resp:  # nosec B310 — validated by _validate_url
-                body = json.loads(resp.read().decode("utf-8"))
-                if self.circuit_breaker is not None:
-                    self.circuit_breaker._on_success()
+                with self.circuit_breaker.call(), urllib.request.urlopen(  # nosec B310 — validated by _validate_url
+                    req, timeout=self.timeout
+                ) as resp:
+                    body = json.loads(resp.read().decode("utf-8"))
+            else:
+                with urllib.request.urlopen(req, timeout=self.timeout) as resp:  # nosec B310 — validated by _validate_url
+                    body = json.loads(resp.read().decode("utf-8"))
         except (urllib.error.URLError, TimeoutError, OSError) as exc:
-            if self.circuit_breaker is not None:
-                self.circuit_breaker._on_failure()
             raise RuntimeError(f"chat failed against {self.endpoint}: {exc}") from exc
         elapsed = time.perf_counter() - t0
         choice = body["choices"][0]

@@ -78,11 +78,17 @@ class HiveConfig:
             raise ValueError("max_memory_nodes must be >= 1")
 
     def to_dict(self) -> dict[str, Any]:
-        """Return a plain dict (useful for JSON logging)."""
-        return {
+        """Return a plain dict (useful for JSON logging).
+
+        ``jwt_secret`` is redacted so config dumps are safe to log.
+        """
+        out = {
             f.name: getattr(self, f.name)
             for f in self.__dataclass_fields__.values()
         }
+        if out.get("jwt_secret"):
+            out["jwt_secret"] = "***"
+        return out
 
 
 __all__ = ["HiveConfig"]

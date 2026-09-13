@@ -48,6 +48,11 @@ class GossipProtocol:
         Seconds between gossip rounds.
     batch_size:
         Max events per gossip message.
+    token:
+        Optional shared secret. When set, outbound batches carry an
+        ``Authorization: Bearer <token>`` header and :meth:`receive` must
+        be called with the matching token (or ``None`` to stay open for
+        local/dev use — no authentication is performed then).
     """
 
     def __init__(
@@ -57,17 +62,24 @@ class GossipProtocol:
         peers: list[str],
         interval: float = 5.0,
         batch_size: int = 100,
+        token: str | None = None,
     ) -> None:
         self._brain = brain
         self._peers = peers
         self._interval = interval
         self._batch_size = batch_size
+        self._token = token
         self._queue: queue.Queue[dict[str, Any]] = queue.Queue()
         self._thread: threading.Thread | None = None
         self._stop = threading.Event()
 
     def publish(self, event: dict[str, Any]) -> None:
-        """Queue a memory event for gossip."""
+        """Queue a memory event for gossip.
+
+        For full-fidelity replication pass ``node.to_dict()`` — peers then
+        preserve ts_ns/hlc/edges. Minimal ``{"key", "value"}`` events work
+        too (fresh timestamps are assigned on receipt).
+        """
         self._queue.put(event)
 
     def start(self) -> None:
@@ -103,6 +115,8 @@ class GossipProtocol:
     def _gossip_batch(self, batch: list[dict[str, Any]]) -> None:
         payload = json.dumps({"events": batch}).encode("utf-8")
         headers = {"Content-Type": "application/json"}
+        if self._token is not None:
+            headers["Authorization"] = f"Bearer {self._token}"
         for peer in self._peers:
             try:
                 req = urllib.request.Request(
@@ -117,17 +131,46 @@ class GossipProtocol:
             except Exception as exc:
                 _log.warning("Gossip to %s failed: %s", peer, exc)
 
-    def receive(self, events: list[dict[str, Any]]) -> int:
-        """Receive gossiped events and write them into the local brain."""
+    def receive(
+        self, events: list[dict[str, Any]], *, token: str | None = None
+    ) -> int:
+        """Receive gossiped events and write them into the local brain.
+
+        Propagates trust, tags, causal edges (``caused_by`` lists plus full
+        ``edges`` maps), ``ts_ns`` and ``hlc`` when present, and advances
+        the local HLC so ordering is preserved across nodes. When the
+        protocol was configured with a ``token``, callers must supply the
+        matching token or a :class:`PermissionError` is raised.
+        """
+        if self._token is not None and token != self._token:
+            raise PermissionError("gossip token mismatch")
         applied = 0
         for ev in events:
             try:
+                if "key" not in ev:
+                    raise ValueError("gossip event missing 'key'")
+                edges: dict[str, list[str]] = {}
+                if isinstance(ev.get("edges"), dict):
+                    for kind, targets in ev["edges"].items():
+                        edges[str(kind)] = [str(t) for t in targets]
+                caused_by = ev.get("caused_by")
+                if caused_by:
+                    edges.setdefault("caused_by", []).extend(
+                        str(k) for k in caused_by
+                    )
+                hlc = ev.get("hlc")
+                node_hlc = tuple(hlc) if hlc is not None else None
                 self._brain.remember(
                     ev["key"],
-                    ev["value"],
+                    ev.get("value"),
                     trust=ev.get("trust", 1.0),
                     tags=set(ev.get("tags", [])),
+                    edges=edges or None,
+                    ts_ns=ev.get("ts_ns"),
+                    hlc=node_hlc,  # type: ignore[arg-type]
                 )
+                if node_hlc is not None:
+                    self._brain.update_hlc(node_hlc)
                 applied += 1
             except Exception as exc:
                 _log.warning("Failed to apply gossiped event: %s", exc)
