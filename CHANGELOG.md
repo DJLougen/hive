@@ -15,16 +15,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Async LLM client via `httpx` (`_OpenAICompatBackend.achat`).
 - Long-context compression eval: `scripts/hive_long_context_eval.py`.
 - HLC preservation tests for snapshot restore and gossip replay.
+- Gossip publish wiring (`HiveStack(gossip=…)` / `AsyncHiveStack(gossip=…)`) and a bounded in-process audit trail (`HiveConfig(audit_enabled=True)`, `stack.audit_events()`) for SIEM export.
+- `rust_brain.history()`: bounded per-key history of superseded versions, persisted in snapshots behind `history_sha256`.
+- Optional bearer-token auth for gossip and the REST API (`HIVE_API_TOKEN`); Ed25519 model signature verification with `sign_model()`.
 
 ### Changed
 - CI: Python 3.13 matrix, pip-audit, SBOM job, MCP smoke, long-context smoke, nightly GPU/Jetson.
 - `restore_from_file` and gossip `receive` preserve HLC timestamps.
 - Docker aarch64 base image bumped to L4T r36.4.0; numpy 2.x allowed.
 - Enterprise roadmap and improvement plan refreshed to reflect shipped features.
+- `validate=True` normalizes state before `route()` and validates writes via `validate_memory()`; `record_outcome()` matches a bounded window of recent `route()` calls so out-of-order feedback lands on the right state.
 
 ### Fixed
 - `rust_brain`: snapshot restore now restores `hlc` fields and updates high-water mark.
 - `gossip.receive`: replays remote `hlc`/`ts_ns` instead of generating new timestamps.
+- `supersede()` keeps `SUPERSEDES` edges on the live node so chains stay walkable; `policy_updater` records `actual_action`; `auth.from_jwks` uses stdlib `urllib` (no `requests` dependency); assorted review fixes (token-bucket locking, telemetry OTel spans, streaming decision source, semantic index staleness).
 
 ### Docs
 - README: August 2026 "What's new" section with outcome table (HLC fix, MCP, long-context eval, `HIVE_BACKEND`, LinUCB).
