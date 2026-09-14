@@ -220,3 +220,23 @@ def test_bulk_write_imports_legacy_ts_ns_rows_into_warm_brain():
     assert brain.recall("b") == 2
     # Legacy ordering from ts_ns is preserved: b is older than a.
     assert brain.get("b").hlc < brain.get("a").hlc
+
+
+def test_gossip_receive_rejects_synthetic_legacy_hlc():
+    """Gossip must not accept import-only legacy HLCs that bypass high-water."""
+    brain = RustBrain()
+    brain.remember("warm", "x", hlc=(5000, 10, "local"))
+
+    gossip = GossipProtocol(brain, peers=[])
+    applied = gossip.receive(
+        [
+            {
+                "key": "injected",
+                "value": "stale",
+                "hlc": [100, 0, "legacy"],
+                "ts_ns": 100,
+            }
+        ]
+    )
+    assert applied == 0
+    assert brain.get("injected") is None

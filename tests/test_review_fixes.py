@@ -349,6 +349,26 @@ def test_record_outcome_binds_identical_decisions_by_object_identity():
     assert fb.get_outcomes()[-1].state["goal"] == "g2"
 
 
+def test_record_outcome_rejects_ambiguous_reconstructed_decision():
+    from hive.feedback import FeedbackBuffer, OutcomeType
+    from hive.stack import RouteDecision
+
+    fb = FeedbackBuffer(capacity=10)
+    stack = HiveStack(honey_comb=RuleFastHoneyComb(), feedback_buffer=fb)
+    d1 = stack.route({"goal": "g1"})
+    d2 = stack.route({"goal": "g2"})
+    assert d1 == d2
+    reconstructed = RouteDecision(
+        tool=d1.tool,
+        args=dict(d1.args),
+        confidence=d1.confidence,
+        escalated=d1.escalated,
+        source=d1.source,
+    )
+    stack.record_outcome(reconstructed, "escalate", OutcomeType.CORRECT)
+    assert len(fb) == 0
+
+
 # ---------------------------------------------------------------------------
 # step(): states without "step" must not clobber decision:0
 # ---------------------------------------------------------------------------
