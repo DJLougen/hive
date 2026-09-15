@@ -592,10 +592,9 @@ class RustBrain:
                     "snapshot history checksum mismatch: file is corrupt or tampered"
                 )
 
-        def _node_from_dict(node_dict: Mapping[str, Any]) -> MemoryNode:
+        def _parse_node_from_dict(node_dict: Mapping[str, Any]) -> MemoryNode:
             ts_ns = node_dict["ts_ns"]
             node_hlc = _parse_hlc(node_dict.get("hlc"), ts_ns=ts_ns)
-            self.update_hlc(node_hlc)
             node = MemoryNode(
                 key=node_dict["key"],
                 value=node_dict["value"],
@@ -610,20 +609,29 @@ class RustBrain:
                     node.attach(kind, n)
             return node
 
+        try:
+            parsed_nodes = [_parse_node_from_dict(node_dict) for node_dict in nodes]
+            parsed_history = {
+                storage_key: [_parse_node_from_dict(d) for d in chain]
+                for storage_key, chain in history.items()
+            }
+        except (KeyError, TypeError, ValueError) as exc:
+            raise ValueError(f"invalid snapshot node: {exc}") from exc
+
         with self._lock:
             self._nodes.clear()
             self._order.clear()
             self._order_index.clear()
             self._history.clear()
             self._hlc_high_water = None
-            for node_dict in nodes:
-                node = _node_from_dict(node_dict)
+            for node in parsed_nodes:
+                self.update_hlc(node.hlc)
                 storage_key = self._prefix(node.key)
                 self._nodes[storage_key] = node
                 self._order_index[storage_key] = len(self._order)
                 self._order.append(storage_key)
-            for storage_key, chain in history.items():
-                self._history[storage_key] = [_node_from_dict(d) for d in chain]
+            for storage_key, chain in parsed_history.items():
+                self._history[storage_key] = chain
         return len(nodes)
 
     def __repr__(self) -> str:
