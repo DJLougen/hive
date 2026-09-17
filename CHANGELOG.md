@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Algorithm bake-off on the full pool (`docs/benchmarks/trace-bakeoff.json`, 10,960 held-out steps): mlp 48.0% / markov2 47.5% / hgb 46.8% raw next-tool accuracy vs 43.1% repeat-last and 37.9% majority. Learning curve shows sequence models saturate almost immediately and feature models gain ~17 points with data — tool choice is largely Markovian, and tool-output content remains the missing signal.
 - `CPURouterPolicy` pluggable algorithms (`algorithm=`): rf, rf-deep, extratrees, hgb, logreg, mlp (early stopping), markov1/markov2 n-gram transition models.
 - `hive_bench.py` flags: `--log` (trajectory logging), `--repeat` (memory-replay passes), `--policy rule|trained`, `--policy-path`.
+- `hive_bench.py` artifacts carry provenance (policy, policy_path, policy_class, temperature, repeat, git sha + dirty flag, timestamp) and a dispersion block: per-pass means plus mean/stderr/range across passes, with `stderr: null` when only one pass ran, so a single run cannot be read as a point estimate with a known spread.
 - `_OpenAICompatBackend` bearer-token auth (`api_key=`), `tools`/`tool_choice` function-calling support, `openai` backend name in `make_backend`, and a `User-Agent` header (fixes 403s on endpoints behind bot filtering).
 - `uv.lock`, `.pre-commit-config.yaml`, and Dependabot for reproducible dev tooling.
 - Optional extras: `server`, `mcp`, `agents`, `http` (FastAPI, MCP, httpx).

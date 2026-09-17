@@ -678,12 +678,49 @@ def run_episode(
 # ---------------------------------------------------------------------------
 
 
+def per_pass_means(
+    results: list[AgentResult], arm: str, metric: str = "llm_calls"
+) -> dict[int, float]:
+    """Mean of ``metric`` per pass index — the unit a repeat actually varies.
+
+    Steps inside one episode and episodes inside one pass are not independent,
+    so the pass is the honest unit for dispersion: report per-pass means, not a
+    stderr over 10 tasks, and not a single pooled mean over N passes.
+    """
+    out: dict[int, float] = {}
+    for p in sorted({r.pass_idx for r in results if r.arm == arm}):
+        rows = [r for r in results if r.arm == arm and r.pass_idx == p]
+        if rows:
+            out[p] = sum(getattr(r, metric) for r in rows) / len(rows)
+    return out
+
+
+def dispersion(values: list[float]) -> dict[str, Any]:
+    """Mean, sample stderr and range over per-pass values (needs >= 2 passes)."""
+    n = len(values)
+    if n == 0:
+        return {"passes": 0}
+    mean = sum(values) / n
+    if n < 2:
+        # A single pass cannot carry a stderr; say so instead of implying one.
+        return {"passes": 1, "mean": round(mean, 2), "stderr": None,
+                "min": round(values[0], 2), "max": round(values[0], 2)}
+    var = sum((v - mean) ** 2 for v in values) / (n - 1)
+    return {
+        "passes": n,
+        "mean": round(mean, 2),
+        "stderr": round((var / n) ** 0.5, 3),
+        "min": round(min(values), 2),
+        "max": round(max(values), 2),
+    }
+
+
 def summarize(results: list[AgentResult], arm: str) -> dict[str, Any]:
     rows = [r for r in results if r.arm == arm]
     if not rows:
         return {}
     n = len(rows)
-    return {
+    summary = {
         "arm": arm,
         "tasks": n,
         "resolved": sum(r.resolved for r in rows),
@@ -697,6 +734,15 @@ def summarize(results: list[AgentResult], arm: str) -> dict[str, Any]:
         "total_observation_chars": sum(r.observation_chars for r in rows),
         "total_context_chars": sum(r.context_chars for r in rows),
     }
+    # Dispersion over passes, so a single-run table cannot be read as a point
+    # estimate with a known spread. `passes == 1` means "not measurable here".
+    summary["per_pass_mean_llm_calls"] = {
+        str(p): round(v, 2) for p, v in per_pass_means(results, arm).items()
+    }
+    summary["llm_calls_dispersion"] = dispersion(
+        list(per_pass_means(results, arm).values())
+    )
+    return summary
 
 
 def _print_report(results: list[AgentResult]) -> None:
@@ -715,6 +761,14 @@ def _print_report(results: list[AgentResult]) -> None:
                       f"prompt_tok={s['mean_prompt_tokens']} turns={s['mean_turns']} "
                       f"mem_hits={s['memory_hits']} "
                       f"ctx_chars={s['total_context_chars']}/{s['total_observation_chars']}")
+        disp = summarize(results, arm).get("llm_calls_dispersion", {})
+        if disp.get("passes", 0) >= 2:
+            print(f"[{arm} across passes] llm_calls mean={disp['mean']} "
+                  f"stderr={disp['stderr']} range={disp['min']}..{disp['max']} "
+                  f"({disp['passes']} passes)")
+        elif disp.get("passes") == 1:
+            print(f"[{arm} across passes] 1 pass — no dispersion measurable; "
+                  f"run with --repeat N>1 to report spread")
 
 # ---------------------------------------------------------------------------
 # Provenance

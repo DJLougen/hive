@@ -146,3 +146,61 @@ def test_provenance_null_policy_for_baseline_only():
                             arms=["baseline"])
     assert prov["policy"] is None
     assert prov["policy_class"] is None
+
+
+# ---------------------------------------------------------------------------
+# Dispersion: the pass is the unit a --repeat actually varies
+# ---------------------------------------------------------------------------
+
+
+class _R:
+    def __init__(self, arm: str, pass_idx: int, llm_calls: int) -> None:
+        self.arm = arm
+        self.pass_idx = pass_idx
+        self.llm_calls = llm_calls
+        self.resolved = False
+        self.turns = 1
+        self.prompt_tokens = 0
+        self.completion_tokens = 0
+        self.wall_clock_s = 0.1
+        self.memory_hit = False
+        self.observation_chars = 0
+        self.context_chars = 0
+
+
+def test_per_pass_means_groups_by_pass_and_arm():
+    from scripts.hive_bench import per_pass_means
+
+    results = [
+        _R("hive", 0, 2), _R("hive", 0, 4),
+        _R("hive", 1, 0), _R("hive", 1, 1),
+        _R("baseline", 0, 6), _R("baseline", 0, 6),
+    ]
+
+    assert per_pass_means(results, "hive") == {0: 3.0, 1: 0.5}
+    assert per_pass_means(results, "baseline") == {0: 6.0}
+    assert per_pass_means(results, "nobody") == {}
+
+
+def test_dispersion_refuses_to_imply_a_spread_from_one_pass():
+    from scripts.hive_bench import dispersion
+
+    one = dispersion([1.8])
+    assert one["passes"] == 1 and one["stderr"] is None
+    assert dispersion([])["passes"] == 0
+
+    two = dispersion([2.0, 1.0])
+    assert two["passes"] == 2 and two["mean"] == 1.5
+    assert two["stderr"] == pytest.approx(0.5)  # sample stderr over 2 passes
+    assert (two["min"], two["max"]) == (1.0, 2.0)
+
+
+def test_summarize_carries_per_pass_means_and_dispersion():
+    from scripts.hive_bench import summarize
+
+    results = [_R("hive", 0, 2), _R("hive", 0, 2), _R("hive", 1, 0), _R("hive", 1, 0)]
+    summary = summarize(results, "hive")
+
+    assert summary["per_pass_mean_llm_calls"] == {"0": 2.0, "1": 0.0}
+    assert summary["llm_calls_dispersion"]["passes"] == 2
+    assert summary["mean_llm_calls"] == 1.0  # pooled, for the headline row
