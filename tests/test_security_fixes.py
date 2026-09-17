@@ -165,7 +165,12 @@ def test_compress_rejects_oversized_content():
 
 
 def test_compress_accepts_normal_content():
-    stack = HiveStack(honey_comb=RuleFastHoneyComb(), max_content_bytes=1024)
+    # Pinned to the Python reference compressor: hive-cpp's compressor keeps only
+    # ceil(n/2) tokens by importance score, so it is lossy on short messages and
+    # is not a drop-in for the taxonomy-based rule_fast path.
+    stack = HiveStack(
+        honey_comb=RuleFastHoneyComb(), max_content_bytes=1024, backend="python"
+    )
     result = stack.compress("user", "hello world")
     assert result.content == "hello world"
 

@@ -5,7 +5,7 @@ build-backend = "maturin"
 [project]
 name = "hive-cpp"
 version = "0.6.1"
-description = "Native Rust backend for Hive - 100x speedup over Python"
+description = "Native Rust backend for Hive (optional route/compress hot paths)"
 requires-python = ">=3.8"
 classifiers = [
     "Programming Language :: Rust",

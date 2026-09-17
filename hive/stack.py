@@ -29,6 +29,7 @@ from hive.config import HiveConfig
 from hive.feedback import FeedbackBuffer, OutcomeType, RoutingOutcome
 from hive.policy_updater import PolicyUpdater
 from hive.ratelimit import RateLimiter
+from hive.rule_fast import classify_label
 from hive.rust_brain import EdgeKind, MemoryNode, RustBrain
 from hive.schemas import validate_memory, validate_state
 from hive.telemetry import Telemetry
@@ -155,15 +156,18 @@ class HiveStack:
         circuit_breaker: CircuitBreaker | None = None,
         backend: str | None = None,
         gossip: Any | None = None,
+        native_route_model: str | None = None,
     ) -> None:
         self.config = config or HiveConfig()
         self._backend = resolve_backend(backend)  # type: ignore[arg-type]
         self.busybee = busybee_policy
         self.comb = honey_comb if honey_comb is not None else _default_honey_comb()
+        # `_native` means exactly "compress/route through hive-cpp". Memory is
+        # always the Python RustBrain (the crate's memory graph is only a
+        # keyed store, not a drop-in for the causal graph).
         self._native = self._backend == "native"
-        if rust_brain is None and self._native:
-            _log.info("HIVE_BACKEND=native but hive-cpp memory is not drop-in; using Python RustBrain")
-            self._native = False
+        self._native_route_model = native_route_model
+        self._native_route_warned = False
         self.brain = rust_brain or RustBrain(
             tenant_id=tenant_id,
             tenant_isolation=self.config.tenant_isolation,
@@ -230,7 +234,8 @@ class HiveStack:
         # Store state for later feedback
         self._last_state = dict(state)
 
-        if self.busybee is None:
+        native_route_model = self._native_route_model if self._native else None
+        if self.busybee is None and native_route_model is None:
             decision = RouteDecision(
                 tool="escalate",
                 args={"reason": "no busybee policy loaded"},
@@ -256,12 +261,25 @@ class HiveStack:
             )
             return decision
         t0 = time.perf_counter()
-        if self._native:
+        if native_route_model is not None:
             from hive.backend import native_route
 
-            action = native_route(dict(state))
+            action = native_route(dict(state), native_route_model)
         else:
-            action = self.busybee.predict(dict(state))
+            policy = self.busybee
+            if policy is None:
+                # Unreachable: the guard above returns when neither a Python
+                # policy nor a native route model is configured.
+                raise HiveUnavailable(
+                    "no routing policy: pass busybee_policy= or native_route_model="
+                )
+            if self._native and not self._native_route_warned:
+                self._native_route_warned = True
+                _log.warning(
+                    "HIVE_BACKEND=native without native_route_model: "
+                    "routing with the Python policy"
+                )
+            action = policy.predict(dict(state))
         elapsed_ms = (time.perf_counter() - t0) * 1000.0
         _log.debug("busybee routed to %s in %.2fms", action.get("tool"), elapsed_ms)
         decision = RouteDecision(
@@ -318,14 +336,13 @@ class HiveStack:
             from hive.backend import native_compress
 
             native_out = native_compress(role, content)
-            out_role = native_out.get("role", role)
-            out_content = native_out.get("content", content)
-            label = native_out.get("label", "CORE")
-            original_tokens = int(native_out.get("original_tokens", len(content) // 4))
-            compressed_tokens = int(native_out.get("compressed_tokens", len(out_content) // 4))
+            out_content = str(native_out["compressed"])
+            label = classify_label(role, out_content)
+            original_tokens = int(native_out["original_tokens"])
+            compressed_tokens = int(native_out["compressed_tokens"])
             elapsed_ms = (time.perf_counter() - t0) * 1000.0
             result = CompressedTurn(
-                role=out_role,
+                role=role,
                 content=out_content,
                 label=label,
                 original_tokens=original_tokens,

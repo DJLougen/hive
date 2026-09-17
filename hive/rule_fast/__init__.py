@@ -37,6 +37,7 @@ __all__ = [
     "Label",
     "Message",
     "RuleFastHoneyComb",
+    "classify_label",
 ]
 
 
@@ -119,6 +120,16 @@ def _infer_content_type(role: str, content: str) -> str:
     if _RE_EXIT.search(content):
         return ContentType.TOOL_RESULT_COMMAND
     return ContentType.UNKNOWN
+
+
+def classify_label(role: str, content: str) -> str:
+    """Label a message using the same taxonomy as the compressor.
+
+    Public wrapper over the internal classifier so callers outside this module
+    (e.g. the native hive-cpp compression branch in ``hive.stack``) can label
+    already-compressed content with the project's own CORE/DISTILL/... taxonomy.
+    """
+    return _classify(role, _infer_content_type(role, content), content)
 
 
 def _classify(role: str, content_type: str, content: str = "") -> str:

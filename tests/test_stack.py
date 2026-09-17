@@ -173,14 +173,15 @@ def test_native_compress_with_telemetry_does_not_crash():
     with patch(
         "hive.backend.native_compress",
         return_value={
-            "role": "user",
-            "content": "hi",
-            "label": "CORE",
+            "compressed": "hi",
             "original_tokens": 10,
             "compressed_tokens": 5,
+            "ratio": 2.0,
+            "latency_ms": 0.01,
         },
     ):
         result = stack.compress("user", "hello world")
     assert result.content == "hi"
+    assert result.label == "core"
     assert len(telemetry.compression) == 1
     assert telemetry.compression[0].original_tokens == 10

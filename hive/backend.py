@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 from typing import Any, Literal
 
@@ -27,35 +28,53 @@ def _native_available() -> bool:
 
 
 def native_compress(role: str, content: str) -> dict[str, Any]:
-    """Compress via hive-cpp when installed."""
+    """Compress one message via hive-cpp.
+
+    The crate's ``rust_compress(text)`` takes the message text only; ``role`` is
+    accepted here so the call site in :mod:`hive.stack` stays backend-agnostic.
+    Returns the crate payload: ``compressed``, ``original_tokens``,
+    ``compressed_tokens``, ``ratio``, ``latency_ms``.
+    """
     from hive_cpp import rust_compress  # type: ignore[import-not-found]
 
-    return rust_compress(role, content)
+    return json.loads(rust_compress(content))
 
 
-def native_memory_store(key: str, value: Any) -> dict[str, Any]:
-    from hive_cpp import rust_memory_store  # type: ignore[import-not-found]
+def native_route(state: dict[str, Any], model_json: str) -> dict[str, Any]:
+    """Route via hive-cpp's decision tree.
 
-    return rust_memory_store(key, value)
-
-
-def native_memory_retrieve(key: str) -> Any:
-    from hive_cpp import rust_memory_retrieve  # type: ignore[import-not-found]
-
-    return rust_memory_retrieve(key)
-
-
-def native_route(state: dict[str, Any]) -> dict[str, Any]:
+    ``rust_router_decide(model_json, state_json)`` needs a serialized
+    ``RouterModel`` and an ``AgentState``; all six ``AgentState`` fields are
+    required by serde, so missing keys are filled with empty values.
+    The crate returns a ``Decision`` (``action``/``confidence``/``reasoning``/
+    ``latency_ms``) — this adapter maps it onto the dict shape
+    :meth:`hive.stack.HiveStack.route` expects.
+    """
     from hive_cpp import rust_router_decide  # type: ignore[import-not-found]
 
-    return rust_router_decide(state)
+    agent_state = {
+        "goal": str(state.get("goal", "")),
+        "step": int(state.get("step", 0)),
+        "last_tool": state.get("last_tool"),
+        "recent_observations": [str(x) for x in state.get("recent_observations", [])],
+        "open_files": [str(x) for x in state.get("open_files", [])],
+        "available_tools": [str(x) for x in state.get("available_tools", [])],
+    }
+    decision = json.loads(rust_router_decide(model_json, json.dumps(agent_state)))
+    action = str(decision.get("action", "escalate"))
+    return {
+        "tool": action,
+        "action": action,
+        "args": {},
+        "confidence": float(decision.get("confidence", 0.0)),
+        "escalated": action == "escalate",
+        "reasoning": str(decision.get("reasoning", "")),
+    }
 
 
 __all__ = [
     "BackendName",
     "native_compress",
-    "native_memory_retrieve",
-    "native_memory_store",
     "native_route",
     "resolve_backend",
 ]

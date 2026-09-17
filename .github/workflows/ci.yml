@@ -70,6 +70,35 @@ jobs:
           pip install --upgrade 'setuptools>=83'
           pip-audit --skip-editable
 
+  # hive-cpp crate + the Python native backend path. This is the job that would
+  # have caught the original wrong-arity bindings: it builds the extension and
+  # runs the adapter tests with HIVE_REQUIRE_NATIVE=1 (no skipping).
+  rust:
+    name: hive-cpp / native backend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Crate unit tests
+        working-directory: hive-cpp
+        run: cargo test
+      - name: Build and install the extension
+        working-directory: hive-cpp
+        run: |
+          pip install maturin
+          maturin build --release --out ../dist
+          pip install ../dist/*.whl
+      - name: Native backend tests (required)
+        env:
+          HIVE_REQUIRE_NATIVE: "1"
+          HIVE_NO_NVML: "1"
+        run: |
+          pip install -e ".[dev,monitor,observability,server,mcp,http]"
+          pytest tests/test_native_backend.py -v
+
   # MCP server import smoke
   mcp-smoke:
     name: MCP / server smoke

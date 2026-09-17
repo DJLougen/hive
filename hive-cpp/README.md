@@ -13,6 +13,12 @@ hive-cpp implements three modules behind the `hive_cpp` Python module:
 Select it from Python with `HIVE_BACKEND=native` (or `backend="native"`); `auto` picks it up when the
 `hive_cpp` extension is importable. See `hive/backend.py` for the adapter.
 
+**Known difference from the Python path:** `rust_compress` keeps only `ceil(n/2)` whitespace tokens,
+scored by a fixed importance table, so it is *lossy* even for short messages (`"hello world"` →
+`"hello"`) and has no notion of the CORE/DISTILL/COMPACT taxonomy. The adapter labels the Rust output
+with `hive.rule_fast.classify_label` so the label a caller sees stays in the project's taxonomy; the
+Python `rule_fast` path keeps short/CORE messages verbatim.
+
 **No performance numbers are published here.** The crate has no committed benchmark artifact, and the
 `latest-micro.json` / `latest-macro.json` artifacts in the parent repo measure the **Python** stack, not
 this crate. Run `cargo bench` and commit the output (`target/criterion/`) to publish a figure.
