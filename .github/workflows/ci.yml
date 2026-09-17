@@ -37,11 +37,11 @@ jobs:
       - name: Test
         env:
           HIVE_NO_NVML: "1"
-        # Coverage floor is enforced only on 3.12: 80.1% (2234/2790 statements)
-        # was measured on CPython 3.12 and rounded down to the nearest multiple
-        # of 5, so on any other interpreter the floor is not a calibrated gate —
-        # coverage is still collected and reported there, but must not fail the
-        # build on a version it was never measured on.
+        # Coverage floor is enforced only on 3.12, the interpreter it was
+        # measured on: 80.8% (2328/2880 statements), rounded down to the nearest
+        # multiple of 5. On any other interpreter coverage is still collected and
+        # reported but must not fail the build on a number nobody measured
+        # there. Raise the floor only after re-measuring; the next step up is 85%.
         run: |
           if [ "${{ matrix.python }}" = "3.12" ]; then
             pytest -v --cov=hive --cov-report=term-missing --cov-fail-under=80
