@@ -31,6 +31,7 @@ brain.remember("fix_B", {"type": "mutex"}, edges={"caused_by": ["bug_A"]})
 
 ## Performance
 
-This Python implementation handles ~270K writes/sec on x86_64. The Rust port
-targets <1µs writes with NEON/SVE2 vector ops for graph walks. Install
-`hive-cpp` and set `HIVE_NATIVE_BACKEND=1` to use the Rust path.
+Measured at ~177K writes/sec in `docs/benchmarks/latest-micro.json` (DGX Spark, Python
+implementation, synthetic load). The optional `hive-cpp` crate provides native `route`/`compress`
+paths; set `HIVE_BACKEND=native` to use them once it is installed. Memory still uses this Python
+`RustBrain` store.

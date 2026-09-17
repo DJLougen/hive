@@ -63,12 +63,16 @@ For each turn:
 
 ## 4. Performance budget
 
-| Stage        | Target (Jetson Thor) | Target (RTX 3090) | Measured (RTX 3090) |
+| Stage        | Target (Jetson Thor) | Target (RTX 3090) | Measured (DGX Spark) |
 |--------------|----------------------|-------------------|---------------------|
-| route        | <30 ms               | <5 ms             | 0.49 µs (2.06M/s)   |
+| route        | <30 ms               | <5 ms             | 9.0 ms / call (112 items/s) |
 | compress     | <5 ms / message      | <1 ms / message   | 50 µs (19.8K/s)     |
-| remember     | <1 µs / write        | <1 µs / write     | 3.7 µs (270K/s)     |
+| remember     | <1 µs / write        | <1 µs / write     | 5.7 µs (177K/s)     |
 | llm (when escalated) | model-dependent | model-dependent   |
+
+Measured column is from `docs/benchmarks/latest-micro.json` (DGX Spark, synthetic load, no trained
+routing policy loaded) — `busybee_cpu` at 112 items/s is the constant-escalate fallback path, not a
+policy-routed call. Targets are the original design budget.
 
 ## 5. Failure modes and recovery
 

@@ -4,11 +4,11 @@ Merged: [PR #62](https://github.com/DJLougen/hive/pull/62) · HLC preservation: 
 
 ## Headline outcomes
 
-- **246 tests passing** — full `pytest` suite green after modernization
+- **Full `pytest` suite green** — validated locally and in CI on Python 3.10–3.13
 - **HLC bug fixed** — logical clocks preserve event order and cause-and-effect (not just time-of-day); snapshot restore and gossip replay keep `hlc`/`ts_ns` intact
 - **MCP server** — `pip install "hive-agent-memory[agents]"` → `hive-mcp`; configs for Cursor, Claude Desktop, and Codex ([MCP_SETUP.md](docs/MCP_SETUP.md))
 - **Harness integration** — hive-bench real eval + Hermes/OpenClaw guides + MCP bridge ([HARNESS_SETUP.md](docs/HARNESS_SETUP.md))
-- **Long-context eval** — `scripts/hive_long_context_eval.py --smoke` shows up to **153×** compression on 50k+ char logs
+- **Long-context eval** — `scripts/hive_long_context_eval.py --smoke` shows up to **153.8×** compression on 50k+ char logs ([`docs/benchmarks/long-context-smoke.json`](benchmarks/long-context-smoke.json))
 - **`HIVE_BACKEND`** — switch route/compress between Python and native hive-cpp (`python` | `native` | `auto`)
 - **LinUCB** — contextual bandit routing without sklearn
 - **httpx async LLM** — `_OpenAICompatBackend.achat` via `[http]` extra
@@ -46,7 +46,7 @@ Merged: [PR #62](https://github.com/DJLougen/hive/pull/62) · HLC preservation: 
 **Short (≤280 chars)**
 
 ```
-Hive update: memory sync fix, 246 tests green, MCP server with bundled Cursor/Claude/Codex configs (hive-mcp), better compression on long logs. Setup: docs/MCP_SETUP.md — github.com/DJLougen/hive/pull/62
+Hive update: memory sync fix, full test suite green, MCP server with bundled Cursor/Claude/Codex configs (hive-mcp), better compression on long logs. Setup: docs/MCP_SETUP.md — github.com/DJLougen/hive/pull/62
 ```
 
 **Plain English (thread-friendly)**
@@ -56,10 +56,10 @@ We updated Hive — the layer that lets AI agents handle boring steps on the CPU
 
 What's new:
 • Memory keeps the right order when saving/restoring or syncing between servers
-• 246 automated tests passing
+• Full automated test suite passing
 • MCP server + bundled configs for Cursor, Claude Desktop, and Codex — see docs/MCP_SETUP.md
 • Long chat logs compress much harder (tested on 50k+ character dumps)
-• Optional faster Rust backend when you need speed
+• Optional Rust backend (`HIVE_BACKEND=native`) for the routing/compression hot paths
 
 PR: github.com/DJLougen/hive/pull/62
 ```
@@ -67,7 +67,7 @@ PR: github.com/DJLougen/hive/pull/62
 **Technical (for dev audience)**
 
 ```
-Hive August 2026 refresh: HLC snapshot fix, 246 tests, MCP one-liner (pip install hive-agent-memory[agents]), 153× long-context compression eval, HIVE_BACKEND native/python, LinUCB + httpx async LLM. PR: github.com/DJLougen/hive/pull/62
+Hive August 2026 refresh: HLC snapshot fix, MCP one-liner (pip install hive-agent-memory[agents]), 153.8× long-context compression eval (docs/benchmarks/long-context-smoke.json), HIVE_BACKEND native/python, LinUCB + httpx async LLM. PR: github.com/DJLougen/hive/pull/62
 ```
 
 **Longer (technical)**
@@ -76,10 +76,10 @@ Hive August 2026 refresh: HLC snapshot fix, 246 tests, MCP one-liner (pip instal
 Shipped a four-tier modernization of Hive — the CPU orchestration layer that routes mechanical agent work off the LLM.
 
 ✅ HLC fix: causal timestamps survive snapshot restore + gossip replay
-✅ 246 tests passing (pytest)
+✅ Full test suite passing (pytest)
 ✅ MCP: `pip install "hive-agent-memory[agents]"` → `hive-mcp`; Cursor / Claude Desktop / Codex configs in [MCP_SETUP.md](docs/MCP_SETUP.md)
 ✅ Harnesses: hive-bench real eval + Hermes/OpenClaw integration guide in [HARNESS_SETUP.md](docs/HARNESS_SETUP.md)
-✅ Long-context eval: up to 153× compression on 50k+ char logs
+✅ Long-context eval: up to 153.8× compression on 50k+ char logs (`docs/benchmarks/long-context-smoke.json`)
 ✅ HIVE_BACKEND=python|native|auto for hive-cpp hot paths
 ✅ LinUCB contextual bandit + httpx async LLM
 ✅ uv.lock, pre-commit, Dependabot, ruff, pip-audit + SBOM CI
@@ -97,7 +97,7 @@ PFN / busyBee training mode is next — not in this PR.
 
 ```bash
 pip install -e ".[dev]"
-pytest                    # 246 passed
+pytest                    # full suite
 ruff check hive/ tests/
 python scripts/hive_long_context_eval.py --smoke
 ```

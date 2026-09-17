@@ -1,22 +1,16 @@
 //! Hive-cpp: Native Rust backend for Hive
 //!
-//! This crate provides a 100x speedup over the Python implementation for
-//! agent context compression and routing decisions.
+//! Optional Rust implementation of Hive's hot paths, exposed to Python through
+//! PyO3 (feature `pyo3`).
 //!
-//! # Architecture
+//! # Modules
 //!
-//! - **Router**: Native port of busybee-cpu decision tree
-//! - **Compressor**: Native port of honey-comb compression
-//! - **Memory**: Lock-free concurrent hash map for agent memory
+//! - **router**: decision-tree action routing (port of busybee-cpu)
+//! - **compressor**: rule-based context compression (port of honey-comb)
+//! - **memory**: causal memory graph with keyed store/retrieve
 //!
-//! # Performance Targets
-//!
-//! | Component | Python | Rust Target | Speedup |
-//! |-----------|--------|-------------|---------|
-//! | Router | ~100ms | <0.1ms | **100x** |
-//! | Compressor | ~0.1ms | <0.1ms | **5-10x** |
-//! | Memory | ~0.01ms | <0.01ms | **5-10x** |
-//! | **End-to-End** | ~100ms | <0.2ms | **50-100x** |
+//! No performance numbers are published here: the crate has no committed
+//! benchmark artifact. Run `cargo bench` and record the output to change that.
 
 pub mod router;
 pub mod compressor;

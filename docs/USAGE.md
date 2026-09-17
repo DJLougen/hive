@@ -58,7 +58,7 @@ pip install "hive-agent-memory[dev,monitor,observability]"
 ### Native Rust backend (optional)
 
 ```bash
-pip install hive-cpp  # PyO3 wheel, ~100x faster memory ops
+pip install hive-cpp  # PyO3 wheel; HIVE_BACKEND=native routes/compresses in Rust (no published benchmark yet)
 ```
 
 ---

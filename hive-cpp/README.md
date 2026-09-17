@@ -1,62 +1,36 @@
 # hive-cpp: Native Rust Backend for Hive
 
-High-performance Rust implementation of Hive's core components with PyO3 Python bindings.
+Optional Rust implementation of Hive's hot paths, exposed to Python through PyO3.
 
 ## Overview
 
-hive-cpp provides a native Rust backend for the Hive orchestration system, implementing three critical modules:
+hive-cpp implements three modules behind the `hive_cpp` Python module:
 
-- **Router**: Decision tree-based action routing (port of busybee-cpu)
-- **Compressor**: Context compression with importance scoring (port of honey-comb)
-- **Memory**: Causal memory graph for state tracking (port of rust-brain)
+- **Router** (`src/router.rs`) — decision-tree action routing (port of busybee-cpu)
+- **Compressor** (`src/compressor.rs`) — rule-based context compression (port of honey-comb)
+- **Memory** (`src/memory.rs`) — causal memory graph with keyed store/retrieve
+
+Select it from Python with `HIVE_BACKEND=native` (or `backend="native"`); `auto` picks it up when the
+`hive_cpp` extension is importable. See `hive/backend.py` for the adapter.
+
+**No performance numbers are published here.** The crate has no committed benchmark artifact, and the
+`latest-micro.json` / `latest-macro.json` artifacts in the parent repo measure the **Python** stack, not
+this crate. Run `cargo bench` and commit the output (`target/criterion/`) to publish a figure.
 
 ## Installation
 
 ```bash
-# Install the pre-built wheel
-pip install target/wheels/hive_cpp-0.1.0-cp312-cp312-win_amd64.whl
-
-# Or build from source
+# Build the Python extension from source
+pip install maturin
 cd hive-cpp
-maturin develop
+maturin develop --release
 ```
 
-## Performance Comparison
-
-### vs Python Implementation
-
-| Component | Python | Rust (Native) | Rust (PyO3) | Speedup (Native) | Speedup (PyO3) |
-|-----------|--------|---------------|-------------|------------------|----------------|
-| **Router** | ~100ms | **0.001ms** | 0.372ms | **269x** | 0.27x |
-| **Compressor** | ~0.1ms | **0.016ms** | 0.656ms | **6.3x** | 0.15x |
-| **Memory Store** | ~0.01ms | **0.020ms** | 0.020ms | 0.5x | 0.5x |
-| **Memory Retrieve** | ~0.01ms | **0.012ms** | 0.012ms | 0.83x | 0.83x |
-
-**Note**: PyO3 overhead includes JSON serialization, Python<->Rust boundary crossing, and string copying. Native Rust shows significant speedups for Router (269x) and Compressor (6.3x).
-
-### Benchmark Details
-
-- **Router**: Decision tree traversal for action routing (10,000 iterations)
-- **Compressor**: Token compression with configurable rules (10,000 iterations)
-- **Memory**: Lock-free concurrent hash map operations (10,000 iterations)
-
-## Architecture
-
-```
-User Request
-  ↓
-[Rust Router] → Decision Tree (0.001ms native)
-  ↓
-[Compressor] → Compress Context (0.016ms native)
-  ↓
-[Memory] → Causal Lookup (0.012ms native)
-  ↓
-[LLM Inference] → OpenAI/vLLM API
-```
+`maturin` reads the `pyo3` feature from `pyproject.toml`; there is no need to pass `--features` by hand.
 
 ## API Reference
 
-All Rust functions are exposed via PyO3 with JSON serialization:
+The four PyO3 functions take/return JSON strings to keep the boundary simple.
 
 ### Router
 
@@ -68,8 +42,8 @@ model_json = """
   "root": {
     "feature": "step",
     "threshold": 5.0,
-    "left": {"action": "read_file"},
-    "right": {"action": "apply_patch"},
+    "left": {"feature": null, "threshold": null, "left": null, "right": null, "action": "read_file"},
+    "right": {"feature": null, "threshold": null, "left": null, "right": null, "action": "apply_patch"},
     "action": null
   },
   "feature_names": ["step"],
@@ -77,16 +51,20 @@ model_json = """
 }
 """
 
+# AgentState requires all six fields (router.rs):
 state_json = """
 {
   "goal": "Fix authentication bug",
   "step": 10,
-  "context": "User reports login failure"
+  "last_tool": "read_file",
+  "recent_observations": [],
+  "open_files": ["auth.py"],
+  "available_tools": ["read_file", "apply_patch"]
 }
 """
 
 decision = rust_router_decide(model_json, state_json)
-# Returns: '{"action": "apply_patch", "confidence": 0.8, "reasoning": "..."}'
+# → '{"action": "apply_patch", "confidence": 0.8, "reasoning": "...", "latency_ms": 0.01}'
 ```
 
 ### Compressor
@@ -94,83 +72,33 @@ decision = rust_router_decide(model_json, state_json)
 ```python
 from hive_cpp import rust_compress
 
-context_json = '["Token1", "Token2", "Error: Something failed", "..."]'
-result = rust_compress(context_json)
-# Returns: '{"compressed_tokens": [...], "removed_tokens": [...], "latency_ms": 0.007}'
+result = rust_compress("DEBUG: cache miss\n" * 200)
+# → '{"compressed": "...", "original_tokens": 1200, "compressed_tokens": 12,
+#      "ratio": 100.0, "latency_ms": 0.02}'
 ```
+
+`rust_compress` takes the **message text**, not a token list.
 
 ### Memory
 
 ```python
 from hive_cpp import rust_memory_store, rust_memory_retrieve
 
-# Store a memory entry
-rust_memory_store(
-    key=42,
-    value="Fixed auth bug on line 123",
-    importance=0.9
-)
-
-# Retrieve by key
+rust_memory_store(42, "Fixed auth bug on line 123", 0.9)   # key: int, value: str, importance: float
 memory = rust_memory_retrieve(42)
-# Returns: '{"key": 42, "value": "Fixed auth bug...", "importance": 0.9, "age_seconds": 0.5}'
+# → '{"key": 42, "content": "Fixed auth bug on line 123", "importance": 0.9, "age_seconds": 0.5}'
+# missing key raises KeyError
 ```
 
 ## Development
 
-### Build from Source
-
 ```bash
-# Install maturin
-pip install maturin
-
-# Development build (debug mode)
-maturin develop
-
-# Release build
+cd hive-cpp
+cargo test            # crate unit tests (no pyo3 feature)
+maturin develop       # debug build of the extension
 maturin build --release
-
-# Run benchmarks
-cargo bench
-
-# Run tests
-cargo test
+cargo bench           # criterion benchmarks
 ```
-
-### Running Tests
-
-```bash
-# Rust unit tests
-cargo test
-
-# Python integration tests
-pytest hive/test_pyo3_bindings.py -v
-
-# Online learning tests
-pytest hive/tests/test_online_learning.py -v
-```
-
-## Validation Results (2026-06-02)
-
-### Phase 1 Status: ✅ COMPLETE
-
-| Component | Python Baseline | Rust Native | Rust (PyO3) | Target | Speedup | Status |
-|-----------|----------------|-------------|-------------|--------|---------|--------|
-| **Router** | ~100ms | **0.001ms** | 0.372ms | <0.1ms | **100,000x** (native) / 269x (PyO3) | ✅ PASS |
-| **Compressor** | ~0.1ms | **0.016ms** | 0.656ms | <0.1ms | **6.3x** (native) | ✅ PASS |
-| **Memory Store** | ~0.01ms | **0.020ms** | 0.020ms | <0.01ms | 0.5x (comparable) | ✅ PASS |
-| **Memory Retrieve** | ~0.01ms | **0.012ms** | 0.012ms | <0.01ms | 0.83x (comparable) | ✅ PASS |
-
-### Test Results
-- **Integration tests**: 3/3 passing
-- **Online learning tests**: 15/15 passing
-- **Criterion benchmarks**: All modules validated
-
-### Performance Notes
-- **PyO3 FFI overhead**: ~0.3-0.6ms (JSON serialization, boundary crossing, string copying)
-- **Native Rust**: Significantly exceeds targets for Router and Compressor
-- **Memory operations**: Comparable to Python dict (which is already highly optimized)
-- **SIMD acceleration**: Enabled for Compressor pattern matching (nightly Rust)
 
 ## Project Structure
 
@@ -179,31 +107,14 @@ hive-cpp/
 ├── src/
 │   ├── lib.rs              # PyO3 bindings (4 functions)
 │   ├── router.rs           # Decision tree implementation
-│   ├── compressor.rs       # Token compression
-│   └── memory.rs           # Lock-free hash map
+│   ├── compressor.rs       # Rule-based compression
+│   └── memory.rs           # Keyed causal memory graph
 ├── benches/
 │   └── bench.rs            # Criterion benchmarks
-├── target/
-│   └── wheels/             # Python wheels
-├── Cargo.toml              # Rust dependencies
+├── Cargo.toml
 ├── pyproject.toml          # PyO3/maturin config
-└── README.md               # This file
+└── README.md
 ```
-
-## Roadmap
-
-- [x] **Phase 1**: Core modules + PyO3 bindings (✅ DONE)
-- [ ] **Phase 2**: Python API wrapper and integration tests
-- [ ] **Phase 3**: Production integration with Hive
-- [ ] **Phase 4**: Optimization and scaling tests
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make changes
-4. Run tests: `cargo test && pytest hive/test_pyo3_bindings.py`
-5. Submit PR
 
 ## License
 

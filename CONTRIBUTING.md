@@ -65,8 +65,8 @@ falls back to no-op gracefully.
    is a PR that needs to be split.
 4. **Add tests.** If you change a public function, add or update a test
    in `tests/`. The PR will not be merged without it.
-5. **Run the test suite locally before pushing.** `pytest -q` should
-   print `37 passed in < 10 s`.
+5. **Run the test suite locally before pushing.** `pytest -q` should pass
+   cleanly.
 6. **One approval from a maintainer.** The project is maintained by
    @DJLougen.
 

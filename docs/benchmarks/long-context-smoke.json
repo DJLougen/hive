@@ -1,0 +1,22 @@
+{
+  "kind": "hive-long-context-eval",
+  "smoke": true,
+  "results": [
+    {
+      "setting": "conservative",
+      "original_chars": 25529,
+      "compressed_chars": 345,
+      "ratio": 74.20930232558139,
+      "label": "distill"
+    },
+    {
+      "setting": "aggressive",
+      "original_chars": 51059,
+      "compressed_chars": 332,
+      "ratio": 153.78313253012047,
+      "label": "distill"
+    }
+  ],
+  "max_ratio": 153.78313253012047,
+  "any_compression": true
+}

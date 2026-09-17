@@ -12,7 +12,7 @@ Hive plugs into OpenClaw as a **memory + compression + routing layer** — repla
 |-----------------|--------|--------|
 | Built-in context compaction | honey-comb 5-label compression | Deterministic, audited compression |
 | Session-based memory | rust-brain graph memory | Causal edges, timestamp protection |
-| Generic tool routing | busybee-cpu policy routing | 2M routes/sec, CPU-only |
+| Generic tool routing | busybee-cpu policy routing | CPU-only, no LLM call |
 | Plugin tool registry | JWT auth + rate limiting | Enterprise-grade access control |
 
 ---

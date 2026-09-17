@@ -56,8 +56,8 @@ python scripts/smoke_rust_brain.py
 
 ## Validation in Hive
 
-* `hive_benchmark.py` reports rust-brain throughput (≥150k writes/s on
-  x86_64 with 5000 synthetic writes).
+* Throughput: 176,796 writes/s in `docs/benchmarks/latest-micro.json` (synthetic
+  load, Python implementation; no x86_64 figure is committed).
 * Memory ordering is enforced — the smoke test covers
   `TimestampRegression` on a back-dated write.
 * The on-wire schema matches the Hermes memory event shape, so the

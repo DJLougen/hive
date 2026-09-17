@@ -4,18 +4,18 @@
 
 [![Version](https://img.shields.io/github/v/release/DJLougen/hive?label=release)](https://github.com/DJLougen/hive/releases/latest)
 [![Python](https://img.shields.io/badge/python-3.10+-green)](https://python.org)
-[![Tests](https://img.shields.io/badge/tests-passing-brightgreen)](https://github.com/DJLougen/hive/actions)
+[![Tests](https://github.com/DJLougen/hive/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/DJLougen/hive/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-MIT-yellow)](https://opensource.org/licenses/MIT)
 [![RTX 3090](https://img.shields.io/badge/RTX%203090-validated-orange)]()
 [![DGX Spark](https://img.shields.io/badge/DGX%20Spark-validated-red)]()
 
-Hive sits between an agent loop and its LLM. It answers the mechanical decisions on the CPU, compresses the context the LLM actually sees, and keeps a timestamped causal-memory graph so the agent stops re-deriving what it already learned. On a 10-task real tool-execution benchmark (real repos, real pytest gate, DeepSeek-V4.1-Flash as the LLM) this cut LLM calls by 83% and prompt tokens by 80% at an identical 10/10 resolve rate — numbers below.
+Hive sits between an agent loop and its LLM. It answers the mechanical decisions on the CPU, compresses the context the LLM actually sees, and keeps a timestamped causal-memory graph so the agent stops re-deriving what it already learned. On a 10-task real tool-execution benchmark (real repos, real pytest gate, DeepSeek-V4.1-Flash as the LLM) this cut LLM calls by 83% and prompt tokens by 81% at an identical 10/10 resolve rate — numbers below.
 
-> **Status:** v0.6.1 (Beta). The August 2026 modernization ([PR #62](https://github.com/DJLougen/hive/pull/62)), HLC preservation (PRs #71–#87), and the review-driven fixes ([PR #88](https://github.com/DJLougen/hive/pull/88)–[PR #91](https://github.com/DJLougen/hive/pull/91)) are merged on `main` — **246 tests** passing. Routing-accuracy numbers are *in-distribution* — see the OOD caveat under [Components](#components). **PFN / busyBee-cpu training-mode integration** is in progress (see [busyBee-cpu](https://github.com/DJLougen/busyBee-cpu)).
+> **Status:** v0.6.1 (Beta). The August 2026 modernization ([PR #62](https://github.com/DJLougen/hive/pull/62)), HLC preservation (PRs #71–#87), and the review-driven fixes ([PR #88](https://github.com/DJLougen/hive/pull/88)–[PR #91](https://github.com/DJLougen/hive/pull/91)) are merged on `main` — full suite green on Python 3.10–3.13 locally and in CI. Routing-accuracy numbers are *in-distribution* — see the OOD caveat under [Components](#components). **PFN / busyBee-cpu training-mode integration** is in progress (see [busyBee-cpu](https://github.com/DJLougen/busyBee-cpu)).
 
 ## What's new (August 2026)
 
-Four-tier modernization, validated locally with **246 tests** (`pytest`) and CI on Python 3.10–3.13. Full detail: [`docs/WHATS_NEW.md`](docs/WHATS_NEW.md) · [CHANGELOG](CHANGELOG.md#unreleased).
+Four-tier modernization, validated locally and in CI on Python 3.10–3.13. Full detail: [`docs/WHATS_NEW.md`](docs/WHATS_NEW.md) · [CHANGELOG](CHANGELOG.md#unreleased).
 
 | Outcome | What shipped |
 |---|---|
@@ -23,7 +23,7 @@ Four-tier modernization, validated locally with **246 tests** (`pytest`) and CI 
 | **Review fixes** | `validate=True` actually validates; `supersede()` chains stay walkable via bounded `history()`; Ed25519 model signatures; stdlib JWKS fetch; bearer-token auth for gossip and the REST API (`HIVE_API_TOKEN`) |
 | **Gossip + audit wiring** | `HiveStack(gossip=…)` publishes every `remember()` to peers; `HiveConfig(audit_enabled=True)` keeps a bounded audit trail via `stack.audit_events()` for SIEM export |
 | **MCP server** | `pip install "hive-agent-memory[agents]"` → `hive-mcp` console command; project config at `.cursor/mcp.json`; setup for Cursor, Claude Desktop, and Codex via [docs/MCP_SETUP.md](docs/MCP_SETUP.md) |
-| **Long-context proof** | `python scripts/hive_long_context_eval.py --smoke` — up to **153×** compression on 50k+ char synthetic logs (short agent turns stay near 1×; routing is the win there) |
+| **Long-context proof** | `python scripts/hive_long_context_eval.py --smoke` — up to **153.8×** compression on 50k+ char synthetic logs, measured in [`docs/benchmarks/long-context-smoke.json`](docs/benchmarks/long-context-smoke.json) (short agent turns stay near 1×; routing is the win there) |
 | **`HIVE_BACKEND`** | `python` \| `native` \| `auto` — route/compress via hive-cpp when installed |
 | **LinUCB** | sklearn-free contextual bandit in `hive.policy_updater` for online routing updates |
 | **Async LLM** | `httpx`-backed `_OpenAICompatBackend.achat` (`[http]` extra) |
@@ -40,11 +40,11 @@ Four-tier modernization, validated locally with **246 tests** (`pytest`) and CI 
 | Metric | Baseline | Hive | Delta |
 |---|---|---|---|
 | Resolve rate | 100% (10/10) | 100% (10/10) | **0 pp** |
-| Mean LLM calls | 5.8 | 1.0 | **−82.8%** |
-| Mean prompt tokens | 7,615 | 1,548 | **−79.7%** |
-| Mean completion tokens | 424 | 234 | **−44.8%** |
-| Mean turns | 5.8 | 7.0 | +20.7% |
-| Mean wall clock (s) | 12.5 | 2.5 | **−80.0%** |
+| Mean LLM calls | 6.0 | 1.0 | **−83.3%** |
+| Mean prompt tokens | 8,569 | 1,591 | **−81.4%** |
+| Mean completion tokens | 424 | 232 | **−45.3%** |
+| Mean turns | 6.0 | 7.0 | +16.7% |
+| Mean wall clock (s) | 12.24 | 3.33 | **−72.8%** |
 | Memory recall hits | — | 4/10 | — |
 
 **Why it works:** each episode runs ~6 mechanical turns (`list_files`, reproduce `run_tests`, read the file the traceback names, verify `run_tests`, `finish`). Without Hive every one of those is a paid LLM call with the full transcript attached. With Hive the CPU policy executes them locally; the model is called once — with the failing test output and the unit under test already in context — and writes the patch. Resolve rate is unchanged because the reasoning still goes to the same model.
@@ -320,9 +320,8 @@ if stack.should_update_policy():     # True once the feedback buffer is full
 ## Components
 
 **busyBee-cpu** — CPU action routing
-- 98.2% accuracy on the training distribution (SWE-bench trajectories).
+- Best state-only model in the trace bake-off: **48.0%** raw next-tool accuracy vs 43.1% repeat-last and 37.9% majority ([`docs/benchmarks/trace-bakeoff.json`](docs/benchmarks/trace-bakeoff.json)); in-distribution workflow shapes route far better — see the boundary discussion above.
 - **OOD performance is unproven**; out-of-distribution states escalate to the LLM rather than guess.
-- ~2.06M routes/s (RTX 3090), ~1.73M routes/s (DGX Spark).
 
 **honey-comb / rule_fast** — context compression
 - 6-label scheme — `CORE, DISTILL, COMPACT, DROP, STALE, ESCALATE` — driven by an 11-value `ContentType` taxonomy (`TOOL_RESULT_TEST`, `AGENT_PATCH`, `TOOL_RESULT_FILE`, …).
@@ -334,7 +333,7 @@ if stack.should_update_policy():     # True once the feedback buffer is full
 - Timestamped graph with monotonic ordering (`TimestampRegression` on stale writes).
 - Edge kinds: `related_to`, `caused_by`, `supersedes`, `attached_to`.
 - Per-tenant isolation, TTL + LRU eviction, optional vector search (`semantic_search.SemanticIndex`). Data is durable: `snapshot_to_file()` (gzip+SHA256) and `restore_from_file()` persist memory across restarts.
-- ~270K writes/s, ~315K reads/s (DGX Spark).
+- ~177K writes/s (`docs/benchmarks/latest-micro.json`).
 
 ### Causal memory: worked example
 
@@ -367,15 +366,18 @@ history = stack.brain.history("endpoint_health")
 
 ## Performance
 
-Component micro-benchmarks (synthetic load; raw data in [`docs/benchmarks/`](docs/benchmarks/)):
+Component micro-benchmarks, measured on one host (synthetic load; raw data in [`docs/benchmarks/latest-micro.json`](docs/benchmarks/latest-micro.json)):
 
-| Component | Metric | RTX 3090 | DGX Spark |
-|---|---|---|---|
-| busyBee-cpu | routes/s | 2.06M | 1.73M |
-| rule_fast | messages/s | 200K | 200K |
-| honey-comb | messages/s | 29K | 29K |
-| rust-brain | writes/s | 270K | 315K |
-| rust-brain | reads/s | 315K | 315K |
+| Component | Items/s (measured host) |
+|---|---|
+| rust_brain | 176,796 |
+| compress[fast] | 19,914 |
+| compress[honeycomb] | 1,185 |
+| busybee_cpu | 112 |
+
+`busybee_cpu` measures 111.7 items/s in `latest-micro.json`. `latest-macro.json` reports 1,734,892/s for
+the same component **with `policy_loaded: false`** — a constant-escalate fallback, not routing — so that
+figure is not published until it is re-measured with a policy loaded.
 
 Reproduce:
 
@@ -444,7 +446,7 @@ pip install -e ".[dev]"    # includes ruff, mypy, pip-audit, pre-commit
 
 pre-commit install
 
-# Run the suite (246 tests)
+# Run the suite (full suite)
 pytest
 
 # Focused runs
