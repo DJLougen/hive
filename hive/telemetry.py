@@ -346,18 +346,51 @@ class Telemetry:
         except ImportError:
             _log.warning("prometheus-client not installed; run: pip install prometheus-client")
 
-    def enable_otel_traces(self) -> None:
-        """Enable OpenTelemetry span creation for every recorded event."""
+    def enable_otel_traces(self, *, endpoint: str | None = None) -> None:
+        """Enable OpenTelemetry span creation for every recorded event.
+
+        ``endpoint`` is an OTLP collector address. When one is configured and the
+        tracing dependencies are missing, this raises instead of logging a
+        warning: the operator asked for export, and silently keeping spans in
+        process is the failure mode this project treats as a defect. With no
+        endpoint, a missing dependency stays a warning (traces are optional).
+        """
         try:
             from opentelemetry import trace
             from opentelemetry.sdk.resources import Resource
             from opentelemetry.sdk.trace import TracerProvider
+        except ImportError as exc:
+            if endpoint:
+                raise ImportError(
+                    "config.otel_endpoint is set but the tracing dependencies are missing; "
+                    "run: pip install 'hive-agent-memory[observability]'"
+                ) from exc
+            _log.warning(
+                "opentelemetry-sdk not installed; run: "
+                "pip install opentelemetry-api opentelemetry-sdk"
+            )
+            return
 
-            resource = Resource.create({"service.name": "hive"})
-            provider = TracerProvider(resource=resource)
-            trace.set_tracer_provider(provider)
-            self._otel_tracer = trace.get_tracer("hive.telemetry")
-            self._otel_enabled = True
-            _log.info("OpenTelemetry traces enabled")
-        except ImportError:
-            _log.warning("opentelemetry-sdk not installed; run: pip install opentelemetry-api opentelemetry-sdk")
+        resource = Resource.create({"service.name": "hive"})
+        provider = TracerProvider(resource=resource)
+        if endpoint:
+            try:
+                from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import (
+                    OTLPSpanExporter,
+                )
+                from opentelemetry.sdk.trace.export import BatchSpanProcessor
+            except ImportError as exc:
+                raise ImportError(
+                    "config.otel_endpoint is set but the OTLP exporter is missing; run: "
+                    "pip install opentelemetry-exporter-otlp-proto-grpc"
+                ) from exc
+            provider.add_span_processor(
+                BatchSpanProcessor(OTLPSpanExporter(endpoint=endpoint))
+            )
+        trace.set_tracer_provider(provider)
+        self._otel_tracer = trace.get_tracer("hive.telemetry")
+        self._otel_enabled = True
+        _log.info(
+            "OpenTelemetry traces enabled%s",
+            f" (exporting to {endpoint})" if endpoint else "",
+        )

@@ -404,13 +404,29 @@ class RustBrain:
 
     # -- read path ----------------------------------------------------------
 
+    def _expired(self, node: MemoryNode) -> bool:
+        """True when ``default_ttl_s`` is set and the node is older than it.
+
+        Expiry is enforced on read (not only by the explicit ``expire()`` /
+        ``gc_expired()`` calls) so a configured retention policy actually holds
+        for a long-lived process that never sweeps.
+        """
+        if self._default_ttl_s is None:
+            return False
+        return (_now_ns() - node.ts_ns) / 1e9 > self._default_ttl_s
+
     def recall(self, key: str, default: Any = None) -> Any:
         key = self._prefix(key)
         node = self._nodes.get(key)
-        return default if node is None else node.value
+        if node is None or self._expired(node):
+            return default
+        return node.value
 
     def get(self, key: str) -> MemoryNode | None:
-        return self._nodes.get(self._prefix(key))
+        node = self._nodes.get(self._prefix(key))
+        if node is None or self._expired(node):
+            return None
+        return node
 
     def neighbours(self, key: str, kind: str | None = None) -> list[str]:
         key = self._prefix(key)
@@ -447,7 +463,10 @@ class RustBrain:
     def snapshot(self) -> list[dict[str, Any]]:
         """Return a Hermes-compatible JSON dump of the entire store."""
         with self._lock:
-            return [self._nodes[k].to_dict() for k in self._order if k]
+            # `_order` can hold keys whose node is gone; membership in _nodes is
+            # the truth. Filtering on truthiness would silently drop the
+            # empty-string key, which is a legal key.
+            return [self._nodes[k].to_dict() for k in self._order if k in self._nodes]
 
     # -- bulk ---------------------------------------------------------------
 
@@ -491,7 +510,10 @@ class RustBrain:
         return len(self._nodes)
 
     def __contains__(self, key: object) -> bool:
-        return isinstance(key, str) and self._prefix(key) in self._nodes
+        if not isinstance(key, str):
+            return False
+        node = self._nodes.get(self._prefix(key))
+        return node is not None and not self._expired(node)
 
     def expire(self, key: str, *, ttl_s: float | None = None) -> bool:
         """Remove a key if it has exceeded its TTL. Returns True if removed."""

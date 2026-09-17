@@ -47,6 +47,9 @@ __all__ = [
 
 _log = logging.getLogger("hive.stack")
 
+# Set once the zero-config posture has been reported (see HiveStack.__init__).
+_UNSAFE_POSTURE_WARNED = False
+
 
 class HiveUnavailable(RuntimeError):
     """Raised when a component is missing and no fallback is available."""
@@ -159,6 +162,9 @@ class HiveStack:
         native_route_model: str | None = None,
     ) -> None:
         self.config = config or HiveConfig()
+        # validate() is documented but was never called: a bad config (e.g.
+        # rate_limit=-1) used to silently disable throttling.
+        self.config.validate()
         self._backend = resolve_backend(backend)  # type: ignore[arg-type]
         self.busybee = busybee_policy
         self.comb = honey_comb if honey_comb is not None else _default_honey_comb()
@@ -184,12 +190,24 @@ class HiveStack:
                 refill_rate=float(self.config.rate_limit),
             )
         self.rate_limiter = rate_limiter
+        if not any(self._controls().values()):
+            # Once per process, not once per stack: the posture is a property of
+            # the default config, and a library that warns on every construction
+            # trains its users to ignore warnings.
+            global _UNSAFE_POSTURE_WARNED
+            if not _UNSAFE_POSTURE_WARNED:
+                _UNSAFE_POSTURE_WARNED = True
+                _log.warning(
+                    "HiveStack constructed with all safety controls off "
+                    "(rate_limiting, ttl, audit); set config.rate_limit, "
+                    "config.default_ttl_s or config.audit_enabled to enable them"
+                )
         self.circuit_breaker = circuit_breaker
         self._max_content_bytes = max_content_bytes
         self.telemetry = telemetry
         if telemetry is not None:
             if self.config.otel_endpoint:
-                telemetry.enable_otel_traces()
+                telemetry.enable_otel_traces(endpoint=self.config.otel_endpoint)
             if self.config.prometheus_port:
                 telemetry.start_prometheus_server(self.config.prometheus_port)
         self.feedback = feedback_buffer
@@ -221,6 +239,9 @@ class HiveStack:
 
     def route(self, state: Mapping[str, Any]) -> RouteDecision:
         """Decide which tool to invoke next. CPU-only."""
+        # Snapshot the caller's state up front so feedback binds to *this*
+        # call's state even when route() runs on several threads at once.
+        state_snapshot = dict(state)
         if self.rate_limiter is not None and not self.rate_limiter.check(self._tenant_id, "route"):
             decision = RouteDecision(
                 tool="escalate",
@@ -240,7 +261,7 @@ class HiveStack:
                     escalated=True,
                 )
             self._last_decision = decision
-            self._pending_decisions.append((dict(state), decision))
+            self._pending_decisions.append((state_snapshot, decision))
             self._audit(
                 "route",
                 tool=decision.tool,
@@ -252,6 +273,9 @@ class HiveStack:
             state = validate_state(dict(state))
         # Store state for later feedback
         self._last_state = dict(state)
+        # Feedback must bind to the validated state of *this* call, not to
+        # whatever a concurrent route() wrote to the shared attribute.
+        state_snapshot = self._last_state
 
         native_route_model = self._native_route_model if self._native else None
         if self.busybee is None and native_route_model is None:
@@ -271,7 +295,7 @@ class HiveStack:
                     escalated=True,
                 )
             self._last_decision = decision
-            self._pending_decisions.append((self._last_state, decision))
+            self._pending_decisions.append((state_snapshot, decision))
             self._audit(
                 "route",
                 tool=decision.tool,
@@ -317,7 +341,7 @@ class HiveStack:
                 escalated=decision.escalated,
             )
         self._last_decision = decision
-        self._pending_decisions.append((self._last_state or {}, decision))
+        self._pending_decisions.append((state_snapshot, decision))
         self._audit(
             "route",
             tool=decision.tool,
@@ -612,10 +636,13 @@ class HiveStack:
         if self.feedback is None:
             _log.warning("Cannot update policy: no feedback buffer")
             return False
-        batch = self.feedback.get_batch()
+        batch = self.feedback.get_outcomes()
         success = self._policy_updater.update(self.busybee, batch)
 
         if success:
+            # Only now is it safe to drop the consumed outcomes; a failed
+            # update must leave them buffered for the next attempt.
+            self.feedback.discard(len(batch))
             _log.info(
                 "Successfully updated busybee policy from %d outcomes", len(batch)
             )
@@ -683,11 +710,20 @@ class HiveStack:
 
     # -- telemetry ----------------------------------------------------------
 
+    def _controls(self) -> dict[str, bool]:
+        """Which safety controls are active on this stack."""
+        return {
+            "rate_limiting": self.rate_limiter is not None,
+            "ttl": self.config.default_ttl_s is not None,
+            "audit": self.config.audit_enabled,
+        }
+
     def stats(self) -> dict[str, Any]:
         result = {
             "brain": self.brain.stats(),
             "comb": self.comb.get_stats() if hasattr(self.comb, "get_stats") else {},
             "backend": self._backend,
+            "controls": self._controls(),
         }
         if self.telemetry is not None:
             result["telemetry"] = self.telemetry.summary()

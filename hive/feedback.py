@@ -9,9 +9,13 @@ This module provides:
 from __future__ import annotations
 
 import json
+import logging
+import threading
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any
+
+_log = logging.getLogger("hive.feedback")
 
 
 class OutcomeType(Enum):
@@ -60,10 +64,23 @@ class FeedbackBuffer:
         self.capacity = capacity
         self.max_state_bytes = max_state_bytes
         self.buffer: list[RoutingOutcome] = []
+        self._lock = threading.RLock()
+        self._dropped = 0
 
     def _append(self, outcome: RoutingOutcome) -> None:
+        with self._lock:
+            self._append_locked(outcome)
+
+    def _append_locked(self, outcome: RoutingOutcome) -> None:
         if len(self.buffer) >= self.capacity:
             self.buffer.pop(0)
+            self._dropped += 1
+            _log.warning(
+                "FeedbackBuffer at capacity (%d); dropped oldest outcome "
+                "(total dropped: %d)",
+                self.capacity,
+                self._dropped,
+            )
         # Truncate oversized state to prevent memory exhaustion DoS.
         # Non-JSON-serialisable state can't be sized — treat it as oversized.
         try:
@@ -87,57 +104,87 @@ class FeedbackBuffer:
         self._append(outcome)
 
     def is_full(self) -> bool:
-        return len(self.buffer) >= self.capacity
+        with self._lock:
+            return len(self.buffer) >= self.capacity
 
     def get_batch(self) -> list[RoutingOutcome]:
-        batch = self.buffer[:]
-        self.buffer.clear()
-        return batch
+        with self._lock:
+            batch = self.buffer[:]
+            self.buffer.clear()
+            return batch
+
+    def discard(self, count: int) -> int:
+        """Drop ``count`` already-consumed outcomes (oldest first).
+
+        Distinct from a capacity drop: these were used by a successful policy
+        update, so they are not counted in ``stats()["dropped"]``. Returns how
+        many were actually removed.
+        """
+        with self._lock:
+            removed = min(max(count, 0), len(self.buffer))
+            del self.buffer[:removed]
+            return removed
 
     def size(self) -> int:
-        return len(self.buffer)
+        with self._lock:
+            return len(self.buffer)
 
     def clear(self) -> None:
-        self.buffer.clear()
+        with self._lock:
+            self.buffer.clear()
 
     def stats(self) -> dict[str, Any]:
-        if not self.buffer:
-            return {"size": 0, "capacity": self.capacity, "outcome_distribution": {}}
-        outcome_counts: dict[str, int] = {}
-        for outcome in self.buffer:
-            key = outcome.outcome_type.value
-            outcome_counts[key] = outcome_counts.get(key, 0) + 1
-        total = len(self.buffer)
-        return {
-            "size": total,
-            "capacity": self.capacity,
-            "outcome_distribution": outcome_counts,
-            "outcome_rates": {k: v / total for k, v in outcome_counts.items()},
-        }
+        with self._lock:
+            if not self.buffer:
+                return {
+                    "size": 0,
+                    "capacity": self.capacity,
+                    "dropped": self._dropped,
+                    "outcome_distribution": {},
+                }
+            outcome_counts: dict[str, int] = {}
+            for outcome in self.buffer:
+                key = outcome.outcome_type.value
+                outcome_counts[key] = outcome_counts.get(key, 0) + 1
+            total = len(self.buffer)
+            return {
+                "size": total,
+                "capacity": self.capacity,
+                "dropped": self._dropped,
+                "outcome_distribution": outcome_counts,
+                "outcome_rates": {k: v / total for k, v in outcome_counts.items()},
+            }
 
     def summary(self) -> dict[str, Any]:
         outcome_counts: dict[str, int] = {}
-        for outcome in self.buffer:
+        with self._lock:
+            snapshot = list(self.buffer)
+            dropped = self._dropped
+        for outcome in snapshot:
             key = outcome.outcome_type.value
             outcome_counts[key] = outcome_counts.get(key, 0) + 1
-        total = len(self.buffer)
+        total = len(snapshot)
         rates = {k: v / total for k, v in outcome_counts.items()} if total > 0 else {}
         return {
             "size": total,
             "capacity": self.capacity,
             "is_full": self.is_full(),
+            "dropped": dropped,
             "summary": {
                 "total_outcomes": total,
                 "by_outcome": outcome_counts,
                 "by_outcome_rate": rates,
+                "dropped": dropped,
             },
         }
 
     def get_outcomes(self) -> list[RoutingOutcome]:
-        return list(self.buffer)
+        with self._lock:
+            return list(self.buffer)
 
     def __len__(self) -> int:
-        return len(self.buffer)
+        with self._lock:
+            return len(self.buffer)
 
     def __repr__(self) -> str:
         return f"FeedbackBuffer(size={len(self)}, capacity={self.capacity})"
