@@ -1,0 +1,5022 @@
+{
+  "model": "accounts/fireworks/models/deepseek-v4p1-flash",
+  "driver": "llm",
+  "suite": "/Users/djl/Documents/GitHub/hive/benchmarks/tasks",
+  "provenance": {
+    "timestamp": "2026-09-17T19:35:08.579331+00:00",
+    "git_sha": "0a561663fd2a29a1e0307c8c3200d3beac1118f1",
+    "git_dirty": false,
+    "policy": "rule",
+    "policy_path": null,
+    "policy_class": "RuleBasedRoutingPolicy",
+    "temperature": 0.0,
+    "repeat": 3
+  },
+  "results": [
+    {
+      "task_id": "paginate-off-by-one",
+      "arm": "baseline",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 6,
+      "llm_calls": 6,
+      "prompt_tokens": 7205,
+      "completion_tokens": 410,
+      "wall_clock_s": 10.158486625005025,
+      "memory_hit": false,
+      "observation_chars": 1374,
+      "context_chars": 1374,
+      "pass_idx": 0,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "llm",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 175,
+          "context_bytes": 175,
+          "compress_label": null
+        },
+        {
+          "turn": 1,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "paginator.py"
+          },
+          "observation_bytes": 415,
+          "context_bytes": 415,
+          "compress_label": null
+        },
+        {
+          "turn": 2,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_paginator.py"
+          },
+          "observation_bytes": 649,
+          "context_bytes": 649,
+          "compress_label": null
+        },
+        {
+          "turn": 3,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "paginator.py",
+            "content": "\"\"\"Tiny pagination helper used by the API layer.\"\"\"\n\n\ndef paginate(items, page: int, per_page: int):\n    \"\"\"Return the s\u2026"
+          },
+          "observation_bytes": 30,
+          "context_bytes": 30,
+          "compress_label": null
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 97,
+          "compress_label": null
+        },
+        {
+          "turn": 5,
+          "decision_source": "llm",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "csv-quoted-commas",
+      "arm": "baseline",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 6,
+      "llm_calls": 6,
+      "prompt_tokens": 7067,
+      "completion_tokens": 549,
+      "wall_clock_s": 8.899320499971509,
+      "memory_hit": false,
+      "observation_chars": 975,
+      "context_chars": 975,
+      "pass_idx": 0,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "llm",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 171,
+          "context_bytes": 171,
+          "compress_label": null
+        },
+        {
+          "turn": 1,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "csvlite.py"
+          },
+          "observation_bytes": 216,
+          "context_bytes": 216,
+          "compress_label": null
+        },
+        {
+          "turn": 2,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_csvlite.py"
+          },
+          "observation_bytes": 454,
+          "context_bytes": 454,
+          "compress_label": null
+        },
+        {
+          "turn": 3,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "csvlite.py",
+            "content": "\"\"\"Minimal CSV line parser (we avoid the stdlib for embedded targets).\"\"\"\n\n\ndef parse_line(line: str) -> list[str]:\n    \u2026"
+          },
+          "observation_bytes": 29,
+          "context_bytes": 29,
+          "compress_label": null
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 97,
+          "compress_label": null
+        },
+        {
+          "turn": 5,
+          "decision_source": "llm",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "ttl-cache-stale",
+      "arm": "baseline",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 5,
+      "llm_calls": 5,
+      "prompt_tokens": 5438,
+      "completion_tokens": 376,
+      "wall_clock_s": 7.865190542011987,
+      "memory_hit": false,
+      "observation_chars": 889,
+      "context_chars": 889,
+      "pass_idx": 0,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "llm",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 173,
+          "context_bytes": 173,
+          "compress_label": null
+        },
+        {
+          "turn": 1,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "ttlcache.py"
+          },
+          "observation_bytes": 582,
+          "context_bytes": 582,
+          "compress_label": null
+        },
+        {
+          "turn": 2,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "ttlcache.py",
+            "content": "\"\"\"A minimal TTL cache.\"\"\"\n\nimport time\n\n\nclass TTLCache:\n    def __init__(self, ttl: float):\n        self.ttl = ttl\n   \u2026"
+          },
+          "observation_bytes": 29,
+          "context_bytes": 29,
+          "compress_label": null
+        },
+        {
+          "turn": 3,
+          "decision_source": "llm",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 97,
+          "compress_label": null
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "retry-gives-up",
+      "arm": "baseline",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 6,
+      "llm_calls": 6,
+      "prompt_tokens": 7543,
+      "completion_tokens": 414,
+      "wall_clock_s": 6.7839285410009325,
+      "memory_hit": false,
+      "observation_chars": 1869,
+      "context_chars": 1869,
+      "pass_idx": 0,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "llm",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 167,
+          "context_bytes": 167,
+          "compress_label": null
+        },
+        {
+          "turn": 1,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "retry.py"
+          },
+          "observation_bytes": 575,
+          "context_bytes": 575,
+          "compress_label": null
+        },
+        {
+          "turn": 2,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_retry.py"
+          },
+          "observation_bytes": 996,
+          "context_bytes": 996,
+          "compress_label": null
+        },
+        {
+          "turn": 3,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "retry.py",
+            "content": "\"\"\"Retry decorator.\"\"\"\n\nimport functools\n\n\ndef retry(times: int, on: tuple[type[BaseException], ...] = (Exception,)):\n  \u2026"
+          },
+          "observation_bytes": 26,
+          "context_bytes": 26,
+          "compress_label": null
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 97,
+          "compress_label": null
+        },
+        {
+          "turn": 5,
+          "decision_source": "llm",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "stacked-discounts",
+      "arm": "baseline",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 5,
+      "llm_calls": 5,
+      "prompt_tokens": 5121,
+      "completion_tokens": 299,
+      "wall_clock_s": 6.712184917007107,
+      "memory_hit": false,
+      "observation_chars": 624,
+      "context_chars": 624,
+      "pass_idx": 0,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "llm",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 171,
+          "context_bytes": 171,
+          "compress_label": null
+        },
+        {
+          "turn": 1,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "pricing.py"
+          },
+          "observation_bytes": 320,
+          "context_bytes": 320,
+          "compress_label": null
+        },
+        {
+          "turn": 2,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "pricing.py",
+            "content": "\"\"\"Pricing helpers.\"\"\"\n\n\ndef apply_discounts(price: float, percents: list[float]) -> float:\n    \"\"\"Apply each percent di\u2026"
+          },
+          "observation_bytes": 28,
+          "context_bytes": 28,
+          "compress_label": null
+        },
+        {
+          "turn": 3,
+          "decision_source": "llm",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 97,
+          "compress_label": null
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "dedup-case",
+      "arm": "baseline",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 6,
+      "llm_calls": 6,
+      "prompt_tokens": 6787,
+      "completion_tokens": 379,
+      "wall_clock_s": 7.784764041018207,
+      "memory_hit": false,
+      "observation_chars": 1091,
+      "context_chars": 1091,
+      "pass_idx": 0,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "llm",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 167,
+          "context_bytes": 167,
+          "compress_label": null
+        },
+        {
+          "turn": 1,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "dedup.py"
+          },
+          "observation_bytes": 337,
+          "context_bytes": 337,
+          "compress_label": null
+        },
+        {
+          "turn": 2,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_dedup.py"
+          },
+          "observation_bytes": 456,
+          "context_bytes": 456,
+          "compress_label": null
+        },
+        {
+          "turn": 3,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "dedup.py",
+            "content": "\"\"\"Username deduplication for the mailer.\"\"\"\n\n\ndef dedup(usernames: list[str]) -> list[str]:\n    \"\"\"Drop duplicate usern\u2026"
+          },
+          "observation_bytes": 26,
+          "context_bytes": 26,
+          "compress_label": null
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 97,
+          "compress_label": null
+        },
+        {
+          "turn": 5,
+          "decision_source": "llm",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "config-precedence",
+      "arm": "baseline",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 6,
+      "llm_calls": 6,
+      "prompt_tokens": 7589,
+      "completion_tokens": 464,
+      "wall_clock_s": 7.786433582950849,
+      "memory_hit": false,
+      "observation_chars": 1704,
+      "context_chars": 1704,
+      "pass_idx": 0,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "llm",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 173,
+          "context_bytes": 173,
+          "compress_label": null
+        },
+        {
+          "turn": 1,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "confload.py"
+          },
+          "observation_bytes": 692,
+          "context_bytes": 692,
+          "compress_label": null
+        },
+        {
+          "turn": 2,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_confload.py"
+          },
+          "observation_bytes": 705,
+          "context_bytes": 705,
+          "compress_label": null
+        },
+        {
+          "turn": 3,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "confload.py",
+            "content": "\"\"\"Config loading with documented precedence: env > file > defaults.\"\"\"\n\nimport os\n\nDEFAULTS = {\"host\": \"127.0.0.1\", \"po\u2026"
+          },
+          "observation_bytes": 29,
+          "context_bytes": 29,
+          "compress_label": null
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 97,
+          "compress_label": null
+        },
+        {
+          "turn": 5,
+          "decision_source": "llm",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "merge-intervals",
+      "arm": "baseline",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 6,
+      "llm_calls": 6,
+      "prompt_tokens": 7178,
+      "completion_tokens": 442,
+      "wall_clock_s": 7.625130957982037,
+      "memory_hit": false,
+      "observation_chars": 1389,
+      "context_chars": 1389,
+      "pass_idx": 0,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "llm",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 175,
+          "context_bytes": 175,
+          "compress_label": null
+        },
+        {
+          "turn": 1,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "intervals.py"
+          },
+          "observation_bytes": 515,
+          "context_bytes": 515,
+          "compress_label": null
+        },
+        {
+          "turn": 2,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_intervals.py"
+          },
+          "observation_bytes": 564,
+          "context_bytes": 564,
+          "compress_label": null
+        },
+        {
+          "turn": 3,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "intervals.py",
+            "content": "\"\"\"Interval merging for calendar bookings.\"\"\"\n\n\ndef merge_intervals(intervals: list[tuple[int, int]]) -> list[tuple[int,\u2026"
+          },
+          "observation_bytes": 30,
+          "context_bytes": 30,
+          "compress_label": null
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 97,
+          "compress_label": null
+        },
+        {
+          "turn": 5,
+          "decision_source": "llm",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "log-error-count",
+      "arm": "baseline",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 7,
+      "llm_calls": 7,
+      "prompt_tokens": 23368,
+      "completion_tokens": 515,
+      "wall_clock_s": 9.912511625036132,
+      "memory_hit": false,
+      "observation_chars": 10395,
+      "context_chars": 10395,
+      "pass_idx": 0,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "llm",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 181,
+          "context_bytes": 181,
+          "compress_label": null
+        },
+        {
+          "turn": 1,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "logstats.py"
+          },
+          "observation_bytes": 508,
+          "context_bytes": 508,
+          "compress_label": null
+        },
+        {
+          "turn": 2,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "app.log"
+          },
+          "observation_bytes": 9004,
+          "context_bytes": 9004,
+          "compress_label": null
+        },
+        {
+          "turn": 3,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_logstats.py"
+          },
+          "observation_bytes": 568,
+          "context_bytes": 568,
+          "compress_label": null
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "logstats.py",
+            "content": "\"\"\"Log statistics for the alerting pipeline.\"\"\"\n\nimport re\n\n_LEVEL_RE = re.compile(r\"\\[([A-Za-z]+)\\]\")\n\n\ndef count_error\u2026"
+          },
+          "observation_bytes": 29,
+          "context_bytes": 29,
+          "compress_label": null
+        },
+        {
+          "turn": 5,
+          "decision_source": "llm",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 97,
+          "compress_label": null
+        },
+        {
+          "turn": 6,
+          "decision_source": "llm",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "token-exp-boundary",
+      "arm": "baseline",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 6,
+      "llm_calls": 6,
+      "prompt_tokens": 6440,
+      "completion_tokens": 373,
+      "wall_clock_s": 11.203334791993257,
+      "memory_hit": false,
+      "observation_chars": 899,
+      "context_chars": 899,
+      "pass_idx": 0,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "llm",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 169,
+          "context_bytes": 169,
+          "compress_label": null
+        },
+        {
+          "turn": 1,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "tokens.py"
+          },
+          "observation_bytes": 222,
+          "context_bytes": 222,
+          "compress_label": null
+        },
+        {
+          "turn": 2,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_tokens.py"
+          },
+          "observation_bytes": 376,
+          "context_bytes": 376,
+          "compress_label": null
+        },
+        {
+          "turn": 3,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "tokens.py",
+            "content": "\"\"\"Token expiry checks.\"\"\"\n\n\ndef is_expired(exp: float, now: float) -> bool:\n    \"\"\"True when the token is no longer val\u2026"
+          },
+          "observation_bytes": 27,
+          "context_bytes": 27,
+          "compress_label": null
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 97,
+          "compress_label": null
+        },
+        {
+          "turn": 5,
+          "decision_source": "llm",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "paginate-off-by-one",
+      "arm": "baseline",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 6,
+      "llm_calls": 6,
+      "prompt_tokens": 7205,
+      "completion_tokens": 392,
+      "wall_clock_s": 6.950848165957723,
+      "memory_hit": false,
+      "observation_chars": 1374,
+      "context_chars": 1374,
+      "pass_idx": 1,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "llm",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 175,
+          "context_bytes": 175,
+          "compress_label": null
+        },
+        {
+          "turn": 1,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "paginator.py"
+          },
+          "observation_bytes": 415,
+          "context_bytes": 415,
+          "compress_label": null
+        },
+        {
+          "turn": 2,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_paginator.py"
+          },
+          "observation_bytes": 649,
+          "context_bytes": 649,
+          "compress_label": null
+        },
+        {
+          "turn": 3,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "paginator.py",
+            "content": "\"\"\"Tiny pagination helper used by the API layer.\"\"\"\n\n\ndef paginate(items, page: int, per_page: int):\n    \"\"\"Return the s\u2026"
+          },
+          "observation_bytes": 30,
+          "context_bytes": 30,
+          "compress_label": null
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 97,
+          "compress_label": null
+        },
+        {
+          "turn": 5,
+          "decision_source": "llm",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "csv-quoted-commas",
+      "arm": "baseline",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 6,
+      "llm_calls": 6,
+      "prompt_tokens": 7079,
+      "completion_tokens": 566,
+      "wall_clock_s": 10.079947874997742,
+      "memory_hit": false,
+      "observation_chars": 975,
+      "context_chars": 975,
+      "pass_idx": 1,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "llm",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 171,
+          "context_bytes": 171,
+          "compress_label": null
+        },
+        {
+          "turn": 1,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "csvlite.py"
+          },
+          "observation_bytes": 216,
+          "context_bytes": 216,
+          "compress_label": null
+        },
+        {
+          "turn": 2,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_csvlite.py"
+          },
+          "observation_bytes": 454,
+          "context_bytes": 454,
+          "compress_label": null
+        },
+        {
+          "turn": 3,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "csvlite.py",
+            "content": "\"\"\"Minimal CSV line parser (we avoid the stdlib for embedded targets).\"\"\"\n\n\ndef parse_line(line: str) -> list[str]:\n    \u2026"
+          },
+          "observation_bytes": 29,
+          "context_bytes": 29,
+          "compress_label": null
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 97,
+          "compress_label": null
+        },
+        {
+          "turn": 5,
+          "decision_source": "llm",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "ttl-cache-stale",
+      "arm": "baseline",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 6,
+      "llm_calls": 6,
+      "prompt_tokens": 7494,
+      "completion_tokens": 452,
+      "wall_clock_s": 12.813805541954935,
+      "memory_hit": false,
+      "observation_chars": 1587,
+      "context_chars": 1587,
+      "pass_idx": 1,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "llm",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 173,
+          "context_bytes": 173,
+          "compress_label": null
+        },
+        {
+          "turn": 1,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "ttlcache.py"
+          },
+          "observation_bytes": 582,
+          "context_bytes": 582,
+          "compress_label": null
+        },
+        {
+          "turn": 2,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_ttlcache.py"
+          },
+          "observation_bytes": 698,
+          "context_bytes": 698,
+          "compress_label": null
+        },
+        {
+          "turn": 3,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "ttlcache.py",
+            "content": "\"\"\"A minimal TTL cache.\"\"\"\n\nimport time\n\n\nclass TTLCache:\n    def __init__(self, ttl: float):\n        self.ttl = ttl\n   \u2026"
+          },
+          "observation_bytes": 29,
+          "context_bytes": 29,
+          "compress_label": null
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 97,
+          "compress_label": null
+        },
+        {
+          "turn": 5,
+          "decision_source": "llm",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "retry-gives-up",
+      "arm": "baseline",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 6,
+      "llm_calls": 6,
+      "prompt_tokens": 7543,
+      "completion_tokens": 414,
+      "wall_clock_s": 8.015692958026193,
+      "memory_hit": false,
+      "observation_chars": 1869,
+      "context_chars": 1869,
+      "pass_idx": 1,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "llm",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 167,
+          "context_bytes": 167,
+          "compress_label": null
+        },
+        {
+          "turn": 1,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "retry.py"
+          },
+          "observation_bytes": 575,
+          "context_bytes": 575,
+          "compress_label": null
+        },
+        {
+          "turn": 2,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_retry.py"
+          },
+          "observation_bytes": 996,
+          "context_bytes": 996,
+          "compress_label": null
+        },
+        {
+          "turn": 3,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "retry.py",
+            "content": "\"\"\"Retry decorator.\"\"\"\n\nimport functools\n\n\ndef retry(times: int, on: tuple[type[BaseException], ...] = (Exception,)):\n  \u2026"
+          },
+          "observation_bytes": 26,
+          "context_bytes": 26,
+          "compress_label": null
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 97,
+          "compress_label": null
+        },
+        {
+          "turn": 5,
+          "decision_source": "llm",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "stacked-discounts",
+      "arm": "baseline",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 5,
+      "llm_calls": 5,
+      "prompt_tokens": 5121,
+      "completion_tokens": 299,
+      "wall_clock_s": 10.338582750002388,
+      "memory_hit": false,
+      "observation_chars": 624,
+      "context_chars": 624,
+      "pass_idx": 1,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "llm",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 171,
+          "context_bytes": 171,
+          "compress_label": null
+        },
+        {
+          "turn": 1,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "pricing.py"
+          },
+          "observation_bytes": 320,
+          "context_bytes": 320,
+          "compress_label": null
+        },
+        {
+          "turn": 2,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "pricing.py",
+            "content": "\"\"\"Pricing helpers.\"\"\"\n\n\ndef apply_discounts(price: float, percents: list[float]) -> float:\n    \"\"\"Apply each percent di\u2026"
+          },
+          "observation_bytes": 28,
+          "context_bytes": 28,
+          "compress_label": null
+        },
+        {
+          "turn": 3,
+          "decision_source": "llm",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 97,
+          "compress_label": null
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "dedup-case",
+      "arm": "baseline",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 6,
+      "llm_calls": 6,
+      "prompt_tokens": 6787,
+      "completion_tokens": 378,
+      "wall_clock_s": 7.818843291956,
+      "memory_hit": false,
+      "observation_chars": 1091,
+      "context_chars": 1091,
+      "pass_idx": 1,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "llm",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 167,
+          "context_bytes": 167,
+          "compress_label": null
+        },
+        {
+          "turn": 1,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "dedup.py"
+          },
+          "observation_bytes": 337,
+          "context_bytes": 337,
+          "compress_label": null
+        },
+        {
+          "turn": 2,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_dedup.py"
+          },
+          "observation_bytes": 456,
+          "context_bytes": 456,
+          "compress_label": null
+        },
+        {
+          "turn": 3,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "dedup.py",
+            "content": "\"\"\"Username deduplication for the mailer.\"\"\"\n\n\ndef dedup(usernames: list[str]) -> list[str]:\n    \"\"\"Drop duplicate usern\u2026"
+          },
+          "observation_bytes": 26,
+          "context_bytes": 26,
+          "compress_label": null
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 97,
+          "compress_label": null
+        },
+        {
+          "turn": 5,
+          "decision_source": "llm",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "config-precedence",
+      "arm": "baseline",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 6,
+      "llm_calls": 6,
+      "prompt_tokens": 7589,
+      "completion_tokens": 464,
+      "wall_clock_s": 9.945505417010281,
+      "memory_hit": false,
+      "observation_chars": 1704,
+      "context_chars": 1704,
+      "pass_idx": 1,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "llm",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 173,
+          "context_bytes": 173,
+          "compress_label": null
+        },
+        {
+          "turn": 1,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "confload.py"
+          },
+          "observation_bytes": 692,
+          "context_bytes": 692,
+          "compress_label": null
+        },
+        {
+          "turn": 2,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_confload.py"
+          },
+          "observation_bytes": 705,
+          "context_bytes": 705,
+          "compress_label": null
+        },
+        {
+          "turn": 3,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "confload.py",
+            "content": "\"\"\"Config loading with documented precedence: env > file > defaults.\"\"\"\n\nimport os\n\nDEFAULTS = {\"host\": \"127.0.0.1\", \"po\u2026"
+          },
+          "observation_bytes": 29,
+          "context_bytes": 29,
+          "compress_label": null
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 97,
+          "compress_label": null
+        },
+        {
+          "turn": 5,
+          "decision_source": "llm",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "merge-intervals",
+      "arm": "baseline",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 6,
+      "llm_calls": 6,
+      "prompt_tokens": 7178,
+      "completion_tokens": 426,
+      "wall_clock_s": 8.43902520899428,
+      "memory_hit": false,
+      "observation_chars": 1389,
+      "context_chars": 1389,
+      "pass_idx": 1,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "llm",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 175,
+          "context_bytes": 175,
+          "compress_label": null
+        },
+        {
+          "turn": 1,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "intervals.py"
+          },
+          "observation_bytes": 515,
+          "context_bytes": 515,
+          "compress_label": null
+        },
+        {
+          "turn": 2,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_intervals.py"
+          },
+          "observation_bytes": 564,
+          "context_bytes": 564,
+          "compress_label": null
+        },
+        {
+          "turn": 3,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "intervals.py",
+            "content": "\"\"\"Interval merging for calendar bookings.\"\"\"\n\n\ndef merge_intervals(intervals: list[tuple[int, int]]) -> list[tuple[int,\u2026"
+          },
+          "observation_bytes": 30,
+          "context_bytes": 30,
+          "compress_label": null
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 97,
+          "compress_label": null
+        },
+        {
+          "turn": 5,
+          "decision_source": "llm",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "log-error-count",
+      "arm": "baseline",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 8,
+      "llm_calls": 8,
+      "prompt_tokens": 29211,
+      "completion_tokens": 924,
+      "wall_clock_s": 13.80104933399707,
+      "memory_hit": false,
+      "observation_chars": 10424,
+      "context_chars": 10424,
+      "pass_idx": 1,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "llm",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 181,
+          "context_bytes": 181,
+          "compress_label": null
+        },
+        {
+          "turn": 1,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "logstats.py"
+          },
+          "observation_bytes": 508,
+          "context_bytes": 508,
+          "compress_label": null
+        },
+        {
+          "turn": 2,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "app.log"
+          },
+          "observation_bytes": 9004,
+          "context_bytes": 9004,
+          "compress_label": null
+        },
+        {
+          "turn": 3,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_logstats.py"
+          },
+          "observation_bytes": 568,
+          "context_bytes": 568,
+          "compress_label": null
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "logstats.py",
+            "content": "\"\"\"Log statistics for the alerting pipeline.\"\"\"\n\nimport re\n\n_LEVEL_RE = re.compile(r\"\\[([A-Za-z]+)\\]\")\n\n\ndef count_error\u2026"
+          },
+          "observation_bytes": 29,
+          "context_bytes": 29,
+          "compress_label": null
+        },
+        {
+          "turn": 5,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "content": "\"\"\"Log statistics for the alerting pipeline.\"\"\"\n\nimport re\n\n_LEVEL_RE = re.compile(r\"^\\S+\\s+\\[([A-Za-z]+)\\]\")\n\n\ndef coun\u2026",
+            "path": "logstats.py"
+          },
+          "observation_bytes": 29,
+          "context_bytes": 29,
+          "compress_label": null
+        },
+        {
+          "turn": 6,
+          "decision_source": "llm",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 97,
+          "compress_label": null
+        },
+        {
+          "turn": 7,
+          "decision_source": "llm",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "token-exp-boundary",
+      "arm": "baseline",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 6,
+      "llm_calls": 6,
+      "prompt_tokens": 6440,
+      "completion_tokens": 362,
+      "wall_clock_s": 6.742827499983832,
+      "memory_hit": false,
+      "observation_chars": 899,
+      "context_chars": 899,
+      "pass_idx": 1,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "llm",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 169,
+          "context_bytes": 169,
+          "compress_label": null
+        },
+        {
+          "turn": 1,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "tokens.py"
+          },
+          "observation_bytes": 222,
+          "context_bytes": 222,
+          "compress_label": null
+        },
+        {
+          "turn": 2,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_tokens.py"
+          },
+          "observation_bytes": 376,
+          "context_bytes": 376,
+          "compress_label": null
+        },
+        {
+          "turn": 3,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "tokens.py",
+            "content": "\"\"\"Token expiry checks.\"\"\"\n\n\ndef is_expired(exp: float, now: float) -> bool:\n    \"\"\"True when the token is no longer val\u2026"
+          },
+          "observation_bytes": 27,
+          "context_bytes": 27,
+          "compress_label": null
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 97,
+          "compress_label": null
+        },
+        {
+          "turn": 5,
+          "decision_source": "llm",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "paginate-off-by-one",
+      "arm": "baseline",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 6,
+      "llm_calls": 6,
+      "prompt_tokens": 7205,
+      "completion_tokens": 392,
+      "wall_clock_s": 6.303869541967288,
+      "memory_hit": false,
+      "observation_chars": 1374,
+      "context_chars": 1374,
+      "pass_idx": 2,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "llm",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 175,
+          "context_bytes": 175,
+          "compress_label": null
+        },
+        {
+          "turn": 1,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "paginator.py"
+          },
+          "observation_bytes": 415,
+          "context_bytes": 415,
+          "compress_label": null
+        },
+        {
+          "turn": 2,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_paginator.py"
+          },
+          "observation_bytes": 649,
+          "context_bytes": 649,
+          "compress_label": null
+        },
+        {
+          "turn": 3,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "paginator.py",
+            "content": "\"\"\"Tiny pagination helper used by the API layer.\"\"\"\n\n\ndef paginate(items, page: int, per_page: int):\n    \"\"\"Return the s\u2026"
+          },
+          "observation_bytes": 30,
+          "context_bytes": 30,
+          "compress_label": null
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 97,
+          "compress_label": null
+        },
+        {
+          "turn": 5,
+          "decision_source": "llm",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "csv-quoted-commas",
+      "arm": "baseline",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 6,
+      "llm_calls": 6,
+      "prompt_tokens": 7117,
+      "completion_tokens": 579,
+      "wall_clock_s": 11.085930917004589,
+      "memory_hit": false,
+      "observation_chars": 975,
+      "context_chars": 975,
+      "pass_idx": 2,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "llm",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 171,
+          "context_bytes": 171,
+          "compress_label": null
+        },
+        {
+          "turn": 1,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "csvlite.py"
+          },
+          "observation_bytes": 216,
+          "context_bytes": 216,
+          "compress_label": null
+        },
+        {
+          "turn": 2,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_csvlite.py"
+          },
+          "observation_bytes": 454,
+          "context_bytes": 454,
+          "compress_label": null
+        },
+        {
+          "turn": 3,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "csvlite.py",
+            "content": "\"\"\"Minimal CSV line parser (we avoid the stdlib for embedded targets).\"\"\"\n\n\ndef parse_line(line: str) -> list[str]:\n    \u2026"
+          },
+          "observation_bytes": 29,
+          "context_bytes": 29,
+          "compress_label": null
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 97,
+          "compress_label": null
+        },
+        {
+          "turn": 5,
+          "decision_source": "llm",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "ttl-cache-stale",
+      "arm": "baseline",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 6,
+      "llm_calls": 6,
+      "prompt_tokens": 7494,
+      "completion_tokens": 447,
+      "wall_clock_s": 8.864562458009459,
+      "memory_hit": false,
+      "observation_chars": 1587,
+      "context_chars": 1587,
+      "pass_idx": 2,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "llm",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 173,
+          "context_bytes": 173,
+          "compress_label": null
+        },
+        {
+          "turn": 1,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "ttlcache.py"
+          },
+          "observation_bytes": 582,
+          "context_bytes": 582,
+          "compress_label": null
+        },
+        {
+          "turn": 2,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_ttlcache.py"
+          },
+          "observation_bytes": 698,
+          "context_bytes": 698,
+          "compress_label": null
+        },
+        {
+          "turn": 3,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "ttlcache.py",
+            "content": "\"\"\"A minimal TTL cache.\"\"\"\n\nimport time\n\n\nclass TTLCache:\n    def __init__(self, ttl: float):\n        self.ttl = ttl\n   \u2026"
+          },
+          "observation_bytes": 29,
+          "context_bytes": 29,
+          "compress_label": null
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 97,
+          "compress_label": null
+        },
+        {
+          "turn": 5,
+          "decision_source": "llm",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "retry-gives-up",
+      "arm": "baseline",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 6,
+      "llm_calls": 6,
+      "prompt_tokens": 7543,
+      "completion_tokens": 414,
+      "wall_clock_s": 7.16171504202066,
+      "memory_hit": false,
+      "observation_chars": 1869,
+      "context_chars": 1869,
+      "pass_idx": 2,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "llm",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 167,
+          "context_bytes": 167,
+          "compress_label": null
+        },
+        {
+          "turn": 1,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "retry.py"
+          },
+          "observation_bytes": 575,
+          "context_bytes": 575,
+          "compress_label": null
+        },
+        {
+          "turn": 2,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_retry.py"
+          },
+          "observation_bytes": 996,
+          "context_bytes": 996,
+          "compress_label": null
+        },
+        {
+          "turn": 3,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "retry.py",
+            "content": "\"\"\"Retry decorator.\"\"\"\n\nimport functools\n\n\ndef retry(times: int, on: tuple[type[BaseException], ...] = (Exception,)):\n  \u2026"
+          },
+          "observation_bytes": 26,
+          "context_bytes": 26,
+          "compress_label": null
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 97,
+          "compress_label": null
+        },
+        {
+          "turn": 5,
+          "decision_source": "llm",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "stacked-discounts",
+      "arm": "baseline",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 5,
+      "llm_calls": 5,
+      "prompt_tokens": 5121,
+      "completion_tokens": 316,
+      "wall_clock_s": 7.709498709009495,
+      "memory_hit": false,
+      "observation_chars": 624,
+      "context_chars": 624,
+      "pass_idx": 2,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "llm",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 171,
+          "context_bytes": 171,
+          "compress_label": null
+        },
+        {
+          "turn": 1,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "pricing.py"
+          },
+          "observation_bytes": 320,
+          "context_bytes": 320,
+          "compress_label": null
+        },
+        {
+          "turn": 2,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "pricing.py",
+            "content": "\"\"\"Pricing helpers.\"\"\"\n\n\ndef apply_discounts(price: float, percents: list[float]) -> float:\n    \"\"\"Apply each percent di\u2026"
+          },
+          "observation_bytes": 28,
+          "context_bytes": 28,
+          "compress_label": null
+        },
+        {
+          "turn": 3,
+          "decision_source": "llm",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 97,
+          "compress_label": null
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "dedup-case",
+      "arm": "baseline",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 6,
+      "llm_calls": 6,
+      "prompt_tokens": 6787,
+      "completion_tokens": 378,
+      "wall_clock_s": 14.687766875023954,
+      "memory_hit": false,
+      "observation_chars": 1091,
+      "context_chars": 1091,
+      "pass_idx": 2,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "llm",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 167,
+          "context_bytes": 167,
+          "compress_label": null
+        },
+        {
+          "turn": 1,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "dedup.py"
+          },
+          "observation_bytes": 337,
+          "context_bytes": 337,
+          "compress_label": null
+        },
+        {
+          "turn": 2,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_dedup.py"
+          },
+          "observation_bytes": 456,
+          "context_bytes": 456,
+          "compress_label": null
+        },
+        {
+          "turn": 3,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "dedup.py",
+            "content": "\"\"\"Username deduplication for the mailer.\"\"\"\n\n\ndef dedup(usernames: list[str]) -> list[str]:\n    \"\"\"Drop duplicate usern\u2026"
+          },
+          "observation_bytes": 26,
+          "context_bytes": 26,
+          "compress_label": null
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 97,
+          "compress_label": null
+        },
+        {
+          "turn": 5,
+          "decision_source": "llm",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "config-precedence",
+      "arm": "baseline",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 6,
+      "llm_calls": 6,
+      "prompt_tokens": 7589,
+      "completion_tokens": 487,
+      "wall_clock_s": 7.536598041013349,
+      "memory_hit": false,
+      "observation_chars": 1704,
+      "context_chars": 1704,
+      "pass_idx": 2,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "llm",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 173,
+          "context_bytes": 173,
+          "compress_label": null
+        },
+        {
+          "turn": 1,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "confload.py"
+          },
+          "observation_bytes": 692,
+          "context_bytes": 692,
+          "compress_label": null
+        },
+        {
+          "turn": 2,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_confload.py"
+          },
+          "observation_bytes": 705,
+          "context_bytes": 705,
+          "compress_label": null
+        },
+        {
+          "turn": 3,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "confload.py",
+            "content": "\"\"\"Config loading with documented precedence: env > file > defaults.\"\"\"\n\nimport os\n\nDEFAULTS = {\"host\": \"127.0.0.1\", \"po\u2026"
+          },
+          "observation_bytes": 29,
+          "context_bytes": 29,
+          "compress_label": null
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 97,
+          "compress_label": null
+        },
+        {
+          "turn": 5,
+          "decision_source": "llm",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "merge-intervals",
+      "arm": "baseline",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 6,
+      "llm_calls": 6,
+      "prompt_tokens": 7178,
+      "completion_tokens": 419,
+      "wall_clock_s": 7.1473016669624485,
+      "memory_hit": false,
+      "observation_chars": 1389,
+      "context_chars": 1389,
+      "pass_idx": 2,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "llm",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 175,
+          "context_bytes": 175,
+          "compress_label": null
+        },
+        {
+          "turn": 1,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "intervals.py"
+          },
+          "observation_bytes": 515,
+          "context_bytes": 515,
+          "compress_label": null
+        },
+        {
+          "turn": 2,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_intervals.py"
+          },
+          "observation_bytes": 564,
+          "context_bytes": 564,
+          "compress_label": null
+        },
+        {
+          "turn": 3,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "intervals.py",
+            "content": "\"\"\"Interval merging for calendar bookings.\"\"\"\n\n\ndef merge_intervals(intervals: list[tuple[int, int]]) -> list[tuple[int,\u2026"
+          },
+          "observation_bytes": 30,
+          "context_bytes": 30,
+          "compress_label": null
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 97,
+          "compress_label": null
+        },
+        {
+          "turn": 5,
+          "decision_source": "llm",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "log-error-count",
+      "arm": "baseline",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 7,
+      "llm_calls": 7,
+      "prompt_tokens": 19835,
+      "completion_tokens": 560,
+      "wall_clock_s": 10.518326917022932,
+      "memory_hit": false,
+      "observation_chars": 10395,
+      "context_chars": 10395,
+      "pass_idx": 2,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "llm",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 181,
+          "context_bytes": 181,
+          "compress_label": null
+        },
+        {
+          "turn": 1,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "logstats.py"
+          },
+          "observation_bytes": 508,
+          "context_bytes": 508,
+          "compress_label": null
+        },
+        {
+          "turn": 2,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_logstats.py"
+          },
+          "observation_bytes": 568,
+          "context_bytes": 568,
+          "compress_label": null
+        },
+        {
+          "turn": 3,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "app.log"
+          },
+          "observation_bytes": 9004,
+          "context_bytes": 9004,
+          "compress_label": null
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "logstats.py",
+            "content": "\"\"\"Log statistics for the alerting pipeline.\"\"\"\n\nimport re\n\n_LEVEL_RE = re.compile(r\"\\[([A-Za-z]+)\\]\")\n\n\ndef count_error\u2026"
+          },
+          "observation_bytes": 29,
+          "context_bytes": 29,
+          "compress_label": null
+        },
+        {
+          "turn": 5,
+          "decision_source": "llm",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 97,
+          "compress_label": null
+        },
+        {
+          "turn": 6,
+          "decision_source": "llm",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "token-exp-boundary",
+      "arm": "baseline",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 6,
+      "llm_calls": 6,
+      "prompt_tokens": 6444,
+      "completion_tokens": 353,
+      "wall_clock_s": 7.604344957973808,
+      "memory_hit": false,
+      "observation_chars": 899,
+      "context_chars": 899,
+      "pass_idx": 2,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "llm",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 169,
+          "context_bytes": 169,
+          "compress_label": null
+        },
+        {
+          "turn": 1,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "tokens.py"
+          },
+          "observation_bytes": 222,
+          "context_bytes": 222,
+          "compress_label": null
+        },
+        {
+          "turn": 2,
+          "decision_source": "llm",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_tokens.py"
+          },
+          "observation_bytes": 376,
+          "context_bytes": 376,
+          "compress_label": null
+        },
+        {
+          "turn": 3,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "tokens.py",
+            "content": "\"\"\"Token expiry checks.\"\"\"\n\n\ndef is_expired(exp: float, now: float) -> bool:\n    \"\"\"True when the token is no longer val\u2026"
+          },
+          "observation_bytes": 27,
+          "context_bytes": 27,
+          "compress_label": null
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 97,
+          "compress_label": null
+        },
+        {
+          "turn": 5,
+          "decision_source": "llm",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "paginate-off-by-one",
+      "arm": "hive",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 7,
+      "llm_calls": 1,
+      "prompt_tokens": 1694,
+      "completion_tokens": 198,
+      "wall_clock_s": 2.4478101250133477,
+      "memory_hit": false,
+      "observation_chars": 3424,
+      "context_chars": 2748,
+      "pass_idx": 0,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "policy",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 175,
+          "context_bytes": 175,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 1,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 2050,
+          "context_bytes": 1447,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 2,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_paginator.py"
+          },
+          "observation_bytes": 649,
+          "context_bytes": 649,
+          "compress_label": "core"
+        },
+        {
+          "turn": 3,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "paginator.py"
+          },
+          "observation_bytes": 415,
+          "context_bytes": 415,
+          "compress_label": "core"
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "paginator.py",
+            "content": "\"\"\"Tiny pagination helper used by the API layer.\"\"\"\n\n\ndef paginate(items, page: int, per_page: int):\n    \"\"\"Return the s\u2026"
+          },
+          "observation_bytes": 30,
+          "context_bytes": 30,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 5,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 24,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 6,
+          "decision_source": "policy",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "csv-quoted-commas",
+      "arm": "hive",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 7,
+      "llm_calls": 1,
+      "prompt_tokens": 1413,
+      "completion_tokens": 353,
+      "wall_clock_s": 4.874761999992188,
+      "memory_hit": false,
+      "observation_chars": 2239,
+      "context_chars": 1949,
+      "pass_idx": 0,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "policy",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 171,
+          "context_bytes": 171,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 1,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 1264,
+          "context_bytes": 1047,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 2,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_csvlite.py"
+          },
+          "observation_bytes": 454,
+          "context_bytes": 454,
+          "compress_label": "core"
+        },
+        {
+          "turn": 3,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "csvlite.py"
+          },
+          "observation_bytes": 216,
+          "context_bytes": 216,
+          "compress_label": "core"
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "csvlite.py",
+            "content": "\"\"\"Minimal CSV line parser (we avoid the stdlib for embedded targets).\"\"\"\n\n\ndef parse_line(line: str) -> list[str]:\n    \u2026"
+          },
+          "observation_bytes": 29,
+          "context_bytes": 29,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 5,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 24,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 6,
+          "decision_source": "policy",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "ttl-cache-stale",
+      "arm": "hive",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 7,
+      "llm_calls": 1,
+      "prompt_tokens": 1806,
+      "completion_tokens": 207,
+      "wall_clock_s": 3.490874624985736,
+      "memory_hit": true,
+      "observation_chars": 2859,
+      "context_chars": 2402,
+      "pass_idx": 0,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "policy",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 173,
+          "context_bytes": 173,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 1,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 1272,
+          "context_bytes": 888,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 2,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_ttlcache.py"
+          },
+          "observation_bytes": 698,
+          "context_bytes": 698,
+          "compress_label": "core"
+        },
+        {
+          "turn": 3,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "ttlcache.py"
+          },
+          "observation_bytes": 582,
+          "context_bytes": 582,
+          "compress_label": "core"
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "ttlcache.py",
+            "content": "\"\"\"A minimal TTL cache.\"\"\"\n\nimport time\n\n\nclass TTLCache:\n    def __init__(self, ttl: float):\n        self.ttl = ttl\n   \u2026"
+          },
+          "observation_bytes": 29,
+          "context_bytes": 29,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 5,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 24,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 6,
+          "decision_source": "policy",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "retry-gives-up",
+      "arm": "hive",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 7,
+      "llm_calls": 1,
+      "prompt_tokens": 1554,
+      "completion_tokens": 222,
+      "wall_clock_s": 2.279781625024043,
+      "memory_hit": false,
+      "observation_chars": 3611,
+      "context_chars": 2606,
+      "pass_idx": 0,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "policy",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 167,
+          "context_bytes": 167,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 1,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 1742,
+          "context_bytes": 810,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 2,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_retry.py"
+          },
+          "observation_bytes": 996,
+          "context_bytes": 996,
+          "compress_label": "core"
+        },
+        {
+          "turn": 3,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "retry.py"
+          },
+          "observation_bytes": 575,
+          "context_bytes": 575,
+          "compress_label": "core"
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "retry.py",
+            "content": "\"\"\"Retry decorator.\"\"\"\n\nimport functools\n\n\ndef retry(times: int, on: tuple[type[BaseException], ...] = (Exception,)):\n  \u2026"
+          },
+          "observation_bytes": 26,
+          "context_bytes": 26,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 5,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 24,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 6,
+          "decision_source": "policy",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "stacked-discounts",
+      "arm": "hive",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 7,
+      "llm_calls": 1,
+      "prompt_tokens": 1445,
+      "completion_tokens": 176,
+      "wall_clock_s": 2.1226106659742072,
+      "memory_hit": false,
+      "observation_chars": 2240,
+      "context_chars": 1911,
+      "pass_idx": 0,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "policy",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 171,
+          "context_bytes": 171,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 1,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 1105,
+          "context_bytes": 849,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 2,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_pricing.py"
+          },
+          "observation_bytes": 511,
+          "context_bytes": 511,
+          "compress_label": "core"
+        },
+        {
+          "turn": 3,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "pricing.py"
+          },
+          "observation_bytes": 320,
+          "context_bytes": 320,
+          "compress_label": "core"
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "pricing.py",
+            "content": "\"\"\"Pricing helpers.\"\"\"\n\n\ndef apply_discounts(price: float, percents: list[float]) -> float:\n    \"\"\"Apply each percent di\u2026"
+          },
+          "observation_bytes": 28,
+          "context_bytes": 28,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 5,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 24,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 6,
+          "decision_source": "policy",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "dedup-case",
+      "arm": "hive",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 7,
+      "llm_calls": 1,
+      "prompt_tokens": 1556,
+      "completion_tokens": 193,
+      "wall_clock_s": 2.495150917035062,
+      "memory_hit": false,
+      "observation_chars": 2835,
+      "context_chars": 2477,
+      "pass_idx": 0,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "policy",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 167,
+          "context_bytes": 167,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 1,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 1744,
+          "context_bytes": 1459,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 2,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_dedup.py"
+          },
+          "observation_bytes": 456,
+          "context_bytes": 456,
+          "compress_label": "core"
+        },
+        {
+          "turn": 3,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "dedup.py"
+          },
+          "observation_bytes": 337,
+          "context_bytes": 337,
+          "compress_label": "core"
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "dedup.py",
+            "content": "\"\"\"Username deduplication for the mailer.\"\"\"\n\n\ndef dedup(usernames: list[str]) -> list[str]:\n    \"\"\"Drop duplicate usern\u2026"
+          },
+          "observation_bytes": 26,
+          "context_bytes": 26,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 5,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 24,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 6,
+          "decision_source": "policy",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "config-precedence",
+      "arm": "hive",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 7,
+      "llm_calls": 1,
+      "prompt_tokens": 1428,
+      "completion_tokens": 277,
+      "wall_clock_s": 2.843678125005681,
+      "memory_hit": false,
+      "observation_chars": 2417,
+      "context_chars": 2079,
+      "pass_idx": 0,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "policy",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 173,
+          "context_bytes": 173,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 1,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 713,
+          "context_bytes": 448,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 2,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_confload.py"
+          },
+          "observation_bytes": 705,
+          "context_bytes": 705,
+          "compress_label": "core"
+        },
+        {
+          "turn": 3,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "confload.py"
+          },
+          "observation_bytes": 692,
+          "context_bytes": 692,
+          "compress_label": "core"
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "confload.py",
+            "content": "\"\"\"Config loading with documented precedence: env > file > defaults.\"\"\"\n\nimport os\n\nDEFAULTS = {\"host\": \"127.0.0.1\", \"po\u2026"
+          },
+          "observation_bytes": 29,
+          "context_bytes": 29,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 5,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 24,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 6,
+          "decision_source": "policy",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "merge-intervals",
+      "arm": "hive",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 7,
+      "llm_calls": 1,
+      "prompt_tokens": 1789,
+      "completion_tokens": 219,
+      "wall_clock_s": 2.4351915000006557,
+      "memory_hit": true,
+      "observation_chars": 2654,
+      "context_chars": 2353,
+      "pass_idx": 0,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "policy",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 175,
+          "context_bytes": 175,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 1,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 1265,
+          "context_bytes": 1037,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 2,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_intervals.py"
+          },
+          "observation_bytes": 564,
+          "context_bytes": 564,
+          "compress_label": "core"
+        },
+        {
+          "turn": 3,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "intervals.py"
+          },
+          "observation_bytes": 515,
+          "context_bytes": 515,
+          "compress_label": "core"
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "intervals.py",
+            "content": "\"\"\"Interval merging for calendar bookings.\"\"\"\n\n\ndef merge_intervals(intervals: list[tuple[int, int]]) -> list[tuple[int,\u2026"
+          },
+          "observation_bytes": 30,
+          "context_bytes": 30,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 5,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 24,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 6,
+          "decision_source": "policy",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "log-error-count",
+      "arm": "hive",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 7,
+      "llm_calls": 1,
+      "prompt_tokens": 1818,
+      "completion_tokens": 237,
+      "wall_clock_s": 2.592492083029356,
+      "memory_hit": true,
+      "observation_chars": 3169,
+      "context_chars": 2586,
+      "pass_idx": 0,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "policy",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 181,
+          "context_bytes": 181,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 1,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 1778,
+          "context_bytes": 1268,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 2,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_logstats.py"
+          },
+          "observation_bytes": 568,
+          "context_bytes": 568,
+          "compress_label": "core"
+        },
+        {
+          "turn": 3,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "logstats.py"
+          },
+          "observation_bytes": 508,
+          "context_bytes": 508,
+          "compress_label": "core"
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "logstats.py",
+            "content": "\"\"\"Log statistics for the alerting pipeline.\"\"\"\n\nimport re\n\n_LEVEL_RE = re.compile(r\"\\[([A-Za-z]+)\\]\")\n\n\ndef count_error\u2026"
+          },
+          "observation_bytes": 29,
+          "context_bytes": 29,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 5,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 24,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 6,
+          "decision_source": "policy",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "token-exp-boundary",
+      "arm": "hive",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 7,
+      "llm_calls": 1,
+      "prompt_tokens": 1409,
+      "completion_tokens": 125,
+      "wall_clock_s": 1.5319020420429297,
+      "memory_hit": true,
+      "observation_chars": 1549,
+      "context_chars": 1283,
+      "pass_idx": 0,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "policy",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 169,
+          "context_bytes": 169,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 1,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 650,
+          "context_bytes": 457,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 2,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_tokens.py"
+          },
+          "observation_bytes": 376,
+          "context_bytes": 376,
+          "compress_label": "core"
+        },
+        {
+          "turn": 3,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "tokens.py"
+          },
+          "observation_bytes": 222,
+          "context_bytes": 222,
+          "compress_label": "core"
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "tokens.py",
+            "content": "\"\"\"Token expiry checks.\"\"\"\n\n\ndef is_expired(exp: float, now: float) -> bool:\n    \"\"\"True when the token is no longer val\u2026"
+          },
+          "observation_bytes": 27,
+          "context_bytes": 27,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 5,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 24,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 6,
+          "decision_source": "policy",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "paginate-off-by-one",
+      "arm": "hive",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 7,
+      "llm_calls": 1,
+      "prompt_tokens": 1694,
+      "completion_tokens": 198,
+      "wall_clock_s": 2.941666124970652,
+      "memory_hit": true,
+      "observation_chars": 3424,
+      "context_chars": 2748,
+      "pass_idx": 1,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "policy",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 175,
+          "context_bytes": 175,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 1,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 2050,
+          "context_bytes": 1447,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 2,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_paginator.py"
+          },
+          "observation_bytes": 649,
+          "context_bytes": 649,
+          "compress_label": "core"
+        },
+        {
+          "turn": 3,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "paginator.py"
+          },
+          "observation_bytes": 415,
+          "context_bytes": 415,
+          "compress_label": "core"
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "paginator.py",
+            "content": "\"\"\"Tiny pagination helper used by the API layer.\"\"\"\n\n\ndef paginate(items, page: int, per_page: int):\n    \"\"\"Return the s\u2026"
+          },
+          "observation_bytes": 30,
+          "context_bytes": 30,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 5,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 24,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 6,
+          "decision_source": "policy",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "csv-quoted-commas",
+      "arm": "hive",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 7,
+      "llm_calls": 1,
+      "prompt_tokens": 1413,
+      "completion_tokens": 373,
+      "wall_clock_s": 3.5854918750119396,
+      "memory_hit": true,
+      "observation_chars": 2239,
+      "context_chars": 1949,
+      "pass_idx": 1,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "policy",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 171,
+          "context_bytes": 171,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 1,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 1264,
+          "context_bytes": 1047,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 2,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_csvlite.py"
+          },
+          "observation_bytes": 454,
+          "context_bytes": 454,
+          "compress_label": "core"
+        },
+        {
+          "turn": 3,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "csvlite.py"
+          },
+          "observation_bytes": 216,
+          "context_bytes": 216,
+          "compress_label": "core"
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "csvlite.py",
+            "content": "\"\"\"Minimal CSV line parser (we avoid the stdlib for embedded targets).\"\"\"\n\n\ndef parse_line(line: str) -> list[str]:\n    \u2026"
+          },
+          "observation_bytes": 29,
+          "context_bytes": 29,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 5,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 24,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 6,
+          "decision_source": "policy",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "ttl-cache-stale",
+      "arm": "hive",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 7,
+      "llm_calls": 1,
+      "prompt_tokens": 1569,
+      "completion_tokens": 207,
+      "wall_clock_s": 4.240914915979374,
+      "memory_hit": true,
+      "observation_chars": 2859,
+      "context_chars": 2402,
+      "pass_idx": 1,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "policy",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 173,
+          "context_bytes": 173,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 1,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 1272,
+          "context_bytes": 888,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 2,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_ttlcache.py"
+          },
+          "observation_bytes": 698,
+          "context_bytes": 698,
+          "compress_label": "core"
+        },
+        {
+          "turn": 3,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "ttlcache.py"
+          },
+          "observation_bytes": 582,
+          "context_bytes": 582,
+          "compress_label": "core"
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "ttlcache.py",
+            "content": "\"\"\"A minimal TTL cache.\"\"\"\n\nimport time\n\n\nclass TTLCache:\n    def __init__(self, ttl: float):\n        self.ttl = ttl\n   \u2026"
+          },
+          "observation_bytes": 29,
+          "context_bytes": 29,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 5,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 24,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 6,
+          "decision_source": "policy",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "retry-gives-up",
+      "arm": "hive",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 7,
+      "llm_calls": 1,
+      "prompt_tokens": 1554,
+      "completion_tokens": 238,
+      "wall_clock_s": 3.5437658329610713,
+      "memory_hit": true,
+      "observation_chars": 3611,
+      "context_chars": 2606,
+      "pass_idx": 1,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "policy",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 167,
+          "context_bytes": 167,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 1,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 1742,
+          "context_bytes": 810,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 2,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_retry.py"
+          },
+          "observation_bytes": 996,
+          "context_bytes": 996,
+          "compress_label": "core"
+        },
+        {
+          "turn": 3,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "retry.py"
+          },
+          "observation_bytes": 575,
+          "context_bytes": 575,
+          "compress_label": "core"
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "retry.py",
+            "content": "\"\"\"Retry decorator.\"\"\"\n\nimport functools\n\n\ndef retry(times: int, on: tuple[type[BaseException], ...] = (Exception,)):\n  \u2026"
+          },
+          "observation_bytes": 26,
+          "context_bytes": 26,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 5,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 24,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 6,
+          "decision_source": "policy",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "stacked-discounts",
+      "arm": "hive",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 7,
+      "llm_calls": 1,
+      "prompt_tokens": 1445,
+      "completion_tokens": 249,
+      "wall_clock_s": 2.821525167033542,
+      "memory_hit": true,
+      "observation_chars": 2240,
+      "context_chars": 1911,
+      "pass_idx": 1,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "policy",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 171,
+          "context_bytes": 171,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 1,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 1105,
+          "context_bytes": 849,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 2,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_pricing.py"
+          },
+          "observation_bytes": 511,
+          "context_bytes": 511,
+          "compress_label": "core"
+        },
+        {
+          "turn": 3,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "pricing.py"
+          },
+          "observation_bytes": 320,
+          "context_bytes": 320,
+          "compress_label": "core"
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "pricing.py",
+            "content": "\"\"\"Pricing helpers.\"\"\"\n\n\ndef apply_discounts(price: float, percents: list[float]) -> float:\n    \"\"\"Apply each percent di\u2026"
+          },
+          "observation_bytes": 28,
+          "context_bytes": 28,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 5,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 24,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 6,
+          "decision_source": "policy",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "dedup-case",
+      "arm": "hive",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 7,
+      "llm_calls": 1,
+      "prompt_tokens": 1556,
+      "completion_tokens": 185,
+      "wall_clock_s": 2.2381110420101322,
+      "memory_hit": true,
+      "observation_chars": 2835,
+      "context_chars": 2477,
+      "pass_idx": 1,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "policy",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 167,
+          "context_bytes": 167,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 1,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 1744,
+          "context_bytes": 1459,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 2,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_dedup.py"
+          },
+          "observation_bytes": 456,
+          "context_bytes": 456,
+          "compress_label": "core"
+        },
+        {
+          "turn": 3,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "dedup.py"
+          },
+          "observation_bytes": 337,
+          "context_bytes": 337,
+          "compress_label": "core"
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "dedup.py",
+            "content": "\"\"\"Username deduplication for the mailer.\"\"\"\n\n\ndef dedup(usernames: list[str]) -> list[str]:\n    \"\"\"Drop duplicate usern\u2026"
+          },
+          "observation_bytes": 26,
+          "context_bytes": 26,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 5,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 24,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 6,
+          "decision_source": "policy",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "config-precedence",
+      "arm": "hive",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 7,
+      "llm_calls": 1,
+      "prompt_tokens": 1428,
+      "completion_tokens": 277,
+      "wall_clock_s": 2.540795499982778,
+      "memory_hit": true,
+      "observation_chars": 2417,
+      "context_chars": 2079,
+      "pass_idx": 1,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "policy",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 173,
+          "context_bytes": 173,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 1,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 713,
+          "context_bytes": 448,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 2,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_confload.py"
+          },
+          "observation_bytes": 705,
+          "context_bytes": 705,
+          "compress_label": "core"
+        },
+        {
+          "turn": 3,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "confload.py"
+          },
+          "observation_bytes": 692,
+          "context_bytes": 692,
+          "compress_label": "core"
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "confload.py",
+            "content": "\"\"\"Config loading with documented precedence: env > file > defaults.\"\"\"\n\nimport os\n\nDEFAULTS = {\"host\": \"127.0.0.1\", \"po\u2026"
+          },
+          "observation_bytes": 29,
+          "context_bytes": 29,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 5,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 24,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 6,
+          "decision_source": "policy",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "merge-intervals",
+      "arm": "hive",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 7,
+      "llm_calls": 1,
+      "prompt_tokens": 1583,
+      "completion_tokens": 219,
+      "wall_clock_s": 2.315819334005937,
+      "memory_hit": true,
+      "observation_chars": 2654,
+      "context_chars": 2353,
+      "pass_idx": 1,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "policy",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 175,
+          "context_bytes": 175,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 1,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 1265,
+          "context_bytes": 1037,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 2,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_intervals.py"
+          },
+          "observation_bytes": 564,
+          "context_bytes": 564,
+          "compress_label": "core"
+        },
+        {
+          "turn": 3,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "intervals.py"
+          },
+          "observation_bytes": 515,
+          "context_bytes": 515,
+          "compress_label": "core"
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "intervals.py",
+            "content": "\"\"\"Interval merging for calendar bookings.\"\"\"\n\n\ndef merge_intervals(intervals: list[tuple[int, int]]) -> list[tuple[int,\u2026"
+          },
+          "observation_bytes": 30,
+          "context_bytes": 30,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 5,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 24,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 6,
+          "decision_source": "policy",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "log-error-count",
+      "arm": "hive",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 7,
+      "llm_calls": 1,
+      "prompt_tokens": 1614,
+      "completion_tokens": 240,
+      "wall_clock_s": 2.6410123329842463,
+      "memory_hit": true,
+      "observation_chars": 3169,
+      "context_chars": 2586,
+      "pass_idx": 1,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "policy",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 181,
+          "context_bytes": 181,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 1,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 1778,
+          "context_bytes": 1268,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 2,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_logstats.py"
+          },
+          "observation_bytes": 568,
+          "context_bytes": 568,
+          "compress_label": "core"
+        },
+        {
+          "turn": 3,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "logstats.py"
+          },
+          "observation_bytes": 508,
+          "context_bytes": 508,
+          "compress_label": "core"
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "logstats.py",
+            "content": "\"\"\"Log statistics for the alerting pipeline.\"\"\"\n\nimport re\n\n_LEVEL_RE = re.compile(r\"\\[([A-Za-z]+)\\]\")\n\n\ndef count_error\u2026"
+          },
+          "observation_bytes": 29,
+          "context_bytes": 29,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 5,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 24,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 6,
+          "decision_source": "policy",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "token-exp-boundary",
+      "arm": "hive",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 7,
+      "llm_calls": 1,
+      "prompt_tokens": 1204,
+      "completion_tokens": 124,
+      "wall_clock_s": 1.4616505000158213,
+      "memory_hit": true,
+      "observation_chars": 1549,
+      "context_chars": 1283,
+      "pass_idx": 1,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "policy",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 169,
+          "context_bytes": 169,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 1,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 650,
+          "context_bytes": 457,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 2,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_tokens.py"
+          },
+          "observation_bytes": 376,
+          "context_bytes": 376,
+          "compress_label": "core"
+        },
+        {
+          "turn": 3,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "tokens.py"
+          },
+          "observation_bytes": 222,
+          "context_bytes": 222,
+          "compress_label": "core"
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "tokens.py",
+            "content": "\"\"\"Token expiry checks.\"\"\"\n\n\ndef is_expired(exp: float, now: float) -> bool:\n    \"\"\"True when the token is no longer val\u2026"
+          },
+          "observation_bytes": 27,
+          "context_bytes": 27,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 5,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 24,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 6,
+          "decision_source": "policy",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "paginate-off-by-one",
+      "arm": "hive",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 7,
+      "llm_calls": 1,
+      "prompt_tokens": 1694,
+      "completion_tokens": 198,
+      "wall_clock_s": 2.1480850420193747,
+      "memory_hit": true,
+      "observation_chars": 3424,
+      "context_chars": 2748,
+      "pass_idx": 2,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "policy",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 175,
+          "context_bytes": 175,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 1,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 2050,
+          "context_bytes": 1447,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 2,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_paginator.py"
+          },
+          "observation_bytes": 649,
+          "context_bytes": 649,
+          "compress_label": "core"
+        },
+        {
+          "turn": 3,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "paginator.py"
+          },
+          "observation_bytes": 415,
+          "context_bytes": 415,
+          "compress_label": "core"
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "paginator.py",
+            "content": "\"\"\"Tiny pagination helper used by the API layer.\"\"\"\n\n\ndef paginate(items, page: int, per_page: int):\n    \"\"\"Return the s\u2026"
+          },
+          "observation_bytes": 30,
+          "context_bytes": 30,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 5,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 24,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 6,
+          "decision_source": "policy",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "csv-quoted-commas",
+      "arm": "hive",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 7,
+      "llm_calls": 1,
+      "prompt_tokens": 1413,
+      "completion_tokens": 371,
+      "wall_clock_s": 3.420724917028565,
+      "memory_hit": true,
+      "observation_chars": 2239,
+      "context_chars": 1949,
+      "pass_idx": 2,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "policy",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 171,
+          "context_bytes": 171,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 1,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 1264,
+          "context_bytes": 1047,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 2,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_csvlite.py"
+          },
+          "observation_bytes": 454,
+          "context_bytes": 454,
+          "compress_label": "core"
+        },
+        {
+          "turn": 3,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "csvlite.py"
+          },
+          "observation_bytes": 216,
+          "context_bytes": 216,
+          "compress_label": "core"
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "csvlite.py",
+            "content": "\"\"\"Minimal CSV line parser (we avoid the stdlib for embedded targets).\"\"\"\n\n\ndef parse_line(line: str) -> list[str]:\n    \u2026"
+          },
+          "observation_bytes": 29,
+          "context_bytes": 29,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 5,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 24,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 6,
+          "decision_source": "policy",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "ttl-cache-stale",
+      "arm": "hive",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 7,
+      "llm_calls": 1,
+      "prompt_tokens": 1569,
+      "completion_tokens": 207,
+      "wall_clock_s": 3.9249321250244975,
+      "memory_hit": true,
+      "observation_chars": 2859,
+      "context_chars": 2402,
+      "pass_idx": 2,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "policy",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 173,
+          "context_bytes": 173,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 1,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 1272,
+          "context_bytes": 888,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 2,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_ttlcache.py"
+          },
+          "observation_bytes": 698,
+          "context_bytes": 698,
+          "compress_label": "core"
+        },
+        {
+          "turn": 3,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "ttlcache.py"
+          },
+          "observation_bytes": 582,
+          "context_bytes": 582,
+          "compress_label": "core"
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "ttlcache.py",
+            "content": "\"\"\"A minimal TTL cache.\"\"\"\n\nimport time\n\n\nclass TTLCache:\n    def __init__(self, ttl: float):\n        self.ttl = ttl\n   \u2026"
+          },
+          "observation_bytes": 29,
+          "context_bytes": 29,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 5,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 24,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 6,
+          "decision_source": "policy",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "retry-gives-up",
+      "arm": "hive",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 7,
+      "llm_calls": 1,
+      "prompt_tokens": 1554,
+      "completion_tokens": 238,
+      "wall_clock_s": 2.433479833009187,
+      "memory_hit": true,
+      "observation_chars": 3611,
+      "context_chars": 2606,
+      "pass_idx": 2,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "policy",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 167,
+          "context_bytes": 167,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 1,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 1742,
+          "context_bytes": 810,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 2,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_retry.py"
+          },
+          "observation_bytes": 996,
+          "context_bytes": 996,
+          "compress_label": "core"
+        },
+        {
+          "turn": 3,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "retry.py"
+          },
+          "observation_bytes": 575,
+          "context_bytes": 575,
+          "compress_label": "core"
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "retry.py",
+            "content": "\"\"\"Retry decorator.\"\"\"\n\nimport functools\n\n\ndef retry(times: int, on: tuple[type[BaseException], ...] = (Exception,)):\n  \u2026"
+          },
+          "observation_bytes": 26,
+          "context_bytes": 26,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 5,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 24,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 6,
+          "decision_source": "policy",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "stacked-discounts",
+      "arm": "hive",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 7,
+      "llm_calls": 1,
+      "prompt_tokens": 1445,
+      "completion_tokens": 238,
+      "wall_clock_s": 3.052516665949952,
+      "memory_hit": true,
+      "observation_chars": 2240,
+      "context_chars": 1911,
+      "pass_idx": 2,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "policy",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 171,
+          "context_bytes": 171,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 1,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 1105,
+          "context_bytes": 849,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 2,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_pricing.py"
+          },
+          "observation_bytes": 511,
+          "context_bytes": 511,
+          "compress_label": "core"
+        },
+        {
+          "turn": 3,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "pricing.py"
+          },
+          "observation_bytes": 320,
+          "context_bytes": 320,
+          "compress_label": "core"
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "pricing.py",
+            "content": "\"\"\"Pricing helpers.\"\"\"\n\n\ndef apply_discounts(price: float, percents: list[float]) -> float:\n    \"\"\"Apply each percent di\u2026"
+          },
+          "observation_bytes": 28,
+          "context_bytes": 28,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 5,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 24,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 6,
+          "decision_source": "policy",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "dedup-case",
+      "arm": "hive",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 7,
+      "llm_calls": 1,
+      "prompt_tokens": 1556,
+      "completion_tokens": 185,
+      "wall_clock_s": 2.3924757079803385,
+      "memory_hit": true,
+      "observation_chars": 2835,
+      "context_chars": 2477,
+      "pass_idx": 2,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "policy",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 167,
+          "context_bytes": 167,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 1,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 1744,
+          "context_bytes": 1459,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 2,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_dedup.py"
+          },
+          "observation_bytes": 456,
+          "context_bytes": 456,
+          "compress_label": "core"
+        },
+        {
+          "turn": 3,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "dedup.py"
+          },
+          "observation_bytes": 337,
+          "context_bytes": 337,
+          "compress_label": "core"
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "dedup.py",
+            "content": "\"\"\"Username deduplication for the mailer.\"\"\"\n\n\ndef dedup(usernames: list[str]) -> list[str]:\n    \"\"\"Drop duplicate usern\u2026"
+          },
+          "observation_bytes": 26,
+          "context_bytes": 26,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 5,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 24,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 6,
+          "decision_source": "policy",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "config-precedence",
+      "arm": "hive",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 7,
+      "llm_calls": 1,
+      "prompt_tokens": 1428,
+      "completion_tokens": 279,
+      "wall_clock_s": 3.6823963340139017,
+      "memory_hit": true,
+      "observation_chars": 2417,
+      "context_chars": 2079,
+      "pass_idx": 2,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "policy",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 173,
+          "context_bytes": 173,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 1,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 713,
+          "context_bytes": 448,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 2,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_confload.py"
+          },
+          "observation_bytes": 705,
+          "context_bytes": 705,
+          "compress_label": "core"
+        },
+        {
+          "turn": 3,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "confload.py"
+          },
+          "observation_bytes": 692,
+          "context_bytes": 692,
+          "compress_label": "core"
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "confload.py",
+            "content": "\"\"\"Config loading with documented precedence: env > file > defaults.\"\"\"\n\nimport os\n\nDEFAULTS = {\"host\": \"127.0.0.1\", \"po\u2026"
+          },
+          "observation_bytes": 29,
+          "context_bytes": 29,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 5,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 24,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 6,
+          "decision_source": "policy",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "merge-intervals",
+      "arm": "hive",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 7,
+      "llm_calls": 1,
+      "prompt_tokens": 1583,
+      "completion_tokens": 221,
+      "wall_clock_s": 2.3140656250179745,
+      "memory_hit": true,
+      "observation_chars": 2654,
+      "context_chars": 2353,
+      "pass_idx": 2,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "policy",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 175,
+          "context_bytes": 175,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 1,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 1265,
+          "context_bytes": 1037,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 2,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_intervals.py"
+          },
+          "observation_bytes": 564,
+          "context_bytes": 564,
+          "compress_label": "core"
+        },
+        {
+          "turn": 3,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "intervals.py"
+          },
+          "observation_bytes": 515,
+          "context_bytes": 515,
+          "compress_label": "core"
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "intervals.py",
+            "content": "\"\"\"Interval merging for calendar bookings.\"\"\"\n\n\ndef merge_intervals(intervals: list[tuple[int, int]]) -> list[tuple[int,\u2026"
+          },
+          "observation_bytes": 30,
+          "context_bytes": 30,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 5,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 24,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 6,
+          "decision_source": "policy",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "log-error-count",
+      "arm": "hive",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 7,
+      "llm_calls": 1,
+      "prompt_tokens": 1614,
+      "completion_tokens": 237,
+      "wall_clock_s": 3.1922247919719666,
+      "memory_hit": true,
+      "observation_chars": 3169,
+      "context_chars": 2586,
+      "pass_idx": 2,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "policy",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 181,
+          "context_bytes": 181,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 1,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 1778,
+          "context_bytes": 1268,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 2,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_logstats.py"
+          },
+          "observation_bytes": 568,
+          "context_bytes": 568,
+          "compress_label": "core"
+        },
+        {
+          "turn": 3,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "logstats.py"
+          },
+          "observation_bytes": 508,
+          "context_bytes": 508,
+          "compress_label": "core"
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "logstats.py",
+            "content": "\"\"\"Log statistics for the alerting pipeline.\"\"\"\n\nimport re\n\n_LEVEL_RE = re.compile(r\"\\[([A-Za-z]+)\\]\")\n\n\ndef count_error\u2026"
+          },
+          "observation_bytes": 29,
+          "context_bytes": 29,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 5,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 24,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 6,
+          "decision_source": "policy",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    },
+    {
+      "task_id": "token-exp-boundary",
+      "arm": "hive",
+      "resolved": true,
+      "pre_failed": true,
+      "turns": 7,
+      "llm_calls": 1,
+      "prompt_tokens": 1204,
+      "completion_tokens": 124,
+      "wall_clock_s": 1.992174957995303,
+      "memory_hit": true,
+      "observation_chars": 1549,
+      "context_chars": 1283,
+      "pass_idx": 2,
+      "steps": [
+        {
+          "turn": 0,
+          "decision_source": "policy",
+          "tool": "list_files",
+          "args": {},
+          "observation_bytes": 169,
+          "context_bytes": 169,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 1,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 650,
+          "context_bytes": 457,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 2,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "tests/test_tokens.py"
+          },
+          "observation_bytes": 376,
+          "context_bytes": 376,
+          "compress_label": "core"
+        },
+        {
+          "turn": 3,
+          "decision_source": "policy",
+          "tool": "read_file",
+          "args": {
+            "path": "tokens.py"
+          },
+          "observation_bytes": 222,
+          "context_bytes": 222,
+          "compress_label": "core"
+        },
+        {
+          "turn": 4,
+          "decision_source": "llm",
+          "tool": "write_file",
+          "args": {
+            "path": "tokens.py",
+            "content": "\"\"\"Token expiry checks.\"\"\"\n\n\ndef is_expired(exp: float, now: float) -> bool:\n    \"\"\"True when the token is no longer val\u2026"
+          },
+          "observation_bytes": 27,
+          "context_bytes": 27,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 5,
+          "decision_source": "policy",
+          "tool": "run_tests",
+          "args": {},
+          "observation_bytes": 97,
+          "context_bytes": 24,
+          "compress_label": "distill"
+        },
+        {
+          "turn": 6,
+          "decision_source": "policy",
+          "tool": "finish",
+          "args": {},
+          "observation_bytes": 8,
+          "context_bytes": 8,
+          "compress_label": null
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "baseline": {
+      "arm": "baseline",
+      "tasks": 30,
+      "resolved": 30,
+      "resolve_rate": 1.0,
+      "mean_turns": 6.0,
+      "mean_llm_calls": 6.0,
+      "mean_prompt_tokens": 8589.9,
+      "mean_completion_tokens": 441.4,
+      "mean_wall_clock_s": 8.94,
+      "memory_hits": 0,
+      "total_observation_chars": 65052,
+      "total_context_chars": 65052,
+      "per_pass_mean_llm_calls": {
+        "0": 5.9,
+        "1": 6.1,
+        "2": 6.0
+      },
+      "llm_calls_dispersion": {
+        "passes": 3,
+        "mean": 6.0,
+        "stderr": 0.058,
+        "min": 5.9,
+        "max": 6.1
+      }
+    },
+    "hive": {
+      "arm": "hive",
+      "tasks": 30,
+      "resolved": 30,
+      "resolve_rate": 1.0,
+      "mean_turns": 7.0,
+      "mean_llm_calls": 1.0,
+      "mean_prompt_tokens": 1534.4,
+      "mean_completion_tokens": 227.2,
+      "mean_wall_clock_s": 2.8,
+      "memory_hits": 24,
+      "total_observation_chars": 80991,
+      "total_context_chars": 67182,
+      "per_pass_mean_llm_calls": {
+        "0": 1.0,
+        "1": 1.0,
+        "2": 1.0
+      },
+      "llm_calls_dispersion": {
+        "passes": 3,
+        "mean": 1.0,
+        "stderr": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      }
+    }
+  }
+}

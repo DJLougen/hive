@@ -9,7 +9,7 @@
 [![RTX 3090](https://img.shields.io/badge/RTX%203090-validated-orange)]()
 [![DGX Spark](https://img.shields.io/badge/DGX%20Spark-validated-red)]()
 
-Hive sits between an agent loop and its LLM. It answers the mechanical decisions on the CPU, compresses the context the LLM actually sees, and keeps a timestamped causal-memory graph so the agent stops re-deriving what it already learned. On a 10-task real tool-execution benchmark (real repos, real pytest gate, DeepSeek-V4.1-Flash as the LLM) this cut LLM calls by 83% and prompt tokens by 81% at an identical 10/10 resolve rate — numbers below.
+Hive sits between an agent loop and its LLM. It answers the mechanical decisions on the CPU, compresses the context the LLM actually sees, and keeps a timestamped causal-memory graph so the agent stops re-deriving what it already learned. On a 10-task real tool-execution benchmark (real repos, real pytest gate, DeepSeek-V4.1-Flash as the LLM) this cut LLM calls by 83% and prompt tokens by 82% at an identical 30/30 resolve rate — numbers below.
 
 > **Status:** v0.6.1 (Beta). The August 2026 modernization ([PR #62](https://github.com/DJLougen/hive/pull/62)), HLC preservation (PRs #71–#87), and the review-driven fixes ([PR #88](https://github.com/DJLougen/hive/pull/88)–[PR #91](https://github.com/DJLougen/hive/pull/91)) are merged on `main` — full suite green on Python 3.10–3.13 locally and in CI. Routing-accuracy numbers are *in-distribution* — see the OOD caveat under [Components](#components). **PFN / busyBee-cpu training-mode integration** is in progress (see [busyBee-cpu](https://github.com/DJLougen/busyBee-cpu)).
 
@@ -35,24 +35,24 @@ Four-tier modernization, validated locally and in CI on Python 3.10–3.13. Full
 
 ## Real-workload evaluation (hive-bench)
 
-10 real bug-fix tasks ([`benchmarks/tasks/`](benchmarks/tasks/)) — each is a real repo with a real failing pytest suite. The agent acts through real tools (`list_files`, `read_file`, `grep`, `run_tests`, `write_file`, `finish`) executed by the harness; `tests/` is read-only so a pass can't be gamed. Resolve = a real `pytest` run at the end of the episode. **Baseline** sends every action decision to the LLM. **Hive** routes mechanical transitions through the CPU policy, compresses tool observations, and recalls prior fixes from causal memory. Same model (`deepseek-v4p1-flash`, Fireworks), same tools, same prompts, `temperature=0`.
+10 real bug-fix tasks ([`benchmarks/tasks/`](benchmarks/tasks/)), 3 repeats each — each is a real repo with a real failing pytest suite. The agent acts through real tools (`list_files`, `read_file`, `grep`, `run_tests`, `write_file`, `finish`) executed by the harness; `tests/` is read-only so a pass can't be gamed. Resolve = a real `pytest` run at the end of the episode. **Baseline** sends every action decision to the LLM. **Hive** routes mechanical transitions through the CPU policy, compresses tool observations, and recalls prior fixes from causal memory. Same model (`deepseek-v4p1-flash`, Fireworks), same tools, same prompts, `temperature=0`.
 
-**Which router produced this table:** the published Hive arm ran the built-in rule-based state machine (`hive.harness.RuleBasedRoutingPolicy`, the `--policy rule` default) driving harness-computed read hints — *not* the trained `CPURouterPolicy`. That artifact predates policy provenance being recorded in the run JSON, and it cannot tell you which router it measured; the trained policy's own numbers are in [`docs/benchmarks/hive-bench-cpu-policy.json`](docs/benchmarks/hive-bench-cpu-policy.json) (pass 0 = 1.8 mean LLM calls, i.e. *more* model calls than the table above, because the trained router escalates more). Read the table as "rule engine + orchestration + memory", and the cpu-policy artifact as the trained-router result.
+**Which router produced this table, and how repeatable it is:** the Hive arm runs the built-in rule-based state machine (`hive.harness.RuleBasedRoutingPolicy`, the `--policy rule` default) driving harness-computed read hints — *not* the trained `CPURouterPolicy`. The artifact records that itself (`provenance`: `policy_class`, `policy`, `temperature`, `repeat`, git sha). The table is **3 repeats × 10 tasks = 30 episodes per arm** (not one pass), and per-pass means are published alongside it: baseline LLM calls 5.9 / 6.1 / 6.0 (stderr 0.06), Hive 1.0 / 1.0 / 1.0 (stderr 0.00). The trained router's own numbers are in [`docs/benchmarks/hive-bench-cpu-policy.json`](docs/benchmarks/hive-bench-cpu-policy.json) (pass 0 = 1.8 mean LLM calls, i.e. *more* model calls than the table above, because it escalates more) — read the table as "rule engine + orchestration + memory", and that artifact as the trained-router result.
 
 | Metric | Baseline | Hive | Delta |
 |---|---|---|---|
-| Resolve rate | 100% (10/10) | 100% (10/10) | **0 pp** |
+| Resolve rate | 100% (30/30) | 100% (30/30) | **0 pp** |
 | Mean LLM calls | 6.0 | 1.0 | **−83.3%** |
-| Mean prompt tokens | 8,569 | 1,591 | **−81.4%** |
-| Mean completion tokens | 424 | 232 | **−45.3%** |
+| Mean prompt tokens | 8,590 | 1,534 | **−82.1%** |
+| Mean completion tokens | 441 | 227 | **−48.5%** |
 | Mean turns | 6.0 | 7.0 | +16.7% |
-| Mean wall clock (s) | 12.24 | 3.33 | **−72.8%** |
-| Memory recall hits | — | 4/10 | — |
+| Mean wall clock (s) | 8.94 | 2.80 | **−68.7%** |
+| Memory recall hits | — | 24/30 | — |
 
 **Why it works:** each episode runs ~6 mechanical turns (`list_files`, reproduce `run_tests`, read the file the traceback names, verify `run_tests`, `finish`). Without Hive every one of those is a paid LLM call with the full transcript attached. With Hive the CPU policy executes them locally; the model is called once — with the failing test output and the unit under test already in context — and writes the patch. Resolve rate is unchanged because the reasoning still goes to the same model.
 
 - **Reproduce:** `python scripts/hive_bench.py --backend openai --endpoint <openai-compatible-url> --api-key-env <KEY> --model <model>`
-- **Raw run:** [`docs/benchmarks/hive-bench-flash.json`](docs/benchmarks/hive-bench-flash.json)
+- **Raw run (this table):** [`docs/benchmarks/hive-bench-flash-r3.json`](docs/benchmarks/hive-bench-flash-r3.json) — 30 episodes per arm, provenance and per-pass dispersion recorded. The earlier single-pass run is kept at [`docs/benchmarks/hive-bench-flash.json`](docs/benchmarks/hive-bench-flash.json) and is superseded by this one.
 
 **Learned CPU policy + memory replay.** `hive.cpu_policy.CPURouterPolicy` is a RandomForest trained by imitating logged trajectories (`--log`, `scripts/train_cpu_policy.py`); it predicts mechanical tool calls on the CPU and escalates anything it can't resolve safely — including `write_file` without a recalled fix, since patch synthesis isn't a routing decision. With `--policy trained --repeat 2` the second pass replays the fix stored in causal memory: `write_file -> run_tests -> finish`, all CPU-routed. Measured: pass 0 = 10/10 resolved at 1.8 mean LLM calls; pass 1 = 10/10 at **0 LLM calls / 0 tokens** ([`docs/benchmarks/hive-bench-cpu-policy.json`](docs/benchmarks/hive-bench-cpu-policy.json)).
 

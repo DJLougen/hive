@@ -29,7 +29,8 @@ ABS_TOL = 0.05
 #   kind="single" -> readme group 1 vs the artifact value
 # --------------------------------------------------------------------------- #
 
-BENCH = "docs/benchmarks/hive-bench-flash.json"
+BENCH = "docs/benchmarks/hive-bench-flash-r3.json"  # 3 repeats x 10 tasks, both arms
+BENCH_V1 = "docs/benchmarks/hive-bench-flash.json"  # superseded single-pass run, kept
 MICRO = "docs/benchmarks/latest-micro.json"
 SMOKE = "docs/benchmarks/long-context-smoke.json"
 BAKEOFF = "docs/benchmarks/trace-bakeoff.json"
@@ -43,7 +44,7 @@ CHECKS: list[dict] = [
         "artifact": BENCH,
         "baseline": "summary.baseline.resolved",
         "hive": "summary.hive.resolved",
-        "regex": r"^\| Resolve rate \| 100% \((10)/10\) \| 100% \((10)/10\) \| \*\*0 pp\*\*",
+        "regex": r"^\| Resolve rate \| 100% \((30)/30\) \| 100% \((30)/30\) \| \*\*0 pp\*\*",
     },
     {
         "label": "A1 mean LLM calls",
@@ -95,7 +96,7 @@ CHECKS: list[dict] = [
         "kind": "single",
         "artifact": BENCH,
         "path": "summary.hive.memory_hits",
-        "regex": r"^\| Memory recall hits \| — \| (\d+)/10 \|",
+        "regex": r"^\| Memory recall hits \| — \| (\d+)/30 \|",
     },
     # ---- A2: per-component throughput (latest-micro.json) ----
     {
@@ -158,6 +159,31 @@ CHECKS: list[dict] = [
         "group": 1,
         "metric": "llm_calls",
         "regex": r"pass 1 = 10/10 resolved at\s*\*\*([\d.]+) LLM calls",
+    },
+    # ---- dispersion: the numbers a --repeat run exists to produce ----
+    {
+        "label": "baseline per-pass LLM-call stderr (README)",
+        "kind": "dispersion",
+        "file": "README.md",
+        "artifact": BENCH,
+        "list": "results",
+        "group_by": "pass_idx",
+        "metric": "llm_calls",
+        "arm": "baseline",
+        "field": "stderr",
+        "regex": r"baseline LLM calls [\d.]+ / [\d.]+ / [\d.]+ \(stderr ([\d.]+)\)",
+    },
+    {
+        "label": "hive per-pass LLM-call stderr (README)",
+        "kind": "dispersion",
+        "file": "README.md",
+        "artifact": BENCH,
+        "list": "results",
+        "group_by": "pass_idx",
+        "metric": "llm_calls",
+        "arm": "hive",
+        "field": "stderr",
+        "regex": r"Hive [\d.]+ / [\d.]+ / [\d.]+ \(stderr ([\d.]+)\)",
     },
     # ---- restated copies: the same numbers outside README.md (ungated until now) ----
     {
@@ -317,6 +343,31 @@ def run_check(check: dict, texts: dict[str, str]) -> list[str]:
                     )
         if not problems:
             print(f"OK\t{label}\t{len(all_hits)} occurrence(s)\tartifact={art_baseline}/{art_hive}")
+        return problems
+
+    if check["kind"] == "dispersion":
+        rows = [r for r in artifact[check["list"]] if r["arm"] == check["arm"]]
+        passes = sorted({r[check["group_by"]] for r in rows})
+        per_pass = [
+            sum(r[check["metric"]] for r in rows if r[check["group_by"]] == p)
+            / len([r for r in rows if r[check["group_by"]] == p])
+            for p in passes
+        ]
+        if len(per_pass) < 2:
+            return [f"MISSING\t{label}\tartifact has {len(per_pass)} pass(es); no dispersion to check"]
+        mean = sum(per_pass) / len(per_pass)
+        var = sum((v - mean) ** 2 for v in per_pass) / (len(per_pass) - 1)
+        artifact_value = var**0.5 / len(per_pass) ** 0.5  # sample stderr of the mean
+        for where, g in all_hits:
+            readme_value = num(str(g[0]))
+            # published to 2 decimals: compare at that precision
+            if round(readme_value, 2) != round(artifact_value, 2):
+                problems.append(
+                    f"MISMATCH\t{label}\t{where}: readme={readme_value} "
+                    f"artifact={round(artifact_value, 4)} (per-pass {[round(v, 2) for v in per_pass]})"
+                )
+        if not problems:
+            print(f"OK\t{label}\tstderr over {len(per_pass)} passes\tartifact={round(artifact_value, 4)}")
         return problems
 
     if check["kind"] == "group_mean":
