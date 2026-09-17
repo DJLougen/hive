@@ -44,7 +44,7 @@ if str(_REPO_ROOT) not in sys.path:
 if str(Path(__file__).parent) not in sys.path:
     sys.path.insert(0, str(Path(__file__).parent))
 
-from extract_traces import _SALT, _canon_tool  # noqa: E402
+from extract_traces import _SALT, _canon_tool
 
 _log = logging.getLogger("hive.latent_extract")
 
@@ -225,7 +225,7 @@ def main() -> int:
     rng = random.Random(42)
     t0 = time.time()
     n_sess = n_steps = 0
-    for fi, (path, source) in enumerate(files):
+    for path, _source in files:
         if args.limit and n_sess >= args.limit:
             break
         sid = hashlib.sha256(f"{_SALT}:{path}".encode()).hexdigest()[:16]

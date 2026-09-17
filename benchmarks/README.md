@@ -49,6 +49,9 @@ python scripts/train_cpu_policy.py \
     --out benchmarks/cpu_router.joblib
 
 # 3. run with the trained policy; --repeat 2 shows memory replay
+# benchmarks/cpu_router.joblib has no .joblib.sig sidecar, and CPURouterPolicy.load
+# refuses unsigned models by default (joblib unpickles arbitrary objects):
+export HIVE_ALLOW_UNSIGNED_MODEL=1        # or sign it: scripts/train_cpu_policy.py --sign
 python scripts/hive_bench.py ... \
     --policy trained --policy-path benchmarks/cpu_router.joblib --repeat 2
 ```

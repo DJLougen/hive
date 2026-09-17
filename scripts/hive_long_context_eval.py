@@ -2,8 +2,10 @@
 """Long-context compression evaluation for Hive.
 
 Generates synthetic multi-thousand-line tool output and measures compression
-ratio across aggressiveness settings. Designed for CI smoke (``--smoke``) and
-local full sweeps.
+ratio at several *input lengths*. Every row uses the same compressor
+(``RuleFastHoneyComb``) on the same generator — the ``setting`` column is an
+input-length label, NOT a compressor configuration, so rows are one
+measurement at different scales, never independent A/B arms.
 
 Usage:
     python scripts/hive_long_context_eval.py --smoke
@@ -29,7 +31,8 @@ from hive.rule_fast import RuleFastHoneyComb
 
 @dataclass
 class LongContextResult:
-    setting: str
+    setting: str          # input-length label, e.g. "input-50pct"
+    input_lines: int
     original_chars: int
     compressed_chars: int
     ratio: float
@@ -51,17 +54,19 @@ def _synthetic_log(lines: int = 4000) -> str:
 def run_eval(*, smoke: bool = False) -> dict:
     stack = HiveStack(honey_comb=RuleFastHoneyComb())
     content = _synthetic_log(800 if smoke else 4000)
-    settings = ["conservative", "aggressive"] if smoke else ["conservative", "moderate", "aggressive", "extreme"]
+    # One compressor, one generator: only the input length varies. The labels
+    # say so explicitly so the artifact can't be read as compressor settings.
+    fractions = (0.5, 1.0) if smoke else (0.25, 0.5, 0.75, 1.0)
     results: list[LongContextResult] = []
-    for setting in settings:
-        # RuleFastHoneyComb ignores external setting names; we vary content padding.
-        payload = content if setting != "conservative" else content[: len(content) // 2]
+    for frac in fractions:
+        payload = content[: int(len(content) * frac)]
         t0 = time.perf_counter()
         out = stack.compress("tool", payload)
         elapsed_ms = (time.perf_counter() - t0) * 1000.0
         results.append(
             LongContextResult(
-                setting=setting,
+                setting=f"input-{int(frac * 100)}pct",
+                input_lines=payload.count("\n") + 1,
                 original_chars=len(payload),
                 compressed_chars=len(out.content),
                 ratio=out.ratio,
@@ -73,6 +78,9 @@ def run_eval(*, smoke: bool = False) -> dict:
     return {
         "kind": "hive-long-context-eval",
         "smoke": smoke,
+        "note": ("all rows use the same compressor (RuleFastHoneyComb) on the "
+                 "same synthetic generator; 'setting' is the input length, "
+                 "not a compressor configuration"),
         "results": [asdict(r) for r in results],
         "max_ratio": max(ratios) if ratios else 0.0,
         "any_compression": any(r.compressed_chars < r.original_chars for r in results),
@@ -85,6 +93,10 @@ def main() -> None:
     parser.add_argument("--output", type=Path, default=None)
     args = parser.parse_args()
     report = run_eval(smoke=args.smoke)
+    for r in report["results"]:
+        print(f"{r['setting']}: input={r['input_lines']} lines "
+              f"({r['original_chars']} chars) -> {r['compressed_chars']} chars "
+              f"(ratio {r['ratio']:.1f}x, label={r['label']})")
     text = json.dumps(report, indent=2)
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)

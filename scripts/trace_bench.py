@@ -20,8 +20,18 @@ argument values:
   state. This is the floor: calls the CPU could fully execute today.
 
 Trained with stratified k-fold CV (every trace is scored held-out).
-Baselines (majority class, repeat-last-tool) for context. Wilson 95% CIs
-on per-step agreement; per-family breakdown; confidence-threshold sweep.
+Baselines (majority class, repeat-last) for context.
+
+Two intervals are reported per aggregate:
+
+* ``agreement_ci95`` — the naive Wilson interval over individual steps. It is
+  kept for continuity with earlier artifacts but is *wrong* as an uncertainty
+  estimate: steps within a trace come from one session and are highly
+  correlated, so ~11k steps are not ~11k independent draws and the interval
+  is far too narrow.
+* ``agreement_ci95_cluster`` — a cluster-robust interval that treats each
+  trace as one cluster (CR0 sandwich estimator over per-trace sums). This is
+  the honest uncertainty number.
 
 Usage:
     python scripts/trace_bench.py --traces benchmarks/traces \
@@ -80,6 +90,24 @@ def wilson(k: int, n: int, z: float = 1.96) -> tuple[float, float]:
     return round((c - m) / d, 4), round((c + m) / d, 4)
 
 
+def cluster_ci(cluster_sums: list[tuple[int, int]], z: float = 1.96) -> tuple[float, float]:
+    """Cluster-robust 95% CI for the pooled mean of a per-step binary outcome.
+
+    ``cluster_sums`` is one ``(sum_of_outcomes, n_steps)`` per trace. The
+    variance of the pooled estimate is estimated from between-trace
+    dispersion of the trace sums (CR0 sandwich), so correlated steps inside
+    a trace cannot inflate the effective sample size the way the naive
+    Wilson interval assumes.
+    """
+    n = sum(n for _, n in cluster_sums)
+    g = len(cluster_sums)
+    if n == 0 or g < 2:
+        return 0.0, 0.0
+    p = sum(s for s, _ in cluster_sums) / n
+    var = sum((s - p * m) ** 2 for s, m in cluster_sums) / (n * n)
+    m = z * math.sqrt(var)
+    return round(max(0.0, p - m), 4), round(min(1.0, p + m), 4)
+
 def collect_records(policy: Any, test_traces: list[dict[str, Any]],
                     baseline: str | None = None,
                     majority: str = "read_file") -> list[dict[str, Any]]:
@@ -98,8 +126,8 @@ def collect_records(policy: Any, test_traces: list[dict[str, Any]],
                 tool, conf = state.get("last_tool") or majority, 1.0
             else:
                 tool, conf = None, 0.0  # filled by batch predict below
-            records.append({"family": tr["family"], "conf": conf,
-                            "pred": tool, "actual": s["tool"],
+            records.append({"family": tr["family"], "trace": tr["id"],
+                            "conf": conf, "pred": tool, "actual": s["tool"],
                             "state": state if baseline is None else None})
     if baseline is None and records:
         # One vectorized predict_proba over all steps — single-sample
@@ -124,27 +152,42 @@ def aggregate(records: list[dict[str, Any]], threshold: float,
               executable_only: bool) -> dict[str, Any]:
     per_fam: dict[str, Counter] = {}
     tot = Counter()
+    # Per-trace (sum, n) of the agreement outcome, for the cluster-robust CI.
+    clusters: dict[str, list[int]] = {}
+    fam_clusters: dict[str, dict[str, list[int]]] = {}
     for r in records:
         routed = (r["pred"] is not None and r["conf"] >= threshold
                   and (not executable_only or r["pred"] in EXECUTABLE_TOOLS))
+        ok = int(bool(routed) and r["pred"] == r["actual"])
         for c in (tot, per_fam.setdefault(r["family"], Counter())):
             c["steps"] += 1
             if routed:
                 c["routed"] += 1
                 if r["pred"] == r["actual"]:
                     c["matched"] += 1
+        trace = str(r.get("trace", ""))
+        cl = clusters.setdefault(trace, [0, 0])
+        cl[0] += ok
+        cl[1] += 1
+        fcl = fam_clusters.setdefault(r["family"], {}).setdefault(trace, [0, 0])
+        fcl[0] += ok
+        fcl[1] += 1
 
-    def pack(c: Counter) -> dict[str, Any]:
+    def pack(c: Counter, sums: list[tuple[int, int]]) -> dict[str, Any]:
         steps, routed, matched = c["steps"], c["routed"], c["matched"]
         lo, hi = wilson(matched, steps)
+        clo, chi = cluster_ci(sums)
         return {"steps": steps, "routed": routed, "matched": matched,
                 "coverage": round(routed / steps, 4) if steps else 0,
                 "fidelity": round(matched / routed, 4) if routed else 0,
                 "agreement": round(matched / steps, 4) if steps else 0,
-                "agreement_ci95": [lo, hi]}
+                "agreement_ci95": [lo, hi],
+                "agreement_ci95_cluster": [clo, chi],
+                "n_traces": len(sums)}
 
-    return {"overall": pack(tot),
-            "per_family": {f: pack(c) for f, c in sorted(per_fam.items())}}
+    return {"overall": pack(tot, [tuple(v) for v in clusters.values()]),
+            "per_family": {f: pack(c, [tuple(v) for v in fam_clusters[f].values()])
+                           for f, c in sorted(per_fam.items())}}
 
 
 def _store(name: str, recs: list[dict[str, Any]], threshold: float,
@@ -165,9 +208,9 @@ def _emit(name: str, recs: list[dict[str, Any]], threshold: float,
           f"cov={tc['overall']['coverage']*100:5.1f}% "
           f"fid={tc['overall']['fidelity']*100:5.1f}% "
           f"agree={tc['overall']['agreement']*100:5.1f}% "
-          f"CI95={tc['overall']['agreement_ci95']} | "
+          f"CI95={tc['overall']['agreement_ci95']} "
+          f"CI95cl={tc['overall']['agreement_ci95_cluster']} | "
           f"exec-cov={ex['overall']['coverage']*100:5.1f}%")
-
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)

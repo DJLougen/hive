@@ -31,12 +31,14 @@ import json
 import logging
 import os
 import re
+import shlex
 import shutil
 import subprocess
 import sys
 import tempfile
 import time
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -134,10 +136,45 @@ def load_tasks(suite_dir: Path, only: list[str] | None = None) -> list[Task]:
 class ToolExecutor:
     """Execute agent actions against a real working copy of the repo."""
 
+    # pytest flags that consume the following token (so it isn't a path).
+    _VALUE_FLAGS = {"-k", "-m", "--maxfail", "--timeout", "--basetemp",
+                    "--rootdir", "-c", "--confcutdir", "--junitxml", "-o"}
+
     def __init__(self, workdir: Path, test_cmd: str, test_timeout_s: int) -> None:
         self.workdir = workdir.resolve()
         self.test_cmd = test_cmd
         self.test_timeout_s = test_timeout_s
+        self.test_paths = self._declared_test_paths(test_cmd)
+
+    @classmethod
+    def _declared_test_paths(cls, test_cmd: str) -> tuple[str, ...]:
+        """Repo-relative paths the task's ``test_cmd`` actually runs.
+
+        Writes under any of these are blocked, so a task that declares e.g.
+        ``pytest checks`` can't have its gate edited via ``checks/``.
+        """
+        try:
+            tokens = shlex.split(test_cmd)
+        except ValueError:
+            return ("tests",)
+        paths: list[str] = []
+        skip_next = False
+        for tok in tokens:
+            if skip_next:
+                skip_next = False
+                continue
+            if tok in cls._VALUE_FLAGS:
+                skip_next = True
+                continue
+            if tok.startswith("-"):
+                continue
+            if tok in ("python", "python3", "pytest") or tok.endswith("/pytest"):
+                continue
+            if tok == "-m":
+                skip_next = True
+                continue
+            paths.append(tok.rstrip("/"))
+        return tuple(paths) if paths else ("tests",)
 
     def _resolve(self, rel: str) -> Path:
         p = (self.workdir / rel).resolve()
@@ -176,14 +213,19 @@ class ToolExecutor:
         return (out.stdout or "(no matches)")[:MAX_OBSERVATION_CHARS]
 
     def run_tests(self) -> tuple[bool, str]:
+        argv = shlex.split(self.test_cmd)
+        if argv and argv[0] in ("python", "python3"):
+            argv[0] = sys.executable  # run under this interpreter, not PATH's
         try:
             out = subprocess.run(
-                [sys.executable, "-m", "pytest", "tests", "-q"],
+                argv,
                 cwd=self.workdir, capture_output=True, text=True,
                 timeout=self.test_timeout_s,
             )
         except subprocess.TimeoutExpired:
             return False, f"ERROR: tests timed out after {self.test_timeout_s}s"
+        except (OSError, ValueError) as exc:
+            return False, f"ERROR: test_cmd {self.test_cmd!r} failed to run: {exc}"
         text = (out.stdout + "\n" + out.stderr).strip()
         return out.returncode == 0, text
 
@@ -192,14 +234,23 @@ class ToolExecutor:
             p = self._resolve(rel)
         except ValueError as exc:
             return f"ERROR: {exc}"
-        if "tests" in p.relative_to(self.workdir).parts:
+        rel_parts = p.relative_to(self.workdir).parts
+        # Any tests/ directory segment is read-only, wherever it sits.
+        if "tests" in rel_parts:
             return "ERROR: tests/ is read-only — fix the source, not the tests"
+        # And so is every path the task's test_cmd actually gates on.
+        for declared in self.test_paths:
+            dparts = Path(declared).parts
+            if rel_parts[: len(dparts)] == dparts:
+                return (f"ERROR: {declared}/ is the declared test path — "
+                        "fix the source, not the tests")
         try:
             p.parent.mkdir(parents=True, exist_ok=True)
             p.write_text(content, encoding="utf-8")
         except OSError as exc:
             return f"ERROR: {exc}"
         return f"wrote {rel} ({len(content)} bytes)"
+
 
 
 # ---------------------------------------------------------------------------
@@ -242,18 +293,13 @@ def parse_action(text: str, tool_calls: list[dict[str, Any]] | None = None) -> t
     return None, {}
 
 
-# ---------------------------------------------------------------------------
-# LLM driver
-# ---------------------------------------------------------------------------
-
-
 def chat_with_retry(backend: Any, messages: list[dict[str, str]], *, max_tokens: int,
-                    retries: int = 4) -> Any:
+                    temperature: float = 0.0, retries: int = 4) -> Any:
     delay = 5.0
     for attempt in range(retries):
         try:
             return backend.chat(
-                messages, max_tokens=max_tokens, temperature=0.0,
+                messages, max_tokens=max_tokens, temperature=temperature,
                 tools=TOOL_SCHEMAS, tool_choice="auto",
             )
         except Exception as exc:
@@ -363,6 +409,11 @@ def _truncate(text: str) -> str:
     return text[: MAX_OBSERVATION_CHARS // 2] + "\n…[truncated]…\n" + text[-MAX_OBSERVATION_CHARS // 2 :]
 
 
+class TaskIntegrityError(RuntimeError):
+    """The task's suite already passes on a fresh checkout — a resolve would
+    be meaningless, so the episode is a hard failure, not a warning."""
+
+
 def run_episode(
     task: Task,
     *,
@@ -374,6 +425,7 @@ def run_episode(
     workdir: Path,
     log_fh: Any | None = None,
     pass_idx: int = 0,
+    temperature: float = 0.0,
 ) -> AgentResult:
     """Run one real episode: real tools, real LLM, real pytest resolve."""
     executor = ToolExecutor(workdir, task.test_cmd, task.test_timeout_s)
@@ -383,10 +435,15 @@ def run_episode(
     )
 
     # Integrity gate: the task must actually be broken before the agent runs.
+    # A suite that already passes makes "resolved" unmeasurable — hard-fail
+    # the episode and name the task, rather than warn and count it anyway.
     pre_passed, _ = executor.run_tests()
     pre_failed = not pre_passed
     if pre_passed:
-        _log.warning("task %s: tests pass on fresh checkout — resolve is meaningless", task.id)
+        raise TaskIntegrityError(
+            f"task {task.id}: test_cmd {task.test_cmd!r} passes on a fresh "
+            "checkout — the resolve gate is meaningless for this task"
+        )
 
     state: dict[str, Any] = {
         "goal": task.problem_statement,
@@ -452,7 +509,8 @@ def run_episode(
                     "single most useful action."
                 )
                 messages.append({"role": "user", "content": escalation_note})
-                resp = chat_with_retry(backend, messages, max_tokens=max_tokens)
+                resp = chat_with_retry(backend, messages, max_tokens=max_tokens,
+                                       temperature=temperature)
                 llm_calls += 1
                 prompt_tokens += resp.prompt_tokens
                 completion_tokens += resp.completion_tokens
@@ -470,7 +528,8 @@ def run_episode(
                 tool, args = decision.tool, {k: str(v) for k, v in decision.args.items()}
                 source = "policy"
         else:
-            resp = chat_with_retry(backend, messages, max_tokens=max_tokens)
+            resp = chat_with_retry(backend, messages, max_tokens=max_tokens,
+                                   temperature=temperature)
             llm_calls += 1
             prompt_tokens += resp.prompt_tokens
             completion_tokens += resp.completion_tokens
@@ -657,6 +716,57 @@ def _print_report(results: list[AgentResult]) -> None:
                       f"mem_hits={s['memory_hits']} "
                       f"ctx_chars={s['total_context_chars']}/{s['total_observation_chars']}")
 
+# ---------------------------------------------------------------------------
+# Provenance
+# ---------------------------------------------------------------------------
+
+
+def _git_sha() -> tuple[str | None, bool | None]:
+    """(HEAD sha, dirty?) for the runner's checkout, or (None, None) when git
+    isn't available — recorded honestly rather than guessed."""
+    try:
+        sha = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=_REPO_ROOT,
+            capture_output=True, text=True, timeout=10,
+        )
+        if sha.returncode != 0:
+            return None, None
+        dirty = subprocess.run(
+            ["git", "status", "--porcelain"], cwd=_REPO_ROOT,
+            capture_output=True, text=True, timeout=10,
+        )
+        return sha.stdout.strip(), bool(dirty.stdout.strip())
+    except (OSError, subprocess.TimeoutExpired):
+        return None, None
+
+
+def build_provenance(*, args: Any, stack: Any | None, policy: Any | None,
+                     arms: list[str]) -> dict[str, Any]:
+    """Record what actually produced the artifact.
+
+    ``--policy`` names the *requested* policy; the class recorded here is the
+    concrete object ``stack.route()`` queries (``stack.busybee``), so a silent
+    fallback can't masquerade as the trained router in a published artifact.
+    ``git_sha``/``git_dirty`` are None when the checkout isn't a git repo.
+    """
+    sha, dirty = _git_sha()
+    queried = getattr(stack, "busybee", None) if stack is not None else None
+    if queried is None:
+        queried = policy
+    hive_arm = "hive" in arms
+    return {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "git_sha": sha,
+        "git_dirty": dirty,
+        "policy": args.policy if hive_arm else None,
+        "policy_path": args.policy_path if hive_arm else None,
+        "policy_class": type(queried).__name__ if queried is not None else None,
+        "temperature": args.temperature,
+        "repeat": args.repeat,
+    }
+
+
+
 
 # ---------------------------------------------------------------------------
 # Main
@@ -676,6 +786,8 @@ def main() -> int:
                     help="'scripted' exercises plumbing without an LLM (resolve rate is meaningless)")
     ap.add_argument("--max-turns", type=int, default=25)
     ap.add_argument("--max-tokens", type=int, default=4096)
+    ap.add_argument("--temperature", type=float, default=0.0,
+                    help="sampling temperature for LLM calls (recorded in the artifact)")
     ap.add_argument("--policy", choices=["rule", "trained"], default="rule",
                     help="CPU routing policy for the hive arm")
     ap.add_argument("--policy-path", default=None,
@@ -749,6 +861,7 @@ def main() -> int:
                             task, arm=arm, backend=backend, stack=stack,
                             max_turns=args.max_turns, max_tokens=args.max_tokens,
                             workdir=workdir, log_fh=log_fh, pass_idx=rep,
+                            temperature=args.temperature,
                         )
                     except Exception:
                         _log.exception("episode %s/%s crashed", task.id, arm)
@@ -772,6 +885,8 @@ def main() -> int:
         "model": args.model,
         "driver": args.driver,
         "suite": str(Path(args.suite)),
+        "provenance": build_provenance(args=args, stack=stack, policy=policy,
+                                       arms=arms),
         "results": [dataclasses.asdict(r) for r in results],
         "summary": {arm: summarize(results, arm) for arm in arms},
     }

@@ -1,16 +1,19 @@
 {
   "kind": "hive-long-context-eval",
   "smoke": true,
+  "note": "all rows use the same compressor (RuleFastHoneyComb) on the same synthetic generator; 'setting' is the input length, not a compressor configuration",
   "results": [
     {
-      "setting": "conservative",
+      "setting": "input-50pct",
+      "input_lines": 401,
       "original_chars": 25529,
       "compressed_chars": 345,
       "ratio": 74.20930232558139,
       "label": "distill"
     },
     {
-      "setting": "aggressive",
+      "setting": "input-100pct",
+      "input_lines": 800,
       "original_chars": 51059,
       "compressed_chars": 332,
       "ratio": 153.78313253012047,
