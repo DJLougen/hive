@@ -21,6 +21,9 @@ def test_semantic_index_add():
     brain = RustBrain()
     node = brain.remember("auth", "login bug", tags={"bug"})
     index = SemanticIndex(brain)
-    # Without sentence-transformers, add() is a no-op but doesn't crash
     index.add(node)
-    assert node.key == "auth"
+    # add() stores vectors keyed "key:node_id"; without sentence-transformers
+    # no model exists, so the index must hold no vector for the node.
+    assert not any(k.rsplit(":", 1)[0] == "auth" for k in index._vectors)
+    # The node is still reachable through the tag-scan fallback.
+    assert [n.key for n, _ in index.search("bug")] == ["auth"]

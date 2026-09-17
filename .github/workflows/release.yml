@@ -77,6 +77,16 @@ jobs:
           path: dist
           merge-multiple: true
 
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Verify built wheel installs and imports
+        run: |
+          python -m pip install --find-links dist hive-agent-memory
+          python -c "import hive, hive.rust_brain; print(hive.__version__)"
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
