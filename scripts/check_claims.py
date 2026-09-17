@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Claim gate — every number Hive publishes in README.md must match a committed artifact.
+"""Claim gate — every number Hive publishes must match a committed artifact.
 
 Each registered check pulls one number out of README.md with a regex and compares it
 against a value read from a committed benchmark artifact. Rounded display values are
@@ -33,6 +33,7 @@ BENCH = "docs/benchmarks/hive-bench-flash.json"
 MICRO = "docs/benchmarks/latest-micro.json"
 SMOKE = "docs/benchmarks/long-context-smoke.json"
 BAKEOFF = "docs/benchmarks/trace-bakeoff.json"
+CPU_POLICY = "docs/benchmarks/hive-bench-cpu-policy.json"
 
 CHECKS: list[dict] = [
     # ---- A1: real-workload A/B table (summary of hive-bench-flash.json) ----
@@ -135,6 +136,65 @@ CHECKS: list[dict] = [
         "path": "max_ratio",
         "regex": r"up to \*\*([\d.]+)×\*\* compression",  # noqa: RUF001
     },
+    # ---- per-pass means, recomputed from the raw results list (not the summary) ----
+    {
+        "label": "cpu-policy pass 0 mean LLM calls (README)",
+        "kind": "group_mean",
+        "file": "README.md",
+        "artifact": CPU_POLICY,
+        "list": "results",
+        "group_by": "pass_idx",
+        "group": 0,
+        "metric": "llm_calls",
+        "regex": r"pass 0 = 10/10 resolved at ([\d.]+) mean LLM calls",
+    },
+    {
+        "label": "cpu-policy pass 1 LLM calls (benchmarks/README.md)",
+        "kind": "group_mean",
+        "file": "benchmarks/README.md",
+        "artifact": CPU_POLICY,
+        "list": "results",
+        "group_by": "pass_idx",
+        "group": 1,
+        "metric": "llm_calls",
+        "regex": r"pass 1 = 10/10 resolved at\s*\*\*([\d.]+) LLM calls",
+    },
+    # ---- restated copies: the same numbers outside README.md (ungated until now) ----
+    {
+        "label": "bake-off mlp next-tool accuracy (benchmarks/README.md)",
+        "kind": "single",
+        "file": "benchmarks/README.md",
+        "artifact": BAKEOFF,
+        "path": "models[mlp].argmax_overall.agreement",
+        "percent": True,
+        "regex": r"^\| mlp \| ([\d.]+)% \|",
+    },
+    {
+        "label": "bake-off repeat-last baseline (benchmarks/README.md)",
+        "kind": "single",
+        "file": "benchmarks/README.md",
+        "artifact": BAKEOFF,
+        "path": "models[repeat-last].argmax_overall.agreement",
+        "percent": True,
+        "regex": r"^\| \*repeat-last\* \| \*([\d.]+)%\* \|",
+    },
+    {
+        "label": "bake-off majority baseline (benchmarks/README.md)",
+        "kind": "single",
+        "file": "benchmarks/README.md",
+        "artifact": BAKEOFF,
+        "path": "models[majority].argmax_overall.agreement",
+        "percent": True,
+        "regex": r"^\| \*majority\* \| \*([\d.]+)%\* \|",
+    },
+    {
+        "label": "long-context max_ratio (docs/WHATS_NEW.md, every copy)",
+        "kind": "single",
+        "file": "docs/WHATS_NEW.md",
+        "artifact": SMOKE,
+        "path": "max_ratio",
+        "regex": r"([\d.]+)×",  # noqa: RUF001 — matches the README's ×
+    },
     # ---- A6: trace bake-off accuracy ----
     {
         "label": "A6 mlp next-tool accuracy",
@@ -207,43 +267,85 @@ def close(readme_value: float, artifact_value: float, rel_tol: float = REL_TOL) 
     return abs(readme_value - artifact_value) <= max(rel_tol * abs(artifact_value), ABS_TOL)
 
 
-def run_check(check: dict, readme: str) -> list[str]:
-    """Return a list of problem strings (empty = pass); prints OK/MISMATCH inline."""
+def run_check(check: dict, texts: dict[str, str]) -> list[str]:
+    """Return a list of problem strings (empty = pass); prints OK/MISMATCH inline.
+
+    A check may name one file or several. Every listed file must contain at least
+    one match, and *every* match in *every* listed file must agree with the
+    artifact — a number restated in three places is checked in all three.
+    """
     label = check["label"]
+    files = check.get("file", "README.md")
+    files = [files] if isinstance(files, str) else list(files)
     pattern = re.compile(check["regex"], re.MULTILINE)
-    hits = pattern.findall(readme)
-    if len(hits) != 1:
-        return [f"MISSING\t{label}\tpattern matched {len(hits)} times in README.md"]
-    groups = hits[0] if isinstance(hits[0], tuple) else (hits[0],)
+
+    all_hits: list[tuple[str, tuple]] = []
+    problems: list[str] = []
+    for name in files:
+        text = texts.get(name)
+        if text is None:
+            problems.append(f"MISSING\t{label}\t{name} not found")
+            continue
+        file_hits = pattern.findall(text)
+        if not file_hits:
+            problems.append(f"MISSING\t{label}\tpattern matched 0 times in {name}")
+            continue
+        for h in file_hits:
+            all_hits.append((name, h if isinstance(h, tuple) else (h,)))
+    if problems:
+        return problems
     artifact = load_artifact(check["artifact"])
     problems: list[str] = []
 
     if check["kind"] == "pair":
-        readme_baseline, readme_hive = num(str(groups[0])), num(str(groups[1]))
         art_baseline = resolve(artifact, check["baseline"])
         art_hive = resolve(artifact, check["hive"])
-        for name, rv, av in (
-            (f"{label} [baseline]", readme_baseline, art_baseline),
-            (f"{label} [hive]", readme_hive, art_hive),
-        ):
-            if not close(rv, av):
-                problems.append(f"MISMATCH\t{name}\treadme={rv} artifact={av}")
-        if "delta_sign" in check:
-            readme_delta = num(str(groups[2])) * check["delta_sign"]
-            art_delta = (art_hive - art_baseline) / art_baseline * 100
-            if not close(readme_delta, art_delta):
-                problems.append(f"MISMATCH\t{label} [delta]\treadme={readme_delta} artifact={round(art_delta, 2)}")
+        art_delta = (art_hive - art_baseline) / art_baseline * 100
+        for where, g in all_hits:
+            readme_baseline, readme_hive = num(str(g[0])), num(str(g[1]))
+            for part, rv, av in (
+                ("baseline", readme_baseline, art_baseline),
+                ("hive", readme_hive, art_hive),
+            ):
+                if not close(rv, av):
+                    problems.append(f"MISMATCH\t{label} [{part}]\t{where}: readme={rv} artifact={av}")
+            if "delta_sign" in check:
+                readme_delta = num(str(g[2])) * check["delta_sign"]
+                if not close(readme_delta, art_delta):
+                    problems.append(
+                        f"MISMATCH\t{label} [delta]\t{where}: readme={readme_delta} artifact={round(art_delta, 2)}"
+                    )
         if not problems:
-            print(f"OK\t{label}\treadme={readme_baseline}/{readme_hive}\tartifact={art_baseline}/{art_hive}")
+            print(f"OK\t{label}\t{len(all_hits)} occurrence(s)\tartifact={art_baseline}/{art_hive}")
         return problems
 
-    readme_value = num(str(groups[0]))
+    if check["kind"] == "group_mean":
+        rows = artifact[check["list"]]
+        group = [r for r in rows if r.get(check["group_by"]) == check["group"]]
+        if not group:
+            return [f"MISSING\t{label}\tno rows with {check['group_by']}={check['group']} in {check['artifact']}"]
+        artifact_value = sum(r[check["metric"]] for r in group) / len(group)
+        for where, g in all_hits:
+            readme_value = num(str(g[0]))
+            if not close(readme_value, artifact_value, check.get("rel_tol", REL_TOL)):
+                problems.append(
+                    f"MISMATCH\t{label}\t{where}: readme={readme_value} "
+                    f"artifact={round(artifact_value, 4)} (mean of {len(group)} rows)"
+                )
+        if not problems:
+            print(f"OK\t{label}\tmean of {len(group)} rows\tartifact={round(artifact_value, 4)}")
+        return problems
+
     artifact_value = resolve(artifact, check["path"])
     if check.get("percent"):
         artifact_value *= 100
-    if not close(readme_value, artifact_value, check.get("rel_tol", REL_TOL)):
-        return [f"MISMATCH\t{label}\treadme={readme_value} artifact={round(artifact_value, 4)}"]
-    print(f"OK\t{label}\treadme={readme_value}\tartifact={round(artifact_value, 4)}")
+    rel_tol = check.get("rel_tol", REL_TOL)
+    for where, g in all_hits:
+        readme_value = num(str(g[0]))
+        if not close(readme_value, artifact_value, rel_tol):
+            problems.append(f"MISMATCH\t{label}\t{where}: readme={readme_value} artifact={round(artifact_value, 4)}")
+    if not problems:
+        print(f"OK\t{label}\t{len(all_hits)} occurrence(s)\tartifact={round(artifact_value, 4)}")
     return problems
 
 
@@ -251,11 +353,19 @@ def main() -> int:
     if not README_PATH.exists():
         print(f"MISSING\tREADME.md not found at {README_PATH}")
         return 1
-    readme = README_PATH.read_text()
+    wanted: set[str] = set()
+    for check in CHECKS:
+        files = check.get("file", "README.md")
+        wanted.update([files] if isinstance(files, str) else files)
+    texts: dict[str, str] = {}
+    for name in sorted(wanted):
+        path = ROOT / name
+        if path.exists():
+            texts[name] = path.read_text()
     problems: list[str] = []
     for check in CHECKS:
         try:
-            problems.extend(run_check(check, readme))
+            problems.extend(run_check(check, texts))
         except Exception as exc:  # artifact missing, path traversal failure, ...
             problems.append(f"MISSING\t{check['label']}\t{type(exc).__name__}: {exc}")
 

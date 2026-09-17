@@ -44,3 +44,6 @@ runs/
 # Rust build artifacts
 hive-cpp/target/
 benchmarks/traces-all/
+
+# Local review evidence (never part of the package)
+.jev-review/

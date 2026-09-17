@@ -47,6 +47,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `gossip.receive`: replays remote `hlc`/`ts_ns` instead of generating new timestamps.
 - `supersede()` keeps `SUPERSEDES` edges on the live node so chains stay walkable; `policy_updater` records `actual_action`; `auth.from_jwks` uses stdlib `urllib` (no `requests` dependency); assorted review fixes (token-bucket locking, telemetry OTel spans, streaming decision source, semantic index staleness).
 
+### Security
+- `CPURouterPolicy.load()` now requires a valid `.joblib.sig` sidecar (Ed25519 + SHA-256 via `hive/model_registry.py`). An unsigned model is refused with an actionable message unless `HIVE_ALLOW_UNSIGNED_MODEL=1` is set, because `joblib.load` executes arbitrary pickle bytecode. A trust store (`HIVE_MODEL_TRUST_STORE`) pins the expected signer; without one the first load is trust-on-first-use (integrity, not authenticity).
+
+### Changed
+- **`HIVE_BACKEND=auto` (the default) no longer selects the native crate.** It resolves to the Python reference implementation unconditionally; `native` must be requested explicitly. Reason: the crate's compressor keeps only `ceil(n/2)` whitespace tokens and rejoins them, so a backend that flipped because a wheel happened to be importable silently changed the context a model sees. `resolve_backend()` also warns on an unrecognised `HIVE_BACKEND` value instead of ignoring it.
+- **The pentest disposition moved out of the checks.** `Finding.accepted` is gone; a passing critical/high finding is blocking unless `scripts/pentest/accepted.json` lists it with an owner, a justification and an unexpired date. A check can no longer mark its own finding non-blocking, and CI fails on an expired or incomplete entry.
+- `hive-mcp` builds its stack with `RuleBasedRoutingPolicy` by default and gained `--policy {rule,path}` / `--policy-path`, so the documented entry point can actually route (it previously returned `escalate`/`source=fallback` for every call). The `hive_route` result reports which policy answered.
+- Zero-config posture is now loud once per process (a warning naming the disabled controls) and `HiveStack(config=…)` validates the config on construction instead of accepting `rate_limit=-1` silently. `HiveStack.stats()["controls"]` reports the active posture. Defaults were **not** flipped.
+- Deploy manifests use real `HiveConfig` field names (`HIVE_MAX_MEMORY_NODES`), run the API server they probe, and require `HIVE_API_TOKEN` (Helm refuses to render without it; the k8s manifest ships a placeholder to replace).
+
+### Fixed
+- `route()` paired a decision with whatever state another thread wrote last (`self._last_state`); pending decisions now carry the caller's own state snapshot, so feedback lands on the state that produced it.
+- `update_policy()` cleared the feedback buffer before the update could fail, destroying up to the whole buffer per transient failure; outcomes are now discarded only after a successful update.
+- `FeedbackBuffer` drops the oldest outcome at capacity with a counter and a log (was silent), and its lock is actually used.
+- `default_ttl_s` was inert: expiry is now enforced on `recall()`/`get()`/`in`, not only by an explicit `expire()`/`gc_expired()` call.
+- `RustBrain.snapshot()` dropped the empty-string key (truthiness filter); membership in `_nodes` is now the test.
+- `config.otel_endpoint` was read and discarded; it is forwarded to `Telemetry.enable_otel_traces(endpoint=…)`, which raises (rather than warning) when a configured endpoint has no tracing dependencies.
+- `is_winner()` could promote a variant from variant-only data; it now requires both arms to reach the minimum sample count.
+- `trace_bench` Wilson intervals treated clustered steps as independent draws; cluster-aware intervals are reported alongside (naive width 0.062 vs cluster 0.438 on the correlated fixture).
+- `hive_long_context_eval.py`: the rows are input *lengths* over one compressor (the old "conservative/aggressive" labels read as two configurations), the summary states each input length, and `--output` still writes the artifact.
+- hive-cpp: `Router::decide` no longer `expect()`s on a malformed model (a caller-supplied JSON could abort CPython under `panic = "abort"`); malformed nodes escalate with a reason. Unused dependencies (`rayon`, `dashmap`, `parking_lot`, `simd-json`, `xxhash-rust`) removed; the bench-only `rand` moved to dev-dependencies.
+- Doc claims corrected against their artifacts: `docs/energy.md` (3 prompts / 148 tokens, not 445/396 and 10×3), `docs/soc2-evidence.md` + `docs/compliance-checklist.md` (encryption-in-transit and audit-log integrity marked *not evidenced*; the non-existent `hive/audit.py` reference removed), `docs/architecture.md` performance cells. `hive-cpp/CHANGELOG.md` no longer publishes unmeasured speedups.
+- Lint: `scripts/` is now inside the ruff scope, with the four pre-existing errors fixed.
+
+### Docs
+- `CONTRIBUTING.md`: the review checklist now names the verification gate, the no-silent-degradation rule and "artifact or it doesn't ship".
+- `scripts/verify.sh`: one command for everything CI enforces (ruff, mypy, suite + coverage floor, claim gate, pentest gate, `cargo test`, native adapter tests).
+- `scripts/check_claims.py` now also checks the numbers restated outside the README (`benchmarks/README.md`, `docs/WHATS_NEW.md` — every occurrence) and recomputes the hive-bench cpu-policy per-pass means from the raw results list.
 ### Docs
 - README: August 2026 "What's new" section with outcome table (HLC fix, MCP, long-context eval, `HIVE_BACKEND`, LinUCB).
 - New `docs/WHATS_NEW.md` with tier summary and Twitter-ready copy.

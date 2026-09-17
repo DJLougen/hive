@@ -37,10 +37,17 @@ jobs:
       - name: Test
         env:
           HIVE_NO_NVML: "1"
-        # Coverage floor: 80% — the measured TOTAL was 80.1% (2234/2790
-        # statements, CPython 3.12) when this gate was added, rounded down to
-        # the nearest multiple of 5. Raise it only after re-measuring.
-        run: pytest -v --cov=hive --cov-report=term-missing --cov-fail-under=80
+        # Coverage floor is enforced only on 3.12: 80.1% (2234/2790 statements)
+        # was measured on CPython 3.12 and rounded down to the nearest multiple
+        # of 5, so on any other interpreter the floor is not a calibrated gate —
+        # coverage is still collected and reported there, but must not fail the
+        # build on a version it was never measured on.
+        run: |
+          if [ "${{ matrix.python }}" = "3.12" ]; then
+            pytest -v --cov=hive --cov-report=term-missing --cov-fail-under=80
+          else
+            pytest -v --cov=hive --cov-report=term-missing
+          fi
       - name: Benchmark (smoke)
         env:
           HIVE_NO_NVML: "1"
@@ -105,6 +112,28 @@ jobs:
         run: |
           pip install -e ".[dev,monitor,observability,server,mcp,http]"
           pytest tests/test_native_backend.py -v
+      - name: Default backend does not switch itself to native
+        env:
+          HIVE_NO_NVML: "1"
+        # The regression this guards: with the crate importable, `auto` used to
+        # resolve to native, silently handing compress() to a lossy compressor.
+        # Native must stay opt-in.
+        run: |
+          python - <<'PY'
+          import importlib.util
+          from hive.backend import resolve_backend
+
+          assert importlib.util.find_spec("hive_cpp") is not None, "crate is not installed"
+          assert resolve_backend() == "python", "auto must not select native by itself"
+          assert resolve_backend("native") == "native", "explicit native must still work"
+          print("default backend:", resolve_backend())
+          PY
+      - name: Full suite with the crate installed
+        env:
+          HIVE_NO_NVML: "1"
+        # The one job where hive_cpp is importable: run everything here, so the
+        # native path cannot diverge from the Python path unobserved.
+        run: pytest -q
 
   # MCP server import smoke
   mcp-smoke:
@@ -159,6 +188,13 @@ jobs:
           HIVE_NO_NVML: "1"
         run: |
           python scripts/hive_pentest.py --fail-on-skip
+      # This is the only job with the sibling packages installed, so it is the
+      # only place the honey-comb / busybee code paths are exercised rather than
+      # skipped. Without this step those tests skip in every job that runs pytest.
+      - name: Sibling-dependent tests (no longer skipped)
+        env:
+          HIVE_NO_NVML: "1"
+        run: pytest -q tests/test_stack.py tests/test_benchmark_cli.py -rs
 
   # x86_64 + CUDA. Requires self-hosted runner with GPU label.
   gpu:

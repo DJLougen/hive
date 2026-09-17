@@ -65,9 +65,19 @@ falls back to no-op gracefully.
    is a PR that needs to be split.
 4. **Add tests.** If you change a public function, add or update a test
    in `tests/`. The PR will not be merged without it.
-5. **Run the test suite locally before pushing.** `pytest -q` should pass
-   cleanly.
-6. **One approval from a maintainer.** The project is maintained by
+5. **Run the gates locally before pushing.** `bash scripts/verify.sh` runs
+   everything CI enforces — ruff, mypy, the full suite with the coverage floor,
+   the claim gate (`scripts/check_claims.py`) and the pentest gate
+   (`scripts/hive_pentest.py`) — plus `cargo test` and the native adapter tests
+   when a Rust toolchain is present. A change that is not in that script is not
+   verified; `pytest -q` alone is not enough.
+6. **No silent degradation.** Any optional path either raises with an install
+   hint or records a counter/log you can see. Losing data, events or decisions
+   quietly is the defect class this project has been bitten by most.
+7. **Artifact or it doesn't ship.** A number in `README.md` or `docs/` must name
+   the committed artifact that supports it, and `scripts/check_claims.py` must be
+   able to check it. If there is no artifact, say so in the prose.
+8. **One approval from a maintainer.** The project is maintained by
    @DJLougen.
 
 ## Commit message convention
