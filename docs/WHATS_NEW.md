@@ -7,7 +7,7 @@ Merged: [PR #62](https://github.com/DJLougen/hive/pull/62) · HLC preservation: 
 - **246 tests passing** — full `pytest` suite green after modernization
 - **HLC bug fixed** — logical clocks preserve event order and cause-and-effect (not just time-of-day); snapshot restore and gossip replay keep `hlc`/`ts_ns` intact
 - **MCP server** — `pip install "hive-agent-memory[agents]"` → `hive-mcp`; configs for Cursor, Claude Desktop, and Codex ([MCP_SETUP.md](docs/MCP_SETUP.md))
-- **Harness integration** — SWE-bench eval + Hermes/OpenClaw guides + MCP bridge ([HARNESS_SETUP.md](docs/HARNESS_SETUP.md))
+- **Harness integration** — hive-bench real eval + Hermes/OpenClaw guides + MCP bridge ([HARNESS_SETUP.md](docs/HARNESS_SETUP.md))
 - **Long-context eval** — `scripts/hive_long_context_eval.py --smoke` shows up to **153×** compression on 50k+ char logs
 - **`HIVE_BACKEND`** — switch route/compress between Python and native hive-cpp (`python` | `native` | `auto`)
 - **LinUCB** — contextual bandit routing without sklearn
@@ -78,7 +78,7 @@ Shipped a four-tier modernization of Hive — the CPU orchestration layer that r
 ✅ HLC fix: causal timestamps survive snapshot restore + gossip replay
 ✅ 246 tests passing (pytest)
 ✅ MCP: `pip install "hive-agent-memory[agents]"` → `hive-mcp`; Cursor / Claude Desktop / Codex configs in [MCP_SETUP.md](docs/MCP_SETUP.md)
-✅ Harnesses: SWE-bench eval + Hermes/OpenClaw integration guide in [HARNESS_SETUP.md](docs/HARNESS_SETUP.md)
+✅ Harnesses: hive-bench real eval + Hermes/OpenClaw integration guide in [HARNESS_SETUP.md](docs/HARNESS_SETUP.md)
 ✅ Long-context eval: up to 153× compression on 50k+ char logs
 ✅ HIVE_BACKEND=python|native|auto for hive-cpp hot paths
 ✅ LinUCB contextual bandit + httpx async LLM

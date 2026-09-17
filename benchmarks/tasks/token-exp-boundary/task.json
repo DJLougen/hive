@@ -1,0 +1,7 @@
+{
+  "id": "token-exp-boundary",
+  "family": "boundary",
+  "problem_statement": "Security review: is_expired() lets a token stay valid at the exact moment it expires (now == exp returns 'still valid'), and tokens remain usable for a whole second past exp. Tokens must be invalid at exp and after. Fix is_expired(). tests/ must pass.",
+  "test_cmd": "python -m pytest tests -q",
+  "test_timeout_s": 60
+}

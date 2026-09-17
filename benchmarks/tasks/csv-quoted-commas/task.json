@@ -1,0 +1,7 @@
+{
+  "id": "csv-quoted-commas",
+  "family": "parsing",
+  "problem_statement": "Our CSV importer corrupts any row containing quoted fields: a cell like \"Smith, John\" is split into two cells. Implement correct RFC-4180-style handling for quoted fields (commas inside quotes stay in the cell; doubled quotes \"\" become a literal \"). tests/ must pass. The stdlib csv module is allowed if you prefer to delegate.",
+  "test_cmd": "python -m pytest tests -q",
+  "test_timeout_s": 60
+}

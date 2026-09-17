@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- `scripts/hive_bench.py` + `benchmarks/tasks/`: real tool-execution benchmark — real repos with real failing pytest suites, real LLM over OpenAI-compatible endpoints (incl. function calling + bearer auth), and a real `pytest` resolve gate. First run: 10/10 resolved on both arms, −83% LLM calls, −80% prompt tokens for the Hive arm (`docs/benchmarks/hive-bench-flash.json`).
+- `hive/cpu_policy.py` (`CPURouterPolicy`): trainable CPU routing policy — RandomForest over observable-state features, trained by imitating logged `state -> action` trajectories (`scripts/hive_bench.py --log`, `scripts/train_cpu_policy.py`), with per-tool arg resolvers, a confidence-floor escalation, a write-without-recalled-fix refusal, and an identical-route loop guard. Drops into `HiveStack(busybee_policy=...)`. Configurable tool vocabulary (`tools=`); `TRACE_TOOLS` covers the canonical set for real-agent traces. Measured on hive-bench: 10/10 resolved with 1.8 mean LLM calls on first sight, and **0 LLM calls** on `--repeat` pass 2 via memory replay (`docs/benchmarks/hive-bench-cpu-policy.json`).
+- `benchmarks/traces/` + `scripts/extract_traces.py` + `scripts/trace_bench.py`: 100 deidentified tool-call traces from real omp/prime-agent session logs (5 stratified workflow families; only canonical tool names, ok/error flags, step indices, histograms, and arg key-classes are stored — no text, paths, or values). `trace_bench.py` reports coverage/fidelity/executable bounds with Wilson CIs, supports `--pool` full-corpus training with eval ids excluded, an `--algorithms` bake-off, and a `--curve` learning curve.
+- `benchmarks/traces-all/` (1,695 deidentified traces) and `benchmarks/traces-hf/` (300 Hermes traces via `scripts/fetch_hf_traces.py` from `ThreeSixNine/hermes-agent-reasoning-traces`) as training corpora.
+- Algorithm bake-off on the full pool (`docs/benchmarks/trace-bakeoff.json`, 10,960 held-out steps): mlp 48.0% / markov2 47.5% / hgb 46.8% raw next-tool accuracy vs 43.1% repeat-last and 37.9% majority. Learning curve shows sequence models saturate almost immediately and feature models gain ~17 points with data — tool choice is largely Markovian, and tool-output content remains the missing signal.
+- `CPURouterPolicy` pluggable algorithms (`algorithm=`): rf, rf-deep, extratrees, hgb, logreg, mlp (early stopping), markov1/markov2 n-gram transition models.
+- `hive_bench.py` flags: `--log` (trajectory logging), `--repeat` (memory-replay passes), `--policy rule|trained`, `--policy-path`.
+- `_OpenAICompatBackend` bearer-token auth (`api_key=`), `tools`/`tool_choice` function-calling support, `openai` backend name in `make_backend`, and a `User-Agent` header (fixes 403s on endpoints behind bot filtering).
 - `uv.lock`, `.pre-commit-config.yaml`, and Dependabot for reproducible dev tooling.
 - Optional extras: `server`, `mcp`, `agents`, `http` (FastAPI, MCP, httpx).
 - `hive/backend.py` with `HIVE_BACKEND=python|native|auto` wiring in `HiveStack`.
@@ -19,7 +27,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `rust_brain.history()`: bounded per-key history of superseded versions, persisted in snapshots behind `history_sha256`.
 - Optional bearer-token auth for gossip and the REST API (`HIVE_API_TOKEN`); Ed25519 model signature verification with `sign_model()`.
 
+### Removed
+- `scripts/hive_swebench_eval.py` simulated the agent loop and drew resolve outcomes from an RNG — its reported numbers (85% vs 0%) were not real. Replaced with a deprecation shim forwarding to `hive_bench.py`; fabricated raw runs under `docs/benchmarks/swebench-lite/` deleted.
+
 ### Changed
+- `RuleBasedRoutingPolicy` routed on `action_hint` — a field only the removed fake eval ever set. It now drives a real workflow state machine (enumerate → reproduce → read traceback target → verify → finish) on observable state, keeping the keyword fallback for generic states.
 - CI: Python 3.13 matrix, pip-audit, SBOM job, MCP smoke, long-context smoke, nightly GPU/Jetson.
 - `restore_from_file` and gossip `receive` preserve HLC timestamps.
 - Docker aarch64 base image bumped to L4T r36.4.0; numpy 2.x allowed.
@@ -27,6 +39,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `validate=True` normalizes state before `route()` and validates writes via `validate_memory()`; `record_outcome()` matches a bounded window of recent `route()` calls so out-of-order feedback lands on the right state.
 
 ### Fixed
+- **Label leakage in the trace benchmark**: `featurize` consumed `n_args`/`has_path`/`has_pattern`/`has_cmd` — features of the *current* call's arguments, which only exist after the tool is chosen. They produced a spurious ~72% argmax; removing them gives the honest ~48% ceiling. Fields remain in stored traces as metadata but are excluded from the feature vector.
+- `_MarkovModel` backoff never found shorter contexts (counts only stored full-order keys); now keeps per-order tables.
+- `trace_bench` only wrote its artifact at the end — a kill lost hours of fits. Now checkpoints after every model, predictions are batched (~100x faster eval), and `--curve-only` resumes a finished bake-off for the learning curve.
+- `rule_fast` compressor destroyed small file reads (`[file] N lines` stub for a 649-byte source file) and stripped test failures down to a count. Small files now stay `CORE`; large files compact to a code skeleton (imports/defs/classes); test output keeps pass/fail counts plus failing asserts and file:line refs.
 - `rust_brain`: snapshot restore now restores `hlc` fields and updates high-water mark.
 - `gossip.receive`: replays remote `hlc`/`ts_ns` instead of generating new timestamps.
 - `supersede()` keeps `SUPERSEDES` edges on the live node so chains stay walkable; `policy_updater` records `actual_action`; `auth.from_jwks` uses stdlib `urllib` (no `requests` dependency); assorted review fixes (token-bucket locking, telemetry OTel spans, streaming decision source, semantic index staleness).

@@ -9,7 +9,7 @@
 [![RTX 3090](https://img.shields.io/badge/RTX%203090-validated-orange)]()
 [![DGX Spark](https://img.shields.io/badge/DGX%20Spark-validated-red)]()
 
-Hive sits between an agent loop and its LLM. It answers the mechanical decisions on the CPU, compresses the context the LLM actually sees, and keeps a timestamped causal-memory graph so the agent stops re-deriving what it already learned. On a 20-instance SWE-bench-lite A/B (GPT-2 backend) this cut LLM calls by 91.7% and resolved 85% of instances versus 0% for the un-augmented agent — numbers below.
+Hive sits between an agent loop and its LLM. It answers the mechanical decisions on the CPU, compresses the context the LLM actually sees, and keeps a timestamped causal-memory graph so the agent stops re-deriving what it already learned. On a 10-task real tool-execution benchmark (real repos, real pytest gate, DeepSeek-V4.1-Flash as the LLM) this cut LLM calls by 83% and prompt tokens by 80% at an identical 10/10 resolve rate — numbers below.
 
 > **Status:** v0.6.1 (Beta). The August 2026 modernization ([PR #62](https://github.com/DJLougen/hive/pull/62)), HLC preservation (PRs #71–#87), and the review-driven fixes ([PR #88](https://github.com/DJLougen/hive/pull/88)–[PR #91](https://github.com/DJLougen/hive/pull/91)) are merged on `main` — **246 tests** passing. Routing-accuracy numbers are *in-distribution* — see the OOD caveat under [Components](#components). **PFN / busyBee-cpu training-mode integration** is in progress (see [busyBee-cpu](https://github.com/DJLougen/busyBee-cpu)).
 
@@ -23,7 +23,7 @@ Four-tier modernization, validated locally with **246 tests** (`pytest`) and CI 
 | **Review fixes** | `validate=True` actually validates; `supersede()` chains stay walkable via bounded `history()`; Ed25519 model signatures; stdlib JWKS fetch; bearer-token auth for gossip and the REST API (`HIVE_API_TOKEN`) |
 | **Gossip + audit wiring** | `HiveStack(gossip=…)` publishes every `remember()` to peers; `HiveConfig(audit_enabled=True)` keeps a bounded audit trail via `stack.audit_events()` for SIEM export |
 | **MCP server** | `pip install "hive-agent-memory[agents]"` → `hive-mcp` console command; project config at `.cursor/mcp.json`; setup for Cursor, Claude Desktop, and Codex via [docs/MCP_SETUP.md](docs/MCP_SETUP.md) |
-| **Long-context proof** | `python scripts/hive_long_context_eval.py --smoke` — up to **153×** compression on 50k+ char synthetic logs (short SWE-bench turns stay at 1.0×; routing is the win there) |
+| **Long-context proof** | `python scripts/hive_long_context_eval.py --smoke` — up to **153×** compression on 50k+ char synthetic logs (short agent turns stay near 1×; routing is the win there) |
 | **`HIVE_BACKEND`** | `python` \| `native` \| `auto` — route/compress via hive-cpp when installed |
 | **LinUCB** | sklearn-free contextual bandit in `hive.policy_updater` for online routing updates |
 | **Async LLM** | `httpx`-backed `_OpenAICompatBackend.achat` (`[http]` extra) |
@@ -33,38 +33,34 @@ Four-tier modernization, validated locally with **246 tests** (`pytest`) and CI 
 
 ---
 
-## Real-workload evaluation (SWE-bench-lite)
+## Real-workload evaluation (hive-bench)
 
-20 real SWE-bench-lite instances, GPT-2 as the LLM backend. **Baseline** runs the agent with every decision going to the LLM. **Hive** adds CPU routing + context compression + causal memory.
+10 real bug-fix tasks ([`benchmarks/tasks/`](benchmarks/tasks/)) — each is a real repo with a real failing pytest suite. The agent acts through real tools (`list_files`, `read_file`, `grep`, `run_tests`, `write_file`, `finish`) executed by the harness; `tests/` is read-only so a pass can't be gamed. Resolve = a real `pytest` run at the end of the episode. **Baseline** sends every action decision to the LLM. **Hive** routes mechanical transitions through the CPU policy, compresses tool observations, and recalls prior fixes from causal memory. Same model (`deepseek-v4p1-flash`, Fireworks), same tools, same prompts, `temperature=0`.
 
 | Metric | Baseline | Hive | Delta |
 |---|---|---|---|
-| Resolve rate | 0.0% | 85.0% (17/20) | **+85.0 pp** |
-| Mean input tokens | 6,324 | 526 | **−91.7%** |
-| Mean output tokens | 1,000 | 85 | **−91.5%** |
-| Mean turns | 20.0 | 9.8 | **−51.0%** |
-| Mean LLM calls | 20.0 | 1.7 | **−91.7%** |
-| LLM calls avoided / instance | — | 8.1 | — |
-| Mean wall clock (s) | 8.68 | 0.72 | **−91.7%** |
+| Resolve rate | 100% (10/10) | 100% (10/10) | **0 pp** |
+| Mean LLM calls | 5.8 | 1.0 | **−82.8%** |
+| Mean prompt tokens | 7,615 | 1,548 | **−79.7%** |
+| Mean completion tokens | 424 | 234 | **−44.8%** |
+| Mean turns | 5.8 | 7.0 | +20.7% |
+| Mean wall clock (s) | 12.5 | 2.5 | **−80.0%** |
+| Memory recall hits | — | 4/10 | — |
 
-**Why it works:** without Hive every turn — including mechanical ones like `read_file`, `run_tests`, `apply_patch` — burns an LLM call, and the agent never reaches a patch. With Hive the CPU policy handles mechanical actions instantly, leaving the LLM the ~2 reasoning steps that genuinely need it.
+**Why it works:** each episode runs ~6 mechanical turns (`list_files`, reproduce `run_tests`, read the file the traceback names, verify `run_tests`, `finish`). Without Hive every one of those is a paid LLM call with the full transcript attached. With Hive the CPU policy executes them locally; the model is called once — with the failing test output and the unit under test already in context — and writes the patch. Resolve rate is unchanged because the reasoning still goes to the same model.
 
-- **Hardware:** Windows 11, Intel i9-12900K, RTX 3090 (CUDA 13.0), Python 3.12
-- **Reproduce:** `python scripts/hive_swebench_eval.py --instances 20 --model gpt2`
-- **Raw runs:** [`docs/benchmarks/swebench-lite/`](docs/benchmarks/swebench-lite/)
+- **Reproduce:** `python scripts/hive_bench.py --backend openai --endpoint <openai-compatible-url> --api-key-env <KEY> --model <model>`
+- **Raw run:** [`docs/benchmarks/hive-bench-flash.json`](docs/benchmarks/hive-bench-flash.json)
 
-### Compression sensitivity
+**Learned CPU policy + memory replay.** `hive.cpu_policy.CPURouterPolicy` is a RandomForest trained by imitating logged trajectories (`--log`, `scripts/train_cpu_policy.py`); it predicts mechanical tool calls on the CPU and escalates anything it can't resolve safely — including `write_file` without a recalled fix, since patch synthesis isn't a routing decision. With `--policy trained --repeat 2` the second pass replays the fix stored in causal memory: `write_file -> run_tests -> finish`, all CPU-routed. Measured: pass 0 = 10/10 resolved at 1.8 mean LLM calls; pass 1 = 10/10 at **0 LLM calls / 0 tokens** ([`docs/benchmarks/hive-bench-cpu-policy.json`](docs/benchmarks/hive-bench-cpu-policy.json)).
 
-Sweeping four compression-aggressiveness settings (conservative → extreme) over the same 20 instances:
+**Where the boundary is — measured on real agent traces.** `benchmarks/traces/` + `scripts/trace_bench.py` evaluate the same policy on 100 deidentified tool-call sequences from real omp/prime-agent sessions (5 workflow families), training on a separate 1,595-trace pool (~148k decisions). An 8-algorithm bake-off (rf, rf-deep, extratrees, hgb, logreg, mlp, markov1/2) found the best state-only model — mlp — at 48% raw next-tool accuracy vs 43% for a repeat-last baseline, and a learning curve showing the gain saturates fast: tool choice is mostly *sequential*, and the missing signal is tool-output content, which deidentified state can't carry. So: CPU routing works where the workflow shape is known (this suite: ~85% of calls, 0-call replays), and open-ended planning still needs the model — which is why the next experiment is reading tool decisions from model hidden states rather than observable state. Full table + the label-leakage bug this experiment caught: [`docs/benchmarks/trace-bakeoff.json`](docs/benchmarks/trace-bakeoff.json), [`benchmarks/README.md`](benchmarks/README.md).
 
-| Setting | Resolve rate | Compression ratio | Mean tokens | Mean turns |
-|---|---|---|---|---|
-| Conservative | 60.0% | 1.0× | 703 | 9.8 |
-| Moderate | 60.0% | 1.0× | 703 | 9.8 |
-| Aggressive | 60.0% | 1.0× | 703 | 9.8 |
-| Extreme | 60.0% | 1.0× | 703 | 9.8 |
+*Note: an earlier revision of this README cited a "20-instance SWE-bench-lite" table (85% vs 0%). That harness simulated the agent loop and drew resolve outcomes from an RNG — the numbers were not real, and the script (`scripts/hive_swebench_eval.py`) has been replaced with a deprecation shim forwarding to `hive_bench.py`.*
 
-**Honest finding:** the agent messages in this run are short enough to fall below the compressor's threshold at every setting, so the ratio stays at 1.0× and resolve rate is flat — on this workload the win comes from **routing**, not compression. Compression pays off on long transcripts (multi-thousand-line tool output, logs), which this sample does not contain. For long-context compression evidence, run `python scripts/hive_long_context_eval.py --smoke` (or see CI). Full short-context sweep: [`docs/benchmarks/compression-sweep-20260611T200633Z.json`](docs/benchmarks/compression-sweep-20260611T200633Z.json).
+### Compression behavior
+
+`rule_fast` keeps small file reads verbatim (`CORE`) and compacts large ones to a code skeleton; test output is distilled to the pass/fail summary plus the failing asserts. On this suite the context payload appended to the transcript is ~1.2× smaller than raw observations — modest here because source files are (correctly) kept whole. Compression pays off on long tool output and logs; run `python scripts/hive_long_context_eval.py --smoke` for the long-context evidence.
 
 ---
 

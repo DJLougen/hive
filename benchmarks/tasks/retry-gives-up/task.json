@@ -1,0 +1,7 @@
+{
+  "id": "retry-gives-up",
+  "family": "logic",
+  "problem_statement": "The @retry decorator is supposed to call the wrapped function up to `times` times, only retrying on the exception types listed in `on`, and giving up (re-raising) otherwise. Right now it gives up after the very first failure — flaky network calls fail permanently instead of succeeding on retry. Fix retry(). tests/ must pass.",
+  "test_cmd": "python -m pytest tests -q",
+  "test_timeout_s": 60
+}

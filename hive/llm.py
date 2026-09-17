@@ -44,6 +44,7 @@ class ModelResponse:
     duration_s: float
     model: str = ""
     finish_reason: str = ""
+    tool_calls: list[dict[str, Any]] | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -101,12 +102,23 @@ class _OpenAICompatBackend:
     def __init__(
         self, endpoint: str, model_name: str, *, timeout: float = 60.0,
         circuit_breaker: CircuitBreaker | None = None,
+        api_key: str | None = None,
     ) -> None:
         _validate_url(endpoint)
         self.endpoint = endpoint.rstrip("/")
         self.model_name = model_name
         self.timeout = timeout
         self.circuit_breaker = circuit_breaker
+        self.api_key = api_key
+
+    def _headers(self) -> dict[str, str]:
+        headers = {
+            "Content-Type": "application/json",
+            "User-Agent": "hive-agent-memory/0.6",
+        }
+        if self.api_key:
+            headers["Authorization"] = f"Bearer {self.api_key}"
+        return headers
 
     def chat(
         self,
@@ -114,20 +126,26 @@ class _OpenAICompatBackend:
         *,
         max_tokens: int = 256,
         temperature: float = 0.0,
+        tools: list[dict[str, Any]] | None = None,
+        tool_choice: str | None = None,
     ) -> ModelResponse:
-        payload = {
+        payload: dict[str, Any] = {
             "model": self.model_name,
             "messages": [dict(m) for m in messages],
             "max_tokens": max_tokens,
             "temperature": temperature,
             "stream": False,
         }
+        if tools:
+            payload["tools"] = tools
+        if tool_choice:
+            payload["tool_choice"] = tool_choice
         data = json.dumps(payload).encode("utf-8")
         req = urllib.request.Request(
             url=f"{self.endpoint}/v1/chat/completions",
             data=data,
             method="POST",
-            headers={"Content-Type": "application/json"},
+            headers=self._headers(),
         )
         t0 = time.perf_counter()
         try:
@@ -145,12 +163,13 @@ class _OpenAICompatBackend:
         choice = body["choices"][0]
         usage = body.get("usage") or {}
         return ModelResponse(
-            text=choice["message"]["content"],
+            text=choice["message"].get("content") or "",
             prompt_tokens=int(usage.get("prompt_tokens", 0)),
             completion_tokens=int(usage.get("completion_tokens", 0)),
             duration_s=elapsed,
             model=body.get("model", self.model_name),
             finish_reason=choice.get("finish_reason", ""),
+            tool_calls=choice["message"].get("tool_calls"),
         )
 
     async def achat(
@@ -183,7 +202,7 @@ class _OpenAICompatBackend:
                 resp = await client.post(
                     f"{self.endpoint}/v1/chat/completions",
                     json=payload,
-                    headers={"Content-Type": "application/json"},
+                    headers=self._headers(),
                 )
                 resp.raise_for_status()
                 body = resp.json()
@@ -197,12 +216,13 @@ class _OpenAICompatBackend:
         choice = body["choices"][0]
         usage = body.get("usage") or {}
         return ModelResponse(
-            text=choice["message"]["content"],
+            text=choice["message"].get("content") or "",
             prompt_tokens=int(usage.get("prompt_tokens", 0)),
             completion_tokens=int(usage.get("completion_tokens", 0)),
             duration_s=elapsed,
             model=body.get("model", self.model_name),
             finish_reason=choice.get("finish_reason", ""),
+            tool_calls=choice["message"].get("tool_calls"),
         )
 
 
@@ -215,6 +235,8 @@ class EchoBackend:
         *,
         max_tokens: int = 256,
         temperature: float = 0.0,
+        tools: list[dict[str, Any]] | None = None,
+        tool_choice: str | None = None,
     ) -> ModelResponse:
         last = messages[-1]["content"] if messages else ""
         return ModelResponse(
@@ -238,21 +260,25 @@ def make_backend(
     endpoint: str | None = None,
     model: str = "hive-default",
     circuit_breaker: CircuitBreaker | None = None,
+    api_key: str | None = None,
 ) -> Any:
     """Return a backend by name.
 
-    ``name`` is one of ``"vllm"``, ``"llama.cpp"`` or ``"echo"``. For the
-    HTTP backends, ``endpoint`` is required.
+    ``name`` is one of ``"vllm"``, ``"llama.cpp"``, ``"openai"`` (any
+    OpenAI-compatible endpoint, e.g. Groq / OpenAI / Together) or ``"echo"``.
+    For the HTTP backends, ``endpoint`` is required; ``api_key`` is sent as a
+    bearer token when provided.
     """
     if name == "echo":
         return EchoBackend()
-    if name in ("vllm", "llama.cpp"):
+    if name in ("vllm", "llama.cpp", "openai"):
         if not endpoint:
             raise ValueError(f"backend {name!r} requires --inference-endpoint")
         return _OpenAICompatBackend(
-            endpoint=endpoint, model_name=model, circuit_breaker=circuit_breaker
+            endpoint=endpoint, model_name=model, circuit_breaker=circuit_breaker,
+            api_key=api_key,
         )
-    raise ValueError(f"unknown backend {name!r}; choose vllm, llama.cpp, or echo")
+    raise ValueError(f"unknown backend {name!r}; choose vllm, llama.cpp, openai, or echo")
 
 
 async def achat(

@@ -1,0 +1,7 @@
+{
+  "id": "stacked-discounts",
+  "family": "math",
+  "problem_statement": "Finance flagged wrong totals when customers stack coupons. apply_discounts(100, [10, 20]) should apply 10% off, then 20% off the result: 100 -> 90 -> 72. We're charging customers 60 instead. Fix apply_discounts so each percentage applies to the running total, preserving order. tests/ must pass.",
+  "test_cmd": "python -m pytest tests -q",
+  "test_timeout_s": 60
+}

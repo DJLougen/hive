@@ -1,0 +1,7 @@
+{
+  "id": "log-error-count",
+  "family": "parsing",
+  "problem_statement": "Our alerting miscounts errors in app.log: count_errors() should count only lines whose level field is ERROR (log format is '[LEVEL] message'), but the alert fires way more often than there are real errors — it also counts INFO lines that merely mention 'error' in the message text. There's a real app.log fixture in the repo you can inspect. Fix count_errors(). tests/ must pass.",
+  "test_cmd": "python -m pytest tests -q",
+  "test_timeout_s": 60
+}

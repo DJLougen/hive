@@ -139,7 +139,9 @@ def _classify(role: str, content_type: str, content: str = "") -> str:
     }:
         return Label.DISTILL
     if content_type == ContentType.TOOL_RESULT_FILE:
-        return Label.COMPACT if len(content) > 2000 else Label.DISTILL
+        # Small files are cheap and almost always load-bearing for the next
+        # reasoning step — keep them verbatim. Only large reads compress.
+        return Label.COMPACT if len(content) > 2400 else Label.CORE
     if content_type == ContentType.AGENT_REASONING:
         return Label.CORE if len(content) < 300 else Label.DISTILL
     return Label.DISTILL
@@ -155,22 +157,33 @@ _TEST_LINE_RE = re.compile(
 )
 
 
+_FAIL_DETAIL_RE = re.compile(
+    r"^\s*(E\s|>\s|_{3,}|.*::|.*\bFAIL|.*ERROR|.*\.py:\d+:|assert|raise )"
+)
+
+
 def _compress_test_output(content: str) -> str:
-    """500 lines of test output → '12 passed, 2 failed' + failure details."""
-    m = _TEST_LINE_RE.search(content)
-    summary = m.group(0) if m else f"{content.count(chr(10))} lines"
-    # Pull out the first FAIL/ERROR block as a representative failure.
-    failed = [
-        line for line in content.splitlines() if "FAIL" in line or "ERROR" in line
-    ][:5]
-    if failed:
-        return f"[test] {summary}. failures: " + " | ".join(failed)
-    return f"[test] {summary}"
+    """Verbose test output → summary + the actual failure details.
+
+    Keeps the pass/fail counts plus the failing test ids, assertion
+    diffs (``E `` lines) and file:line references — the parts a model
+    needs to diagnose — while dropping progress dots and noise.
+    """
+    lines = content.splitlines()
+    summary = ""
+    for ln in reversed(lines):
+        if _TEST_LINE_RE.search(ln):
+            summary = ln.strip()
+            break
+    details = [ln for ln in lines if _FAIL_DETAIL_RE.match(ln)][:30]
+    result = f"[test] {summary or f'{len(lines)} lines'}\n" + "\n".join(details)
+    return result.rstrip() if len(result) < len(content) else content
 
 
 def _compress_search(content: str) -> str:
-    lines = [line for line in content.splitlines() if line.strip()][:8]
-    return f"[search] {len(content.splitlines())} hits; sample: " + " | ".join(lines)
+    lines = [line for line in content.splitlines() if line.strip()][:12]
+    total = len(content.splitlines())
+    return f"[search] {total} hits\n" + "\n".join(lines)
 
 
 def _compress_command(content: str) -> str:
@@ -178,10 +191,25 @@ def _compress_command(content: str) -> str:
     return f"[cmd] {head}\n... ({len(content)} chars)"
 
 
+_CODE_SKEL_RE = re.compile(
+    r"^\s*(@|class |def |async def |import |from |if __name__|[A-Z_]+ = )"
+)
+
+
 def _compact_file(content: str) -> str:
+    """Large file → structural skeleton: imports, defs, classes, constants.
+
+    Preserves everything a model needs to navigate the file (signatures,
+    names, line count) instead of an arbitrary 3-line head.
+    """
     lines = content.splitlines()
-    head = "\n".join(lines[:3])
-    return f"[file] {len(lines)} lines, {len(content)} chars\n{head}\n..."
+    if _RE_CODE.search(content):
+        skeleton = [ln for ln in lines if _CODE_SKEL_RE.match(ln)]
+        body = "\n".join(skeleton[:80])
+        return f"[file] {len(lines)} lines, {len(content)} chars — skeleton:\n{body}"
+    head = "\n".join(lines[:10])
+    tail = "\n".join(lines[-5:])
+    return f"[file] {len(lines)} lines, {len(content)} chars\n{head}\n...\n{tail}"
 
 
 def _distill(content: str) -> str:

@@ -1,0 +1,1715 @@
+{
+  "n_traces": 100,
+  "threshold": 0.45,
+  "families": {
+    "edit-only": 20,
+    "edit-verify": 20,
+    "explore": 20,
+    "mixed": 20,
+    "web-research": 20
+  },
+  "models": {
+    "rf": {
+      "argmax_overall": {
+        "steps": 10960,
+        "routed": 10960,
+        "matched": 2221,
+        "coverage": 1.0,
+        "fidelity": 0.2026,
+        "agreement": 0.2026,
+        "agreement_ci95": [
+          0.1952,
+          0.2103
+        ]
+      },
+      "tool_choice": {
+        "overall": {
+          "steps": 10960,
+          "routed": 853,
+          "matched": 235,
+          "coverage": 0.0778,
+          "fidelity": 0.2755,
+          "agreement": 0.0214,
+          "agreement_ci95": [
+            0.0189,
+            0.0243
+          ]
+        },
+        "per_family": {
+          "edit-only": {
+            "steps": 1694,
+            "routed": 99,
+            "matched": 14,
+            "coverage": 0.0584,
+            "fidelity": 0.1414,
+            "agreement": 0.0083,
+            "agreement_ci95": [
+              0.0049,
+              0.0138
+            ]
+          },
+          "edit-verify": {
+            "steps": 6597,
+            "routed": 383,
+            "matched": 112,
+            "coverage": 0.0581,
+            "fidelity": 0.2924,
+            "agreement": 0.017,
+            "agreement_ci95": [
+              0.0141,
+              0.0204
+            ]
+          },
+          "explore": {
+            "steps": 1061,
+            "routed": 58,
+            "matched": 5,
+            "coverage": 0.0547,
+            "fidelity": 0.0862,
+            "agreement": 0.0047,
+            "agreement_ci95": [
+              0.002,
+              0.011
+            ]
+          },
+          "mixed": {
+            "steps": 773,
+            "routed": 93,
+            "matched": 5,
+            "coverage": 0.1203,
+            "fidelity": 0.0538,
+            "agreement": 0.0065,
+            "agreement_ci95": [
+              0.0028,
+              0.0151
+            ]
+          },
+          "web-research": {
+            "steps": 835,
+            "routed": 220,
+            "matched": 99,
+            "coverage": 0.2635,
+            "fidelity": 0.45,
+            "agreement": 0.1186,
+            "agreement_ci95": [
+              0.0984,
+              0.1423
+            ]
+          }
+        }
+      },
+      "executable": {
+        "overall": {
+          "steps": 10960,
+          "routed": 579,
+          "matched": 113,
+          "coverage": 0.0528,
+          "fidelity": 0.1952,
+          "agreement": 0.0103,
+          "agreement_ci95": [
+            0.0086,
+            0.0124
+          ]
+        },
+        "per_family": {
+          "edit-only": {
+            "steps": 1694,
+            "routed": 72,
+            "matched": 7,
+            "coverage": 0.0425,
+            "fidelity": 0.0972,
+            "agreement": 0.0041,
+            "agreement_ci95": [
+              0.002,
+              0.0085
+            ]
+          },
+          "edit-verify": {
+            "steps": 6597,
+            "routed": 328,
+            "matched": 86,
+            "coverage": 0.0497,
+            "fidelity": 0.2622,
+            "agreement": 0.013,
+            "agreement_ci95": [
+              0.0106,
+              0.0161
+            ]
+          },
+          "explore": {
+            "steps": 1061,
+            "routed": 57,
+            "matched": 5,
+            "coverage": 0.0537,
+            "fidelity": 0.0877,
+            "agreement": 0.0047,
+            "agreement_ci95": [
+              0.002,
+              0.011
+            ]
+          },
+          "mixed": {
+            "steps": 773,
+            "routed": 93,
+            "matched": 5,
+            "coverage": 0.1203,
+            "fidelity": 0.0538,
+            "agreement": 0.0065,
+            "agreement_ci95": [
+              0.0028,
+              0.0151
+            ]
+          },
+          "web-research": {
+            "steps": 835,
+            "routed": 29,
+            "matched": 10,
+            "coverage": 0.0347,
+            "fidelity": 0.3448,
+            "agreement": 0.012,
+            "agreement_ci95": [
+              0.0065,
+              0.0219
+            ]
+          }
+        }
+      }
+    },
+    "rf-deep": {
+      "argmax_overall": {
+        "steps": 10960,
+        "routed": 10960,
+        "matched": 4095,
+        "coverage": 1.0,
+        "fidelity": 0.3736,
+        "agreement": 0.3736,
+        "agreement_ci95": [
+          0.3646,
+          0.3827
+        ]
+      },
+      "tool_choice": {
+        "overall": {
+          "steps": 10960,
+          "routed": 3147,
+          "matched": 1565,
+          "coverage": 0.2871,
+          "fidelity": 0.4973,
+          "agreement": 0.1428,
+          "agreement_ci95": [
+            0.1364,
+            0.1495
+          ]
+        },
+        "per_family": {
+          "edit-only": {
+            "steps": 1694,
+            "routed": 571,
+            "matched": 266,
+            "coverage": 0.3371,
+            "fidelity": 0.4658,
+            "agreement": 0.157,
+            "agreement_ci95": [
+              0.1405,
+              0.1751
+            ]
+          },
+          "edit-verify": {
+            "steps": 6597,
+            "routed": 880,
+            "matched": 466,
+            "coverage": 0.1334,
+            "fidelity": 0.5295,
+            "agreement": 0.0706,
+            "agreement_ci95": [
+              0.0647,
+              0.0771
+            ]
+          },
+          "explore": {
+            "steps": 1061,
+            "routed": 668,
+            "matched": 241,
+            "coverage": 0.6296,
+            "fidelity": 0.3608,
+            "agreement": 0.2271,
+            "agreement_ci95": [
+              0.2029,
+              0.2533
+            ]
+          },
+          "mixed": {
+            "steps": 773,
+            "routed": 515,
+            "matched": 300,
+            "coverage": 0.6662,
+            "fidelity": 0.5825,
+            "agreement": 0.3881,
+            "agreement_ci95": [
+              0.3544,
+              0.4229
+            ]
+          },
+          "web-research": {
+            "steps": 835,
+            "routed": 513,
+            "matched": 292,
+            "coverage": 0.6144,
+            "fidelity": 0.5692,
+            "agreement": 0.3497,
+            "agreement_ci95": [
+              0.3181,
+              0.3827
+            ]
+          }
+        }
+      },
+      "executable": {
+        "overall": {
+          "steps": 10960,
+          "routed": 314,
+          "matched": 60,
+          "coverage": 0.0286,
+          "fidelity": 0.1911,
+          "agreement": 0.0055,
+          "agreement_ci95": [
+            0.0043,
+            0.007
+          ]
+        },
+        "per_family": {
+          "edit-only": {
+            "steps": 1694,
+            "routed": 44,
+            "matched": 6,
+            "coverage": 0.026,
+            "fidelity": 0.1364,
+            "agreement": 0.0035,
+            "agreement_ci95": [
+              0.0016,
+              0.0077
+            ]
+          },
+          "edit-verify": {
+            "steps": 6597,
+            "routed": 121,
+            "matched": 36,
+            "coverage": 0.0183,
+            "fidelity": 0.2975,
+            "agreement": 0.0055,
+            "agreement_ci95": [
+              0.0039,
+              0.0075
+            ]
+          },
+          "explore": {
+            "steps": 1061,
+            "routed": 74,
+            "matched": 8,
+            "coverage": 0.0697,
+            "fidelity": 0.1081,
+            "agreement": 0.0075,
+            "agreement_ci95": [
+              0.0038,
+              0.0148
+            ]
+          },
+          "mixed": {
+            "steps": 773,
+            "routed": 42,
+            "matched": 3,
+            "coverage": 0.0543,
+            "fidelity": 0.0714,
+            "agreement": 0.0039,
+            "agreement_ci95": [
+              0.0013,
+              0.0113
+            ]
+          },
+          "web-research": {
+            "steps": 835,
+            "routed": 33,
+            "matched": 7,
+            "coverage": 0.0395,
+            "fidelity": 0.2121,
+            "agreement": 0.0084,
+            "agreement_ci95": [
+              0.0041,
+              0.0172
+            ]
+          }
+        }
+      }
+    },
+    "extratrees": {
+      "argmax_overall": {
+        "steps": 10960,
+        "routed": 10960,
+        "matched": 4340,
+        "coverage": 1.0,
+        "fidelity": 0.396,
+        "agreement": 0.396,
+        "agreement_ci95": [
+          0.3869,
+          0.4052
+        ]
+      },
+      "tool_choice": {
+        "overall": {
+          "steps": 10960,
+          "routed": 4288,
+          "matched": 2092,
+          "coverage": 0.3912,
+          "fidelity": 0.4879,
+          "agreement": 0.1909,
+          "agreement_ci95": [
+            0.1836,
+            0.1983
+          ]
+        },
+        "per_family": {
+          "edit-only": {
+            "steps": 1694,
+            "routed": 772,
+            "matched": 364,
+            "coverage": 0.4557,
+            "fidelity": 0.4715,
+            "agreement": 0.2149,
+            "agreement_ci95": [
+              0.196,
+              0.2351
+            ]
+          },
+          "edit-verify": {
+            "steps": 6597,
+            "routed": 1562,
+            "matched": 741,
+            "coverage": 0.2368,
+            "fidelity": 0.4744,
+            "agreement": 0.1123,
+            "agreement_ci95": [
+              0.1049,
+              0.1202
+            ]
+          },
+          "explore": {
+            "steps": 1061,
+            "routed": 790,
+            "matched": 352,
+            "coverage": 0.7446,
+            "fidelity": 0.4456,
+            "agreement": 0.3318,
+            "agreement_ci95": [
+              0.3041,
+              0.3607
+            ]
+          },
+          "mixed": {
+            "steps": 773,
+            "routed": 570,
+            "matched": 317,
+            "coverage": 0.7374,
+            "fidelity": 0.5561,
+            "agreement": 0.4101,
+            "agreement_ci95": [
+              0.3759,
+              0.4451
+            ]
+          },
+          "web-research": {
+            "steps": 835,
+            "routed": 594,
+            "matched": 318,
+            "coverage": 0.7114,
+            "fidelity": 0.5354,
+            "agreement": 0.3808,
+            "agreement_ci95": [
+              0.3485,
+              0.4143
+            ]
+          }
+        }
+      },
+      "executable": {
+        "overall": {
+          "steps": 10960,
+          "routed": 191,
+          "matched": 42,
+          "coverage": 0.0174,
+          "fidelity": 0.2199,
+          "agreement": 0.0038,
+          "agreement_ci95": [
+            0.0028,
+            0.0052
+          ]
+        },
+        "per_family": {
+          "edit-only": {
+            "steps": 1694,
+            "routed": 25,
+            "matched": 6,
+            "coverage": 0.0148,
+            "fidelity": 0.24,
+            "agreement": 0.0035,
+            "agreement_ci95": [
+              0.0016,
+              0.0077
+            ]
+          },
+          "edit-verify": {
+            "steps": 6597,
+            "routed": 72,
+            "matched": 26,
+            "coverage": 0.0109,
+            "fidelity": 0.3611,
+            "agreement": 0.0039,
+            "agreement_ci95": [
+              0.0027,
+              0.0058
+            ]
+          },
+          "explore": {
+            "steps": 1061,
+            "routed": 49,
+            "matched": 4,
+            "coverage": 0.0462,
+            "fidelity": 0.0816,
+            "agreement": 0.0038,
+            "agreement_ci95": [
+              0.0015,
+              0.0097
+            ]
+          },
+          "mixed": {
+            "steps": 773,
+            "routed": 24,
+            "matched": 3,
+            "coverage": 0.031,
+            "fidelity": 0.125,
+            "agreement": 0.0039,
+            "agreement_ci95": [
+              0.0013,
+              0.0113
+            ]
+          },
+          "web-research": {
+            "steps": 835,
+            "routed": 21,
+            "matched": 3,
+            "coverage": 0.0251,
+            "fidelity": 0.1429,
+            "agreement": 0.0036,
+            "agreement_ci95": [
+              0.0012,
+              0.0105
+            ]
+          }
+        }
+      }
+    },
+    "hgb": {
+      "argmax_overall": {
+        "steps": 10960,
+        "routed": 10960,
+        "matched": 5125,
+        "coverage": 1.0,
+        "fidelity": 0.4676,
+        "agreement": 0.4676,
+        "agreement_ci95": [
+          0.4583,
+          0.477
+        ]
+      },
+      "tool_choice": {
+        "overall": {
+          "steps": 10960,
+          "routed": 6868,
+          "matched": 3686,
+          "coverage": 0.6266,
+          "fidelity": 0.5367,
+          "agreement": 0.3363,
+          "agreement_ci95": [
+            0.3275,
+            0.3452
+          ]
+        },
+        "per_family": {
+          "edit-only": {
+            "steps": 1694,
+            "routed": 904,
+            "matched": 518,
+            "coverage": 0.5336,
+            "fidelity": 0.573,
+            "agreement": 0.3058,
+            "agreement_ci95": [
+              0.2843,
+              0.3281
+            ]
+          },
+          "edit-verify": {
+            "steps": 6597,
+            "routed": 3644,
+            "matched": 1709,
+            "coverage": 0.5524,
+            "fidelity": 0.469,
+            "agreement": 0.2591,
+            "agreement_ci95": [
+              0.2486,
+              0.2698
+            ]
+          },
+          "explore": {
+            "steps": 1061,
+            "routed": 905,
+            "matched": 558,
+            "coverage": 0.853,
+            "fidelity": 0.6166,
+            "agreement": 0.5259,
+            "agreement_ci95": [
+              0.4958,
+              0.5558
+            ]
+          },
+          "mixed": {
+            "steps": 773,
+            "routed": 650,
+            "matched": 391,
+            "coverage": 0.8409,
+            "fidelity": 0.6015,
+            "agreement": 0.5058,
+            "agreement_ci95": [
+              0.4706,
+              0.541
+            ]
+          },
+          "web-research": {
+            "steps": 835,
+            "routed": 765,
+            "matched": 510,
+            "coverage": 0.9162,
+            "fidelity": 0.6667,
+            "agreement": 0.6108,
+            "agreement_ci95": [
+              0.5773,
+              0.6433
+            ]
+          }
+        }
+      },
+      "executable": {
+        "overall": {
+          "steps": 10960,
+          "routed": 499,
+          "matched": 71,
+          "coverage": 0.0455,
+          "fidelity": 0.1423,
+          "agreement": 0.0065,
+          "agreement_ci95": [
+            0.0051,
+            0.0082
+          ]
+        },
+        "per_family": {
+          "edit-only": {
+            "steps": 1694,
+            "routed": 0,
+            "matched": 0,
+            "coverage": 0.0,
+            "fidelity": 0,
+            "agreement": 0.0,
+            "agreement_ci95": [
+              0.0,
+              0.0023
+            ]
+          },
+          "edit-verify": {
+            "steps": 6597,
+            "routed": 478,
+            "matched": 63,
+            "coverage": 0.0725,
+            "fidelity": 0.1318,
+            "agreement": 0.0095,
+            "agreement_ci95": [
+              0.0075,
+              0.0122
+            ]
+          },
+          "explore": {
+            "steps": 1061,
+            "routed": 14,
+            "matched": 5,
+            "coverage": 0.0132,
+            "fidelity": 0.3571,
+            "agreement": 0.0047,
+            "agreement_ci95": [
+              0.002,
+              0.011
+            ]
+          },
+          "mixed": {
+            "steps": 773,
+            "routed": 0,
+            "matched": 0,
+            "coverage": 0.0,
+            "fidelity": 0,
+            "agreement": 0.0,
+            "agreement_ci95": [
+              0.0,
+              0.0049
+            ]
+          },
+          "web-research": {
+            "steps": 835,
+            "routed": 7,
+            "matched": 3,
+            "coverage": 0.0084,
+            "fidelity": 0.4286,
+            "agreement": 0.0036,
+            "agreement_ci95": [
+              0.0012,
+              0.0105
+            ]
+          }
+        }
+      }
+    },
+    "logreg": {
+      "argmax_overall": {
+        "steps": 10960,
+        "routed": 10960,
+        "matched": 2966,
+        "coverage": 1.0,
+        "fidelity": 0.2706,
+        "agreement": 0.2706,
+        "agreement_ci95": [
+          0.2624,
+          0.279
+        ]
+      },
+      "tool_choice": {
+        "overall": {
+          "steps": 10960,
+          "routed": 3892,
+          "matched": 729,
+          "coverage": 0.3551,
+          "fidelity": 0.1873,
+          "agreement": 0.0665,
+          "agreement_ci95": [
+            0.062,
+            0.0713
+          ]
+        },
+        "per_family": {
+          "edit-only": {
+            "steps": 1694,
+            "routed": 327,
+            "matched": 71,
+            "coverage": 0.193,
+            "fidelity": 0.2171,
+            "agreement": 0.0419,
+            "agreement_ci95": [
+              0.0334,
+              0.0525
+            ]
+          },
+          "edit-verify": {
+            "steps": 6597,
+            "routed": 2720,
+            "matched": 489,
+            "coverage": 0.4123,
+            "fidelity": 0.1798,
+            "agreement": 0.0741,
+            "agreement_ci95": [
+              0.068,
+              0.0807
+            ]
+          },
+          "explore": {
+            "steps": 1061,
+            "routed": 230,
+            "matched": 56,
+            "coverage": 0.2168,
+            "fidelity": 0.2435,
+            "agreement": 0.0528,
+            "agreement_ci95": [
+              0.0409,
+              0.0679
+            ]
+          },
+          "mixed": {
+            "steps": 773,
+            "routed": 405,
+            "matched": 18,
+            "coverage": 0.5239,
+            "fidelity": 0.0444,
+            "agreement": 0.0233,
+            "agreement_ci95": [
+              0.0148,
+              0.0365
+            ]
+          },
+          "web-research": {
+            "steps": 835,
+            "routed": 210,
+            "matched": 95,
+            "coverage": 0.2515,
+            "fidelity": 0.4524,
+            "agreement": 0.1138,
+            "agreement_ci95": [
+              0.094,
+              0.1371
+            ]
+          }
+        }
+      },
+      "executable": {
+        "overall": {
+          "steps": 10960,
+          "routed": 3046,
+          "matched": 335,
+          "coverage": 0.2779,
+          "fidelity": 0.11,
+          "agreement": 0.0306,
+          "agreement_ci95": [
+            0.0275,
+            0.034
+          ]
+        },
+        "per_family": {
+          "edit-only": {
+            "steps": 1694,
+            "routed": 184,
+            "matched": 12,
+            "coverage": 0.1086,
+            "fidelity": 0.0652,
+            "agreement": 0.0071,
+            "agreement_ci95": [
+              0.0041,
+              0.0123
+            ]
+          },
+          "edit-verify": {
+            "steps": 6597,
+            "routed": 2288,
+            "matched": 276,
+            "coverage": 0.3468,
+            "fidelity": 0.1206,
+            "agreement": 0.0418,
+            "agreement_ci95": [
+              0.0373,
+              0.0469
+            ]
+          },
+          "explore": {
+            "steps": 1061,
+            "routed": 133,
+            "matched": 16,
+            "coverage": 0.1254,
+            "fidelity": 0.1203,
+            "agreement": 0.0151,
+            "agreement_ci95": [
+              0.0093,
+              0.0244
+            ]
+          },
+          "mixed": {
+            "steps": 773,
+            "routed": 387,
+            "matched": 14,
+            "coverage": 0.5006,
+            "fidelity": 0.0362,
+            "agreement": 0.0181,
+            "agreement_ci95": [
+              0.0108,
+              0.0302
+            ]
+          },
+          "web-research": {
+            "steps": 835,
+            "routed": 54,
+            "matched": 17,
+            "coverage": 0.0647,
+            "fidelity": 0.3148,
+            "agreement": 0.0204,
+            "agreement_ci95": [
+              0.0127,
+              0.0324
+            ]
+          }
+        }
+      }
+    },
+    "mlp": {
+      "argmax_overall": {
+        "steps": 10960,
+        "routed": 10960,
+        "matched": 5256,
+        "coverage": 1.0,
+        "fidelity": 0.4796,
+        "agreement": 0.4796,
+        "agreement_ci95": [
+          0.4702,
+          0.4889
+        ]
+      },
+      "tool_choice": {
+        "overall": {
+          "steps": 10960,
+          "routed": 6146,
+          "matched": 3539,
+          "coverage": 0.5608,
+          "fidelity": 0.5758,
+          "agreement": 0.3229,
+          "agreement_ci95": [
+            0.3142,
+            0.3317
+          ]
+        },
+        "per_family": {
+          "edit-only": {
+            "steps": 1694,
+            "routed": 887,
+            "matched": 516,
+            "coverage": 0.5236,
+            "fidelity": 0.5817,
+            "agreement": 0.3046,
+            "agreement_ci95": [
+              0.2831,
+              0.3269
+            ]
+          },
+          "edit-verify": {
+            "steps": 6597,
+            "routed": 3060,
+            "matched": 1618,
+            "coverage": 0.4638,
+            "fidelity": 0.5288,
+            "agreement": 0.2453,
+            "agreement_ci95": [
+              0.235,
+              0.2558
+            ]
+          },
+          "explore": {
+            "steps": 1061,
+            "routed": 842,
+            "matched": 528,
+            "coverage": 0.7936,
+            "fidelity": 0.6271,
+            "agreement": 0.4976,
+            "agreement_ci95": [
+              0.4676,
+              0.5277
+            ]
+          },
+          "mixed": {
+            "steps": 773,
+            "routed": 630,
+            "matched": 377,
+            "coverage": 0.815,
+            "fidelity": 0.5984,
+            "agreement": 0.4877,
+            "agreement_ci95": [
+              0.4526,
+              0.5229
+            ]
+          },
+          "web-research": {
+            "steps": 835,
+            "routed": 727,
+            "matched": 500,
+            "coverage": 0.8707,
+            "fidelity": 0.6878,
+            "agreement": 0.5988,
+            "agreement_ci95": [
+              0.5652,
+              0.6315
+            ]
+          }
+        }
+      },
+      "executable": {
+        "overall": {
+          "steps": 10960,
+          "routed": 4,
+          "matched": 1,
+          "coverage": 0.0004,
+          "fidelity": 0.25,
+          "agreement": 0.0001,
+          "agreement_ci95": [
+            0.0,
+            0.0005
+          ]
+        },
+        "per_family": {
+          "edit-only": {
+            "steps": 1694,
+            "routed": 0,
+            "matched": 0,
+            "coverage": 0.0,
+            "fidelity": 0,
+            "agreement": 0.0,
+            "agreement_ci95": [
+              0.0,
+              0.0023
+            ]
+          },
+          "edit-verify": {
+            "steps": 6597,
+            "routed": 4,
+            "matched": 1,
+            "coverage": 0.0006,
+            "fidelity": 0.25,
+            "agreement": 0.0002,
+            "agreement_ci95": [
+              0.0,
+              0.0009
+            ]
+          },
+          "explore": {
+            "steps": 1061,
+            "routed": 0,
+            "matched": 0,
+            "coverage": 0.0,
+            "fidelity": 0,
+            "agreement": 0.0,
+            "agreement_ci95": [
+              0.0,
+              0.0036
+            ]
+          },
+          "mixed": {
+            "steps": 773,
+            "routed": 0,
+            "matched": 0,
+            "coverage": 0.0,
+            "fidelity": 0,
+            "agreement": 0.0,
+            "agreement_ci95": [
+              0.0,
+              0.0049
+            ]
+          },
+          "web-research": {
+            "steps": 835,
+            "routed": 0,
+            "matched": 0,
+            "coverage": 0.0,
+            "fidelity": 0,
+            "agreement": 0.0,
+            "agreement_ci95": [
+              -0.0,
+              0.0046
+            ]
+          }
+        }
+      }
+    },
+    "markov1": {
+      "argmax_overall": {
+        "steps": 10960,
+        "routed": 10960,
+        "matched": 4988,
+        "coverage": 1.0,
+        "fidelity": 0.4551,
+        "agreement": 0.4551,
+        "agreement_ci95": [
+          0.4458,
+          0.4644
+        ]
+      },
+      "tool_choice": {
+        "overall": {
+          "steps": 10960,
+          "routed": 5712,
+          "matched": 2886,
+          "coverage": 0.5212,
+          "fidelity": 0.5053,
+          "agreement": 0.2633,
+          "agreement_ci95": [
+            0.2552,
+            0.2716
+          ]
+        },
+        "per_family": {
+          "edit-only": {
+            "steps": 1694,
+            "routed": 946,
+            "matched": 479,
+            "coverage": 0.5584,
+            "fidelity": 0.5063,
+            "agreement": 0.2828,
+            "agreement_ci95": [
+              0.2618,
+              0.3047
+            ]
+          },
+          "edit-verify": {
+            "steps": 6597,
+            "routed": 2726,
+            "matched": 1165,
+            "coverage": 0.4132,
+            "fidelity": 0.4274,
+            "agreement": 0.1766,
+            "agreement_ci95": [
+              0.1676,
+              0.186
+            ]
+          },
+          "explore": {
+            "steps": 1061,
+            "routed": 792,
+            "matched": 473,
+            "coverage": 0.7465,
+            "fidelity": 0.5972,
+            "agreement": 0.4458,
+            "agreement_ci95": [
+              0.4161,
+              0.4759
+            ]
+          },
+          "mixed": {
+            "steps": 773,
+            "routed": 666,
+            "matched": 372,
+            "coverage": 0.8616,
+            "fidelity": 0.5586,
+            "agreement": 0.4812,
+            "agreement_ci95": [
+              0.4462,
+              0.5165
+            ]
+          },
+          "web-research": {
+            "steps": 835,
+            "routed": 582,
+            "matched": 397,
+            "coverage": 0.697,
+            "fidelity": 0.6821,
+            "agreement": 0.4754,
+            "agreement_ci95": [
+              0.4418,
+              0.5094
+            ]
+          }
+        }
+      },
+      "executable": {
+        "overall": {
+          "steps": 10960,
+          "routed": 0,
+          "matched": 0,
+          "coverage": 0.0,
+          "fidelity": 0,
+          "agreement": 0.0,
+          "agreement_ci95": [
+            -0.0,
+            0.0004
+          ]
+        },
+        "per_family": {
+          "edit-only": {
+            "steps": 1694,
+            "routed": 0,
+            "matched": 0,
+            "coverage": 0.0,
+            "fidelity": 0,
+            "agreement": 0.0,
+            "agreement_ci95": [
+              0.0,
+              0.0023
+            ]
+          },
+          "edit-verify": {
+            "steps": 6597,
+            "routed": 0,
+            "matched": 0,
+            "coverage": 0.0,
+            "fidelity": 0,
+            "agreement": 0.0,
+            "agreement_ci95": [
+              0.0,
+              0.0006
+            ]
+          },
+          "explore": {
+            "steps": 1061,
+            "routed": 0,
+            "matched": 0,
+            "coverage": 0.0,
+            "fidelity": 0,
+            "agreement": 0.0,
+            "agreement_ci95": [
+              0.0,
+              0.0036
+            ]
+          },
+          "mixed": {
+            "steps": 773,
+            "routed": 0,
+            "matched": 0,
+            "coverage": 0.0,
+            "fidelity": 0,
+            "agreement": 0.0,
+            "agreement_ci95": [
+              0.0,
+              0.0049
+            ]
+          },
+          "web-research": {
+            "steps": 835,
+            "routed": 0,
+            "matched": 0,
+            "coverage": 0.0,
+            "fidelity": 0,
+            "agreement": 0.0,
+            "agreement_ci95": [
+              -0.0,
+              0.0046
+            ]
+          }
+        }
+      }
+    },
+    "markov2": {
+      "argmax_overall": {
+        "steps": 10960,
+        "routed": 10960,
+        "matched": 5202,
+        "coverage": 1.0,
+        "fidelity": 0.4746,
+        "agreement": 0.4746,
+        "agreement_ci95": [
+          0.4653,
+          0.484
+        ]
+      },
+      "tool_choice": {
+        "overall": {
+          "steps": 10960,
+          "routed": 6686,
+          "matched": 3769,
+          "coverage": 0.61,
+          "fidelity": 0.5637,
+          "agreement": 0.3439,
+          "agreement_ci95": [
+            0.335,
+            0.3528
+          ]
+        },
+        "per_family": {
+          "edit-only": {
+            "steps": 1694,
+            "routed": 1046,
+            "matched": 565,
+            "coverage": 0.6175,
+            "fidelity": 0.5402,
+            "agreement": 0.3335,
+            "agreement_ci95": [
+              0.3115,
+              0.3563
+            ]
+          },
+          "edit-verify": {
+            "steps": 6597,
+            "routed": 3606,
+            "matched": 1910,
+            "coverage": 0.5466,
+            "fidelity": 0.5297,
+            "agreement": 0.2895,
+            "agreement_ci95": [
+              0.2787,
+              0.3006
+            ]
+          },
+          "explore": {
+            "steps": 1061,
+            "routed": 817,
+            "matched": 518,
+            "coverage": 0.77,
+            "fidelity": 0.634,
+            "agreement": 0.4882,
+            "agreement_ci95": [
+              0.4582,
+              0.5183
+            ]
+          },
+          "mixed": {
+            "steps": 773,
+            "routed": 516,
+            "matched": 297,
+            "coverage": 0.6675,
+            "fidelity": 0.5756,
+            "agreement": 0.3842,
+            "agreement_ci95": [
+              0.3506,
+              0.419
+            ]
+          },
+          "web-research": {
+            "steps": 835,
+            "routed": 701,
+            "matched": 479,
+            "coverage": 0.8395,
+            "fidelity": 0.6833,
+            "agreement": 0.5737,
+            "agreement_ci95": [
+              0.5398,
+              0.6068
+            ]
+          }
+        }
+      },
+      "executable": {
+        "overall": {
+          "steps": 10960,
+          "routed": 0,
+          "matched": 0,
+          "coverage": 0.0,
+          "fidelity": 0,
+          "agreement": 0.0,
+          "agreement_ci95": [
+            -0.0,
+            0.0004
+          ]
+        },
+        "per_family": {
+          "edit-only": {
+            "steps": 1694,
+            "routed": 0,
+            "matched": 0,
+            "coverage": 0.0,
+            "fidelity": 0,
+            "agreement": 0.0,
+            "agreement_ci95": [
+              0.0,
+              0.0023
+            ]
+          },
+          "edit-verify": {
+            "steps": 6597,
+            "routed": 0,
+            "matched": 0,
+            "coverage": 0.0,
+            "fidelity": 0,
+            "agreement": 0.0,
+            "agreement_ci95": [
+              0.0,
+              0.0006
+            ]
+          },
+          "explore": {
+            "steps": 1061,
+            "routed": 0,
+            "matched": 0,
+            "coverage": 0.0,
+            "fidelity": 0,
+            "agreement": 0.0,
+            "agreement_ci95": [
+              0.0,
+              0.0036
+            ]
+          },
+          "mixed": {
+            "steps": 773,
+            "routed": 0,
+            "matched": 0,
+            "coverage": 0.0,
+            "fidelity": 0,
+            "agreement": 0.0,
+            "agreement_ci95": [
+              0.0,
+              0.0049
+            ]
+          },
+          "web-research": {
+            "steps": 835,
+            "routed": 0,
+            "matched": 0,
+            "coverage": 0.0,
+            "fidelity": 0,
+            "agreement": 0.0,
+            "agreement_ci95": [
+              -0.0,
+              0.0046
+            ]
+          }
+        }
+      }
+    },
+    "majority": {
+      "argmax_overall": {
+        "steps": 10960,
+        "routed": 10960,
+        "matched": 4148,
+        "coverage": 1.0,
+        "fidelity": 0.3785,
+        "agreement": 0.3785,
+        "agreement_ci95": [
+          0.3694,
+          0.3876
+        ]
+      },
+      "tool_choice": {
+        "overall": {
+          "steps": 10960,
+          "routed": 10960,
+          "matched": 4148,
+          "coverage": 1.0,
+          "fidelity": 0.3785,
+          "agreement": 0.3785,
+          "agreement_ci95": [
+            0.3694,
+            0.3876
+          ]
+        },
+        "per_family": {
+          "edit-only": {
+            "steps": 1694,
+            "routed": 1694,
+            "matched": 637,
+            "coverage": 1.0,
+            "fidelity": 0.376,
+            "agreement": 0.376,
+            "agreement_ci95": [
+              0.3533,
+              0.3994
+            ]
+          },
+          "edit-verify": {
+            "steps": 6597,
+            "routed": 6597,
+            "matched": 2237,
+            "coverage": 1.0,
+            "fidelity": 0.3391,
+            "agreement": 0.3391,
+            "agreement_ci95": [
+              0.3278,
+              0.3506
+            ]
+          },
+          "explore": {
+            "steps": 1061,
+            "routed": 1061,
+            "matched": 621,
+            "coverage": 1.0,
+            "fidelity": 0.5853,
+            "agreement": 0.5853,
+            "agreement_ci95": [
+              0.5554,
+              0.6146
+            ]
+          },
+          "mixed": {
+            "steps": 773,
+            "routed": 773,
+            "matched": 167,
+            "coverage": 1.0,
+            "fidelity": 0.216,
+            "agreement": 0.216,
+            "agreement_ci95": [
+              0.1885,
+              0.2464
+            ]
+          },
+          "web-research": {
+            "steps": 835,
+            "routed": 835,
+            "matched": 486,
+            "coverage": 1.0,
+            "fidelity": 0.582,
+            "agreement": 0.582,
+            "agreement_ci95": [
+              0.5483,
+              0.615
+            ]
+          }
+        }
+      },
+      "executable": {
+        "overall": {
+          "steps": 10960,
+          "routed": 0,
+          "matched": 0,
+          "coverage": 0.0,
+          "fidelity": 0,
+          "agreement": 0.0,
+          "agreement_ci95": [
+            -0.0,
+            0.0004
+          ]
+        },
+        "per_family": {
+          "edit-only": {
+            "steps": 1694,
+            "routed": 0,
+            "matched": 0,
+            "coverage": 0.0,
+            "fidelity": 0,
+            "agreement": 0.0,
+            "agreement_ci95": [
+              0.0,
+              0.0023
+            ]
+          },
+          "edit-verify": {
+            "steps": 6597,
+            "routed": 0,
+            "matched": 0,
+            "coverage": 0.0,
+            "fidelity": 0,
+            "agreement": 0.0,
+            "agreement_ci95": [
+              0.0,
+              0.0006
+            ]
+          },
+          "explore": {
+            "steps": 1061,
+            "routed": 0,
+            "matched": 0,
+            "coverage": 0.0,
+            "fidelity": 0,
+            "agreement": 0.0,
+            "agreement_ci95": [
+              0.0,
+              0.0036
+            ]
+          },
+          "mixed": {
+            "steps": 773,
+            "routed": 0,
+            "matched": 0,
+            "coverage": 0.0,
+            "fidelity": 0,
+            "agreement": 0.0,
+            "agreement_ci95": [
+              0.0,
+              0.0049
+            ]
+          },
+          "web-research": {
+            "steps": 835,
+            "routed": 0,
+            "matched": 0,
+            "coverage": 0.0,
+            "fidelity": 0,
+            "agreement": 0.0,
+            "agreement_ci95": [
+              -0.0,
+              0.0046
+            ]
+          }
+        }
+      }
+    },
+    "repeat-last": {
+      "argmax_overall": {
+        "steps": 10960,
+        "routed": 10960,
+        "matched": 4729,
+        "coverage": 1.0,
+        "fidelity": 0.4315,
+        "agreement": 0.4315,
+        "agreement_ci95": [
+          0.4222,
+          0.4408
+        ]
+      },
+      "tool_choice": {
+        "overall": {
+          "steps": 10960,
+          "routed": 10960,
+          "matched": 4729,
+          "coverage": 1.0,
+          "fidelity": 0.4315,
+          "agreement": 0.4315,
+          "agreement_ci95": [
+            0.4222,
+            0.4408
+          ]
+        },
+        "per_family": {
+          "edit-only": {
+            "steps": 1694,
+            "routed": 1694,
+            "matched": 717,
+            "coverage": 1.0,
+            "fidelity": 0.4233,
+            "agreement": 0.4233,
+            "agreement_ci95": [
+              0.3999,
+              0.4469
+            ]
+          },
+          "edit-verify": {
+            "steps": 6597,
+            "routed": 6597,
+            "matched": 2554,
+            "coverage": 1.0,
+            "fidelity": 0.3871,
+            "agreement": 0.3871,
+            "agreement_ci95": [
+              0.3755,
+              0.399
+            ]
+          },
+          "explore": {
+            "steps": 1061,
+            "routed": 1061,
+            "matched": 564,
+            "coverage": 1.0,
+            "fidelity": 0.5316,
+            "agreement": 0.5316,
+            "agreement_ci95": [
+              0.5015,
+              0.5614
+            ]
+          },
+          "mixed": {
+            "steps": 773,
+            "routed": 773,
+            "matched": 391,
+            "coverage": 1.0,
+            "fidelity": 0.5058,
+            "agreement": 0.5058,
+            "agreement_ci95": [
+              0.4706,
+              0.541
+            ]
+          },
+          "web-research": {
+            "steps": 835,
+            "routed": 835,
+            "matched": 503,
+            "coverage": 1.0,
+            "fidelity": 0.6024,
+            "agreement": 0.6024,
+            "agreement_ci95": [
+              0.5688,
+              0.635
+            ]
+          }
+        }
+      },
+      "executable": {
+        "overall": {
+          "steps": 10960,
+          "routed": 625,
+          "matched": 126,
+          "coverage": 0.057,
+          "fidelity": 0.2016,
+          "agreement": 0.0115,
+          "agreement_ci95": [
+            0.0097,
+            0.0137
+          ]
+        },
+        "per_family": {
+          "edit-only": {
+            "steps": 1694,
+            "routed": 37,
+            "matched": 4,
+            "coverage": 0.0218,
+            "fidelity": 0.1081,
+            "agreement": 0.0024,
+            "agreement_ci95": [
+              0.0009,
+              0.0061
+            ]
+          },
+          "edit-verify": {
+            "steps": 6597,
+            "routed": 535,
+            "matched": 119,
+            "coverage": 0.0811,
+            "fidelity": 0.2224,
+            "agreement": 0.018,
+            "agreement_ci95": [
+              0.0151,
+              0.0215
+            ]
+          },
+          "explore": {
+            "steps": 1061,
+            "routed": 22,
+            "matched": 1,
+            "coverage": 0.0207,
+            "fidelity": 0.0455,
+            "agreement": 0.0009,
+            "agreement_ci95": [
+              0.0002,
+              0.0053
+            ]
+          },
+          "mixed": {
+            "steps": 773,
+            "routed": 11,
+            "matched": 0,
+            "coverage": 0.0142,
+            "fidelity": 0.0,
+            "agreement": 0.0,
+            "agreement_ci95": [
+              0.0,
+              0.0049
+            ]
+          },
+          "web-research": {
+            "steps": 835,
+            "routed": 20,
+            "matched": 2,
+            "coverage": 0.024,
+            "fidelity": 0.1,
+            "agreement": 0.0024,
+            "agreement_ci95": [
+              0.0007,
+              0.0087
+            ]
+          }
+        }
+      }
+    }
+  },
+  "learning_curve_argmax_agreement": {
+    "rf": {
+      "0.02": 0.1688,
+      "0.05": 0.2017,
+      "0.1": 0.1396,
+      "0.25": 0.2188,
+      "0.5": 0.2149,
+      "1.0": 0.1999
+    },
+    "hgb": {
+      "0.02": 0.3043,
+      "0.05": 0.3266,
+      "0.1": 0.4499,
+      "0.25": 0.4501,
+      "0.5": 0.4509,
+      "1.0": 0.4657
+    },
+    "logreg": {
+      "0.02": 0.2291,
+      "0.05": 0.2626,
+      "0.1": 0.2367,
+      "0.25": 0.3107,
+      "0.5": 0.2824,
+      "1.0": 0.2584
+    },
+    "markov1": {
+      "0.02": 0.4482,
+      "0.05": 0.4432,
+      "0.1": 0.4452,
+      "0.25": 0.4496,
+      "0.5": 0.4496,
+      "1.0": 0.4551
+    },
+    "markov2": {
+      "0.02": 0.429,
+      "0.05": 0.4678,
+      "0.1": 0.4728,
+      "0.25": 0.4806,
+      "0.5": 0.4746,
+      "1.0": 0.4746
+    }
+  }
+}

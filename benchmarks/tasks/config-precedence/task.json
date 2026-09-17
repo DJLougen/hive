@@ -1,0 +1,7 @@
+{
+  "id": "config-precedence",
+  "family": "precedence",
+  "problem_statement": "Our config loader documents that environment variables override the config file (APP_<KEY> wins over file values). Operators set APP_PORT=9090 but the service still binds the file's port — the file is overriding the env instead of the other way around. Fix load_config() precedence. tests/ must pass.",
+  "test_cmd": "python -m pytest tests -q",
+  "test_timeout_s": 60
+}

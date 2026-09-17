@@ -1,0 +1,180 @@
+2026-09-01T12:00:00 [INFO] user login ok
+2026-09-01T12:00:01 [INFO] request completed in 42ms
+2026-09-01T12:00:02 [INFO] retry succeeded, no error
+2026-09-01T12:00:03 [INFO] retry succeeded, no error
+2026-09-01T12:00:04 [INFO] retry succeeded, no error
+2026-09-01T12:00:05 [INFO] request completed in 42ms
+2026-09-01T12:00:06 [INFO] request completed in 42ms
+2026-09-01T12:00:07 [INFO] retry succeeded, no error
+2026-09-01T12:00:08 [INFO] retry succeeded, no error
+2026-09-01T12:00:09 [INFO] user login ok
+2026-09-01T12:00:10 [INFO] retry succeeded, no error
+2026-09-01T12:00:11 [DEBUG] retry succeeded, no error
+2026-09-01T12:00:12 [INFO] request completed in 42ms
+2026-09-01T12:00:13 [DEBUG] request completed in 42ms
+2026-09-01T12:00:14 [INFO] user login ok
+2026-09-01T12:00:15 [INFO] user login ok
+2026-09-01T12:00:16 [INFO] retry succeeded, no error
+2026-09-01T12:00:17 [INFO] config reloaded without error
+2026-09-01T12:00:18 [INFO] retry succeeded, no error
+2026-09-01T12:00:19 [INFO] user login ok
+2026-09-01T12:00:20 [INFO] retry succeeded, no error
+2026-09-01T12:00:21 [WARN] retry succeeded, no error
+2026-09-01T12:00:22 [INFO] user login ok
+2026-09-01T12:00:23 [INFO] retry succeeded, no error
+2026-09-01T12:00:24 [INFO] no error detected in heartbeat
+2026-09-01T12:00:25 [INFO] cache warmed
+2026-09-01T12:00:26 [INFO] user login ok
+2026-09-01T12:00:27 [WARN] config reloaded without error
+2026-09-01T12:00:28 [WARN] request completed in 42ms
+2026-09-01T12:00:29 [INFO] retry succeeded, no error
+2026-09-01T12:00:30 [INFO] no error detected in heartbeat
+2026-09-01T12:00:31 [WARN] no error detected in heartbeat
+2026-09-01T12:00:32 [INFO] request completed in 42ms
+2026-09-01T12:00:33 [INFO] cache warmed
+2026-09-01T12:00:34 [INFO] no error detected in heartbeat
+2026-09-01T12:00:35 [INFO] cache warmed
+2026-09-01T12:00:36 [INFO] config reloaded without error
+2026-09-01T12:00:37 [INFO] retry succeeded, no error
+2026-09-01T12:00:38 [INFO] no error detected in heartbeat
+2026-09-01T12:00:39 [INFO] no error detected in heartbeat
+2026-09-01T12:00:40 [INFO] retry succeeded, no error
+2026-09-01T12:00:41 [WARN] request completed in 42ms
+2026-09-01T12:00:42 [ERROR] disk quota exceeded
+2026-09-01T12:00:43 [INFO] config reloaded without error
+2026-09-01T12:00:44 [INFO] config reloaded without error
+2026-09-01T12:00:45 [WARN] config reloaded without error
+2026-09-01T12:00:46 [INFO] config reloaded without error
+2026-09-01T12:00:47 [ERROR] disk quota exceeded
+2026-09-01T12:00:48 [WARN] config reloaded without error
+2026-09-01T12:00:49 [INFO] cache warmed
+2026-09-01T12:00:50 [INFO] retry succeeded, no error
+2026-09-01T12:00:51 [INFO] request completed in 42ms
+2026-09-01T12:00:52 [INFO] no error detected in heartbeat
+2026-09-01T12:00:53 [INFO] user login ok
+2026-09-01T12:00:54 [INFO] cache warmed
+2026-09-01T12:00:55 [INFO] cache warmed
+2026-09-01T12:00:56 [INFO] no error detected in heartbeat
+2026-09-01T12:00:57 [ERROR] upstream timeout
+2026-09-01T12:00:58 [ERROR] disk quota exceeded
+2026-09-01T12:00:59 [WARN] no error detected in heartbeat
+2026-09-01T12:01:00 [INFO] cache warmed
+2026-09-01T12:01:01 [DEBUG] user login ok
+2026-09-01T12:01:02 [INFO] user login ok
+2026-09-01T12:01:03 [INFO] user login ok
+2026-09-01T12:01:04 [INFO] retry succeeded, no error
+2026-09-01T12:01:05 [INFO] no error detected in heartbeat
+2026-09-01T12:01:06 [INFO] cache warmed
+2026-09-01T12:01:07 [INFO] retry succeeded, no error
+2026-09-01T12:01:08 [INFO] user login ok
+2026-09-01T12:01:09 [INFO] retry succeeded, no error
+2026-09-01T12:01:10 [DEBUG] config reloaded without error
+2026-09-01T12:01:11 [INFO] request completed in 42ms
+2026-09-01T12:01:12 [INFO] config reloaded without error
+2026-09-01T12:01:13 [WARN] cache warmed
+2026-09-01T12:01:14 [INFO] cache warmed
+2026-09-01T12:01:15 [INFO] config reloaded without error
+2026-09-01T12:01:16 [INFO] user login ok
+2026-09-01T12:01:17 [INFO] user login ok
+2026-09-01T12:01:18 [INFO] request completed in 42ms
+2026-09-01T12:01:19 [INFO] request completed in 42ms
+2026-09-01T12:01:20 [INFO] retry succeeded, no error
+2026-09-01T12:01:21 [INFO] request completed in 42ms
+2026-09-01T12:01:22 [DEBUG] retry succeeded, no error
+2026-09-01T12:01:23 [INFO] user login ok
+2026-09-01T12:01:24 [INFO] user login ok
+2026-09-01T12:01:25 [INFO] no error detected in heartbeat
+2026-09-01T12:01:26 [INFO] cache warmed
+2026-09-01T12:01:27 [INFO] cache warmed
+2026-09-01T12:01:28 [DEBUG] cache warmed
+2026-09-01T12:01:29 [INFO] no error detected in heartbeat
+2026-09-01T12:01:30 [INFO] request completed in 42ms
+2026-09-01T12:01:31 [WARN] config reloaded without error
+2026-09-01T12:01:32 [INFO] config reloaded without error
+2026-09-01T12:01:33 [INFO] request completed in 42ms
+2026-09-01T12:01:34 [INFO] retry succeeded, no error
+2026-09-01T12:01:35 [INFO] config reloaded without error
+2026-09-01T12:01:36 [INFO] request completed in 42ms
+2026-09-01T12:01:37 [WARN] no error detected in heartbeat
+2026-09-01T12:01:38 [DEBUG] request completed in 42ms
+2026-09-01T12:01:39 [INFO] no error detected in heartbeat
+2026-09-01T12:01:40 [INFO] user login ok
+2026-09-01T12:01:41 [INFO] user login ok
+2026-09-01T12:01:42 [INFO] retry succeeded, no error
+2026-09-01T12:01:43 [INFO] user login ok
+2026-09-01T12:01:44 [INFO] user login ok
+2026-09-01T12:01:45 [ERROR] upstream timeout
+2026-09-01T12:01:46 [WARN] user login ok
+2026-09-01T12:01:47 [INFO] cache warmed
+2026-09-01T12:01:48 [INFO] request completed in 42ms
+2026-09-01T12:01:49 [DEBUG] no error detected in heartbeat
+2026-09-01T12:01:50 [INFO] user login ok
+2026-09-01T12:01:51 [INFO] no error detected in heartbeat
+2026-09-01T12:01:52 [INFO] config reloaded without error
+2026-09-01T12:01:53 [DEBUG] no error detected in heartbeat
+2026-09-01T12:01:54 [INFO] request completed in 42ms
+2026-09-01T12:01:55 [INFO] user login ok
+2026-09-01T12:01:56 [INFO] cache warmed
+2026-09-01T12:01:57 [INFO] retry succeeded, no error
+2026-09-01T12:01:58 [ERROR] upstream timeout
+2026-09-01T12:01:59 [ERROR] disk quota exceeded
+2026-09-01T12:02:00 [WARN] request completed in 42ms
+2026-09-01T12:02:01 [ERROR] db connection refused
+2026-09-01T12:02:02 [ERROR] unhandled exception in worker
+2026-09-01T12:02:03 [INFO] user login ok
+2026-09-01T12:02:04 [INFO] config reloaded without error
+2026-09-01T12:02:05 [INFO] config reloaded without error
+2026-09-01T12:02:06 [INFO] cache warmed
+2026-09-01T12:02:07 [WARN] request completed in 42ms
+2026-09-01T12:02:08 [WARN] user login ok
+2026-09-01T12:02:09 [DEBUG] request completed in 42ms
+2026-09-01T12:02:10 [INFO] cache warmed
+2026-09-01T12:02:11 [ERROR] unhandled exception in worker
+2026-09-01T12:02:12 [INFO] retry succeeded, no error
+2026-09-01T12:02:13 [DEBUG] config reloaded without error
+2026-09-01T12:02:14 [DEBUG] user login ok
+2026-09-01T12:02:15 [INFO] user login ok
+2026-09-01T12:02:16 [INFO] config reloaded without error
+2026-09-01T12:02:17 [INFO] retry succeeded, no error
+2026-09-01T12:02:18 [WARN] user login ok
+2026-09-01T12:02:19 [INFO] user login ok
+2026-09-01T12:02:20 [ERROR] unhandled exception in worker
+2026-09-01T12:02:21 [INFO] user login ok
+2026-09-01T12:02:22 [INFO] user login ok
+2026-09-01T12:02:23 [WARN] no error detected in heartbeat
+2026-09-01T12:02:24 [INFO] cache warmed
+2026-09-01T12:02:25 [ERROR] db connection refused
+2026-09-01T12:02:26 [ERROR] disk quota exceeded
+2026-09-01T12:02:27 [ERROR] auth token rejected
+2026-09-01T12:02:28 [ERROR] auth token rejected
+2026-09-01T12:02:29 [INFO] retry succeeded, no error
+2026-09-01T12:02:30 [INFO] user login ok
+2026-09-01T12:02:31 [INFO] request completed in 42ms
+2026-09-01T12:02:32 [ERROR] unhandled exception in worker
+2026-09-01T12:02:33 [INFO] user login ok
+2026-09-01T12:02:34 [INFO] cache warmed
+2026-09-01T12:02:35 [INFO] request completed in 42ms
+2026-09-01T12:02:36 [INFO] no error detected in heartbeat
+2026-09-01T12:02:37 [INFO] retry succeeded, no error
+2026-09-01T12:02:38 [INFO] request completed in 42ms
+2026-09-01T12:02:39 [ERROR] db connection refused
+2026-09-01T12:02:40 [INFO] no error detected in heartbeat
+2026-09-01T12:02:41 [INFO] request completed in 42ms
+2026-09-01T12:02:42 [INFO] retry succeeded, no error
+2026-09-01T12:02:43 [INFO] request completed in 42ms
+2026-09-01T12:02:44 [INFO] retry succeeded, no error
+2026-09-01T12:02:45 [DEBUG] retry succeeded, no error
+2026-09-01T12:02:46 [INFO] config reloaded without error
+2026-09-01T12:02:47 [INFO] retry succeeded, no error
+2026-09-01T12:02:48 [INFO] cache warmed
+2026-09-01T12:02:49 [INFO] user login ok
+2026-09-01T12:02:50 [INFO] no error detected in heartbeat
+2026-09-01T12:02:51 [DEBUG] user login ok
+2026-09-01T12:02:52 [ERROR] unhandled exception in worker
+2026-09-01T12:02:53 [INFO] cache warmed
+2026-09-01T12:02:54 [INFO] request completed in 42ms
+2026-09-01T12:02:55 [INFO] cache warmed
+2026-09-01T12:02:56 [INFO] config reloaded without error
+2026-09-01T12:02:57 [INFO] request completed in 42ms
+2026-09-01T12:02:58 [ERROR] unhandled exception in worker
+2026-09-01T12:02:59 [DEBUG] config reloaded without error

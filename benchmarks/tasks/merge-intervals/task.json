@@ -1,0 +1,7 @@
+{
+  "id": "merge-intervals",
+  "family": "boundary",
+  "problem_statement": "The calendar merge util leaves touching intervals unmerged: merge([(1,3),(3,5)]) should return [(1,5)] because one meeting ends exactly when the next starts, but we return them separately and the booking UI shows a phantom gap. Fix merge_intervals(). tests/ must pass.",
+  "test_cmd": "python -m pytest tests -q",
+  "test_timeout_s": 60
+}

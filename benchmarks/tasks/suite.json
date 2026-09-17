@@ -1,0 +1,17 @@
+{
+  "name": "hive-bench",
+  "version": 1,
+  "description": "Real bug-fix tasks: real repos, real failing pytest suites, real resolve check. Order matters — tasks sharing a 'family' let the causal-memory arm recall prior fixes.",
+  "tasks": [
+    "paginate-off-by-one",
+    "csv-quoted-commas",
+    "ttl-cache-stale",
+    "retry-gives-up",
+    "stacked-discounts",
+    "dedup-case",
+    "config-precedence",
+    "merge-intervals",
+    "log-error-count",
+    "token-exp-boundary"
+  ]
+}

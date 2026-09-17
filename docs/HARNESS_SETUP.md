@@ -64,25 +64,28 @@ should call Hive as an external tool server instead of importing it.
 
 ---
 
-## 3. SWE-bench eval harness
+## 3. hive-bench eval harness
 
-`scripts/hive_swebench_eval.py` runs SWE-bench-lite instances with and without Hive in
-the loop. It uses `hive.harness.load_routing_policy()` to pick a policy:
-
-1. **Trained busyBee** — when `--busybee-model path/to/model.joblib` is passed and
-   `busybee-cpu` is installed
-2. **Rule-based fallback** — keyword routing for read/test/patch/install steps (no model
-   file required)
+`scripts/hive_bench.py` runs the real tool-execution benchmark in
+[`benchmarks/tasks/`](../benchmarks/tasks/): real repos with real failing pytest
+suites, real tool calls, a real LLM over an OpenAI-compatible endpoint, and a real
+`pytest` run as the resolve check. It uses `hive.harness.load_routing_policy()` for
+the Hive arm's CPU routing.
 
 ```bash
-# Baseline vs Hive (rule-based routing)
-python scripts/hive_swebench_eval.py --instances 10 --seed 42
+# Baseline vs Hive, 10 tasks
+python scripts/hive_bench.py \
+    --backend openai --endpoint https://api.fireworks.ai/inference \
+    --api-key-env FIREWORKS_API_KEY --model accounts/fireworks/models/deepseek-v4p1-flash
 
-# With a trained busyBee model
-python scripts/hive_swebench_eval.py --instances 10 --busybee-model models/busybee.joblib
+# Plumbing smoke (no LLM needed)
+python scripts/hive_bench.py --driver scripted
 ```
 
-Reports land in `docs/benchmarks/swebench-lite/`.
+`scripts/hive_swebench_eval.py` is deprecated — the old script simulated the agent
+loop and drew resolve outcomes from an RNG. It now forwards to `hive_bench.py`.
+
+Reports go to `docs/benchmarks/hive-bench-*.json` via `--output`.
 
 ---
 
@@ -146,7 +149,7 @@ mode is tracked separately on the Hive roadmap.
 |---------|-----|
 | Every `route()` escalates | Load a busyBee model or install `[full]`; without a policy Hive escalates by design |
 | MCP tools missing in IDE | Run `python -m hive.mcp_install --all` and restart the client ([MCP_SETUP.md](MCP_SETUP.md)) |
-| SWE-bench eval uses mock data | `pip install datasets` for real SWE-bench-lite instances |
+| `hive_swebench_eval.py` prints a deprecation notice | It was removed (simulated, RNG resolve). Use `scripts/hive_bench.py` |
 | Harness doc vs MCP mismatch | In-process = `HiveStack`; external = `hive-mcp` — same semantics, different transport |
 
 ---

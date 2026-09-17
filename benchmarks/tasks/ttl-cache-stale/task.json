@@ -1,0 +1,7 @@
+{
+  "id": "ttl-cache-stale",
+  "family": "boundary",
+  "problem_statement": "The TTLCache either never returns entries or expires them at the wrong time, depending on the machine. Production logs show cache.get() returning None for keys that were set seconds ago with a generous ttl. Suspect a clock-domain mix-up. Fix it so entries are returned until their ttl elapses. tests/ must pass.",
+  "test_cmd": "python -m pytest tests -q",
+  "test_timeout_s": 60
+}

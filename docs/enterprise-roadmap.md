@@ -26,7 +26,7 @@ This document tracks what is **shipped** vs **planned** for enterprise-grade Hiv
 | FastAPI server | ✅ | `scripts/hive_api_server.py` |
 | Native backend (hive-cpp) | ✅ beta | `hive-cpp/`, `HIVE_BACKEND=native` |
 | LinUCB online learning | ✅ | `hive/policy_updater.py` |
-| SWE-bench eval harness | ✅ | `scripts/hive_swebench_eval.py` |
+| Real eval harness | ✅ | `scripts/hive_bench.py` (replaced simulated `hive_swebench_eval.py`) |
 | PyPI publishing | ✅ | `.github/workflows/release.yml` |
 | SBOM + pip-audit CI | ✅ | `scripts/generate_sbom.py`, CI `sbom` job |
 

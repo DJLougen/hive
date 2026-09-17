@@ -1,0 +1,7 @@
+{
+  "id": "dedup-case",
+  "family": "normalization",
+  "problem_statement": "dedup() should drop duplicate usernames case-insensitively while keeping the first occurrence's original spelling — 'Alice' and 'ALICE' are the same user. Currently both survive the dedup, so downstream jobs email users twice. Fix dedup() (order must be preserved). tests/ must pass.",
+  "test_cmd": "python -m pytest tests -q",
+  "test_timeout_s": 60
+}

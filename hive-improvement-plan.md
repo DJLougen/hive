@@ -10,7 +10,7 @@ Handoff plan for `DJLougen/hive`. Most Phase 1–3 items are **done** as of v0.6
 
 | Task | Status | Evidence |
 |------|--------|----------|
-| 1.1 SWE-bench-lite A/B eval | ✅ | `scripts/hive_swebench_eval.py`, `docs/benchmarks/swebench-lite/` |
+| 1.1 Real A/B eval | ✅ | `scripts/hive_bench.py` + `benchmarks/tasks/` — the prior `hive_swebench_eval.py` simulated the loop and drew resolves from an RNG; removed |
 | 1.2 Compression sensitivity | ✅ | `scripts/hive_compression_sweep.py`, README table |
 | Long-context compression eval | ✅ | `scripts/hive_long_context_eval.py` |
 

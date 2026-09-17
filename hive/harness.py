@@ -16,31 +16,74 @@ class RoutingPolicy(Protocol):
 
 
 class RuleBasedRoutingPolicy:
-    """Rule-based policy that routes mechanical SWE-style decisions to the CPU."""
+    """Rule-based policy that routes mechanical agent-loop decisions to the CPU.
+
+    Two decision layers, evaluated in order:
+
+    1. **Workflow state machine** — when the state carries the observable
+       signals an agent loop produces (``listed``, ``tests_run``,
+       ``tests_passed``, ``suggested_read``, ``writes`` …), the policy routes
+       the canonical mechanical transitions locally: enumerate the repo,
+       reproduce the failure, read the file the traceback names, re-verify
+       after a write, finish on green. Everything else escalates to the LLM.
+
+    2. **Keyword fallback** — for generic states without workflow signals,
+       route obvious mechanical goals by keyword (read file, run tests,
+       apply patch, install). Unknown goals escalate.
+    """
 
     def __init__(self) -> None:
         self.stats = {"routed": 0, "escalated": 0}
 
+    def _route(self, tool: str, args: dict[str, Any] | None = None, confidence: float = 0.95) -> dict[str, Any]:
+        self.stats["routed"] += 1
+        return {"tool": tool, "args": args or {}, "confidence": confidence, "escalated": False}
+
+    def _escalate(self, reason: str) -> dict[str, Any]:
+        self.stats["escalated"] += 1
+        return {"tool": "escalate", "args": {"reason": reason}, "confidence": 0.5, "escalated": True}
+
     def predict(self, state: dict[str, Any]) -> dict[str, Any]:
-        goal = str(state.get("goal", "")).lower()
-        action_hint = str(state.get("action_hint", "")).lower()
-        combined = f"{goal} {action_hint}"
+        # Workflow layer: only engage when the caller exposes loop signals.
+        if "listed" in state or "tests_run" in state:
+            return self._predict_workflow(state)
+        return self._predict_keywords(state)
+
+    def _predict_workflow(self, state: dict[str, Any]) -> dict[str, Any]:
+        listed = bool(state.get("listed"))
+        tests_run = int(state.get("tests_run") or 0)
+        writes = int(state.get("writes") or 0)
+        tests_passed = state.get("tests_passed")  # None | True | False
+        verify_pending = bool(state.get("verify_pending"))
+        suggested_read = state.get("suggested_read")
+        files_read = state.get("files_read") or []
+
+        # Mechanical transitions, highest precedence first.
+        if tests_passed is True and writes > 0:
+            return self._route("finish")
+        if verify_pending:
+            return self._route("run_tests")  # verify the patch once, then re-diagnose
+        if not listed:
+            return self._route("list_files")
+        if tests_run == 0:
+            return self._route("run_tests")  # reproduce the bug
+        if suggested_read and suggested_read not in files_read:
+            return self._route("read_file", {"path": suggested_read})
+        return self._escalate("diagnosis / patch synthesis needs reasoning")
+
+    def _predict_keywords(self, state: dict[str, Any]) -> dict[str, Any]:
+        combined = str(state.get("goal", "")).lower()
 
         if any(kw in combined for kw in ["read file", "read_file", "list dir", "grep", "search file", "view code"]):
-            self.stats["routed"] += 1
-            return {"tool": "read_file", "args": {}, "confidence": 0.95, "escalated": False}
+            return self._route("read_file")
         if any(kw in combined for kw in ["run test", "pytest", "execute test", "check test"]):
-            self.stats["routed"] += 1
-            return {"tool": "run_tests", "args": {}, "confidence": 0.95, "escalated": False}
+            return self._route("run_tests")
         if any(kw in combined for kw in ["apply patch", "git apply", "apply diff", "write fix", "edit file"]):
-            self.stats["routed"] += 1
-            return {"tool": "apply_patch", "args": {}, "confidence": 0.95, "escalated": False}
+            return self._route("apply_patch")
         if any(kw in combined for kw in ["install", "pip install", "setup"]):
-            self.stats["routed"] += 1
-            return {"tool": "run_command", "args": {}, "confidence": 0.90, "escalated": False}
+            return self._route("run_command", confidence=0.90)
 
-        self.stats["escalated"] += 1
-        return {"tool": "escalate", "args": {"reason": "complex reasoning"}, "confidence": 0.5, "escalated": True}
+        return self._escalate("complex reasoning")
 
 
 def load_routing_policy(*, model_path: str | Path | None = None) -> RoutingPolicy:

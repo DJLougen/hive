@@ -1,0 +1,7 @@
+{
+  "id": "paginate-off-by-one",
+  "family": "boundary",
+  "problem_statement": "Users report that the paginate() helper skips items. Asking for page 2 returns items that were already on page 1's tail, and page 1 itself is off by one — the first item of the collection is missing entirely. Fix paginate() so pages are correct and out-of-range pages return an empty list. The test suite in tests/ must pass.",
+  "test_cmd": "python -m pytest tests -q",
+  "test_timeout_s": 60
+}
