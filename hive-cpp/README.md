@@ -10,8 +10,11 @@ hive-cpp implements three modules behind the `hive_cpp` Python module:
 - **Compressor** (`src/compressor.rs`) — rule-based context compression (port of honey-comb)
 - **Memory** (`src/memory.rs`) — causal memory graph with keyed store/retrieve
 
-Select it from Python with `HIVE_BACKEND=native` (or `backend="native"`); `auto` picks it up when the
-`hive_cpp` extension is importable. See `hive/backend.py` for the adapter.
+Select it from Python with `HIVE_BACKEND=native` (or `backend="native"`). Native is strictly
+opt-in: the default `auto` resolves to the Python backend even when `hive_cpp` is importable,
+because `rust_compress` is lossy in a way the Python path is not (see below) — a compressor
+whose output depends on whether an unrelated wheel is installed is not reproducible.
+See `hive/backend.py` for the adapter.
 
 **Known difference from the Python path:** `rust_compress` keeps only `ceil(n/2)` whitespace tokens,
 scored by a fixed importance table, so it is *lossy* even for short messages (`"hello world"` →
@@ -70,7 +73,9 @@ state_json = """
 """
 
 decision = rust_router_decide(model_json, state_json)
-# → '{"action": "apply_patch", "confidence": 0.8, "reasoning": "...", "latency_ms": 0.01}'
+# → '{"action": "apply_patch", "confidence": 1.0,
+#      "reasoning": "Decision tree depth: 1", "latency_ms": 0.01}'
+# (confidence is hardcoded to 1.0 at every leaf — router.rs)
 ```
 
 ### Compressor
@@ -78,9 +83,11 @@ decision = rust_router_decide(model_json, state_json)
 ```python
 from hive_cpp import rust_compress
 
-result = rust_compress("DEBUG: cache miss\n" * 200)
-# → '{"compressed": "...", "original_tokens": 1200, "compressed_tokens": 12,
-#      "ratio": 100.0, "latency_ms": 0.02}'
+result = rust_compress("ERROR: disk full\nWARNING: retrying\nINFO: ok")
+# → '{"compressed": "ERROR: disk full WARNING:", "original_tokens": 7,
+#      "compressed_tokens": 4, "ratio": 1.75, "latency_ms": 0.02}'
+# Note the loss: "INFO: ok" is dropped and newlines become single spaces.
+# rust_compress keeps ceil(n/2) whitespace tokens, so ratio is always ≤ 2.0.
 ```
 
 `rust_compress` takes the **message text**, not a token list.

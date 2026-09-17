@@ -58,8 +58,15 @@ pip install "hive-agent-memory[dev,monitor,observability]"
 ### Native Rust backend (optional)
 
 ```bash
-pip install hive-cpp  # PyO3 wheel; HIVE_BACKEND=native routes/compresses in Rust (no published benchmark yet)
+pip install hive-cpp  # PyO3 wheel; opt-in only — see below
 ```
+
+Native is **opt-in**: the default `auto` backend always resolves to Python, even when the
+`hive-cpp` wheel is installed. Request it explicitly with `HIVE_BACKEND=native` or
+`HiveStack(backend="native")`. Reason: `rust_compress` keeps only `ceil(n/2)` whitespace
+tokens rejoined with single spaces (destroying newlines and code layout), while the Python
+path preserves structure — a compressor whose output depends on whether an unrelated wheel
+is importable is not reproducible. No published benchmark yet.
 
 ---
 
@@ -228,6 +235,12 @@ Environment variables:
 | `HIVE_TENANT_ISOLATION` | true | Enable key prefixing |
 | `HIVE_DEFAULT_TTL_S` | None | Memory TTL in seconds |
 | `HIVE_VALIDATE_INPUTS` | false | Pydantic validation |
+| `HIVE_MAX_MEMORY_NODES` | 10000 | Memory graph capacity |
+| `HIVE_AUDIT_ENABLED` | false | Record in-memory audit events |
+| `HIVE_JWT_SECRET` | None | JWT shared secret (redacted in `to_dict()`) |
+| `HIVE_OTEL_ENDPOINT` | None | OpenTelemetry collector endpoint |
+| `HIVE_PROMETHEUS_PORT` | 0 | Prometheus metrics port (0 = disabled) |
+| `HIVE_API_TOKEN` | None | Bearer token for `scripts/hive_api_server.py` data endpoints (unset = open) |
 | `HIVE_JWKS_URL` | None | JWT key server |
 | `HIVE_JWT_ISSUER` | None | Token issuer |
 | `HIVE_JWT_AUDIENCE` | None | Token audience |

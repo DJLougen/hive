@@ -9,7 +9,7 @@ Merged: [PR #62](https://github.com/DJLougen/hive/pull/62) · HLC preservation: 
 - **MCP server** — `pip install "hive-agent-memory[agents]"` → `hive-mcp`; configs for Cursor, Claude Desktop, and Codex ([MCP_SETUP.md](docs/MCP_SETUP.md))
 - **Harness integration** — hive-bench real eval + Hermes/OpenClaw guides + MCP bridge ([HARNESS_SETUP.md](docs/HARNESS_SETUP.md))
 - **Long-context eval** — `scripts/hive_long_context_eval.py --smoke` shows up to **153.8×** compression on 50k+ char logs ([`docs/benchmarks/long-context-smoke.json`](benchmarks/long-context-smoke.json))
-- **`HIVE_BACKEND`** — switch route/compress between Python and native hive-cpp (`python` | `native` | `auto`)
+- **`HIVE_BACKEND`** — opt-in native hive-cpp for route/compress (`HIVE_BACKEND=native` or `backend="native"`); the default `auto` stays on Python because the Rust compressor is lossy (drops newlines, keeps `ceil(n/2)` tokens), so silently switching on wheel presence would not be reproducible
 - **LinUCB** — contextual bandit routing without sklearn
 - **httpx async LLM** — `_OpenAICompatBackend.achat` via `[http]` extra
 

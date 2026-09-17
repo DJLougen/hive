@@ -1,27 +1,55 @@
-"""Backend selection for HiveStack (Python reference vs native hive-cpp)."""
+"""Backend selection for HiveStack (Python reference vs native hive-cpp).
+
+The default ``auto`` resolves to ``"python"`` unconditionally. The native
+hive-cpp backend is opt-in only: ``HIVE_BACKEND=native`` or
+``backend="native"``. Rationale: ``rust_compress`` is lossy in a way the
+Python path is not (it keeps ``ceil(n/2)`` whitespace tokens and rejoins
+them with single spaces, destroying newlines and code layout), so a
+compressor whose output depends on whether an unrelated wheel happens to be
+importable is not reproducible. An unrecognized ``HIVE_BACKEND`` value warns
+and falls back to the default.
+"""
 
 from __future__ import annotations
 
 import json
 import os
+import warnings
 from typing import Any, Literal
 
 BackendName = Literal["python", "native", "auto"]
 
 
 def resolve_backend(explicit: BackendName | None = None) -> BackendName:
-    """Resolve the active backend from env or explicit override."""
+    """Resolve the active backend from env or explicit override.
+
+    ``auto`` (the default) always resolves to ``"python"``; the native
+    backend must be requested explicitly. An explicit non-``auto`` argument
+    wins over the environment. An unrecognized ``HIVE_BACKEND`` value emits
+    a :class:`UserWarning` and falls back to the default rather than being
+    silently ignored.
+    """
     if explicit is not None and explicit != "auto":
         return explicit
-    env = os.environ.get("HIVE_BACKEND", "auto").strip().lower()
+    env = os.environ.get("HIVE_BACKEND", "").strip().lower() or "auto"
     if env in ("python", "native"):
         return env  # type: ignore[return-value]
-    if _native_available():
-        return "native"
+    if env != "auto":
+        warnings.warn(
+            f"unknown HIVE_BACKEND={env!r}; falling back to the default "
+            "('python'). Valid values: 'python', 'native', 'auto'.",
+            UserWarning,
+            stacklevel=2,
+        )
     return "python"
 
 
 def _native_available() -> bool:
+    """Whether the ``hive_cpp`` extension is importable.
+
+    Not consulted by :func:`resolve_backend` — native is strictly opt-in —
+    but kept as a probe for callers/tests that want to check availability.
+    """
     import importlib.util
 
     return importlib.util.find_spec("hive_cpp") is not None

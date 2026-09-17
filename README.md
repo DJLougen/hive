@@ -24,7 +24,7 @@ Four-tier modernization, validated locally and in CI on Python 3.10–3.13. Full
 | **Gossip + audit wiring** | `HiveStack(gossip=…)` publishes every `remember()` to peers; `HiveConfig(audit_enabled=True)` keeps a bounded audit trail via `stack.audit_events()` for SIEM export |
 | **MCP server** | `pip install "hive-agent-memory[agents]"` → `hive-mcp` console command; project config at `.cursor/mcp.json`; setup for Cursor, Claude Desktop, and Codex via [docs/MCP_SETUP.md](docs/MCP_SETUP.md) |
 | **Long-context proof** | `python scripts/hive_long_context_eval.py --smoke` — up to **153.8×** compression on 50k+ char synthetic logs, measured in [`docs/benchmarks/long-context-smoke.json`](docs/benchmarks/long-context-smoke.json) (short agent turns stay near 1×; routing is the win there) |
-| **`HIVE_BACKEND`** | `python` \| `native` \| `auto` — route/compress via hive-cpp when installed |
+| **`HIVE_BACKEND`** | `python` \| `native` \| `auto` — `auto` (the default) stays on the Python reference implementation; native is opt-in |
 | **LinUCB** | sklearn-free contextual bandit in `hive.policy_updater` for online routing updates |
 | **Async LLM** | `httpx`-backed `_OpenAICompatBackend.achat` (`[http]` extra) |
 | **Dev + supply chain** | `uv.lock`, pre-commit, Dependabot, ruff, pip-audit + SBOM CI, Docker L4T r36.4.0 bump |
@@ -36,6 +36,8 @@ Four-tier modernization, validated locally and in CI on Python 3.10–3.13. Full
 ## Real-workload evaluation (hive-bench)
 
 10 real bug-fix tasks ([`benchmarks/tasks/`](benchmarks/tasks/)) — each is a real repo with a real failing pytest suite. The agent acts through real tools (`list_files`, `read_file`, `grep`, `run_tests`, `write_file`, `finish`) executed by the harness; `tests/` is read-only so a pass can't be gamed. Resolve = a real `pytest` run at the end of the episode. **Baseline** sends every action decision to the LLM. **Hive** routes mechanical transitions through the CPU policy, compresses tool observations, and recalls prior fixes from causal memory. Same model (`deepseek-v4p1-flash`, Fireworks), same tools, same prompts, `temperature=0`.
+
+**Which router produced this table:** the published Hive arm ran the built-in rule-based state machine (`hive.harness.RuleBasedRoutingPolicy`, the `--policy rule` default) driving harness-computed read hints — *not* the trained `CPURouterPolicy`. That artifact predates policy provenance being recorded in the run JSON, and it cannot tell you which router it measured; the trained policy's own numbers are in [`docs/benchmarks/hive-bench-cpu-policy.json`](docs/benchmarks/hive-bench-cpu-policy.json) (pass 0 = 1.8 mean LLM calls, i.e. *more* model calls than the table above, because the trained router escalates more). Read the table as "rule engine + orchestration + memory", and the cpu-policy artifact as the trained-router result.
 
 | Metric | Baseline | Hive | Delta |
 |---|---|---|---|
@@ -100,7 +102,7 @@ Hive is a *meta-package*. The orchestrator (`hive.stack.HiveStack`) is small; th
 hive/
 ├── stack.py            # HiveStack — the orchestrator facade (route/compress/remember/step)
 ├── async_stack.py      # AsyncHiveStack — async API for FastAPI / high-throughput
-├── backend.py          # HIVE_BACKEND=python|native|auto resolution (hive-cpp when installed)
+├── backend.py          # HIVE_BACKEND resolution (python default; native opt-in)
 ├── config.py           # HiveConfig — enterprise configuration
 │
 │   memory
@@ -256,7 +258,7 @@ stack = HiveStack(
     gossip=None,              # GossipProtocol — remember() publishes each node
                               #   to peers when attached
     max_content_bytes=1_048_576,
-    backend=None,             # "python" | "native" | "auto"; or set HIVE_BACKEND env var
+    backend=None,             # "python" (default) | "native" | "auto"; or set HIVE_BACKEND
 )
 ```
 
@@ -395,10 +397,14 @@ Energy methodology and raw NVML samples live in [`docs/energy.md`](docs/energy.m
 `hive-cpp` is an optional Rust implementation of the hot paths (router, compressor, memory store). Control it with `HIVE_BACKEND` or the `backend=` constructor argument:
 
 ```bash
-export HIVE_BACKEND=native    # use hive-cpp for route/compress when installed
-export HIVE_BACKEND=python    # force Python reference implementation
-export HIVE_BACKEND=auto      # native when hive_cpp is importable (default)
+export HIVE_BACKEND=native    # REQUIRED to use hive-cpp for route/compress
+export HIVE_BACKEND=python    # Python reference implementation
+export HIVE_BACKEND=auto      # default: stays on python, so installing the crate changes nothing
 ```
+
+Native is opt-in on purpose. The crate's compressor is lossy (it keeps `ceil(n/2)` whitespace tokens by an
+importance score and rejoins them), so a backend that flipped to it merely because a wheel was importable
+would silently change what the model sees. `auto` therefore never selects native by itself.
 
 ```bash
 pip install "hive-agent-memory[performance]"   # or: pip install hive-cpp
