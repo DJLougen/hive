@@ -89,10 +89,14 @@ class AsyncHiveStack:
     async def compress_many(
         self, turns: Sequence[tuple[str, str]]
     ) -> list[CompressedTurn]:
-        # Parallel compression across messages
-        return await asyncio.gather(
-            *(self.compress(r, c) for r, c in turns)
-        )
+        # Delegate to the sync batch path so total max_content_bytes is
+        # enforced (parallel per-message compress() would bypass the cap).
+        async with self._lock:
+            loop = asyncio.get_running_loop()
+            return await loop.run_in_executor(
+                None,
+                functools.partial(self._stack.compress_many, turns),
+            )
 
     async def remember(
         self,
@@ -129,11 +133,12 @@ class AsyncHiveStack:
         # Delegate the whole step so the result matches HiveStack.step()
         # exactly: last-turn compression, decision persisted to the brain,
         # and a stats payload.
-        loop = asyncio.get_running_loop()
-        return await loop.run_in_executor(
-            None,
-            functools.partial(self._stack.step, dict(state), transcript),
-        )
+        async with self._lock:
+            loop = asyncio.get_running_loop()
+            return await loop.run_in_executor(
+                None,
+                functools.partial(self._stack.step, dict(state), transcript),
+            )
 
     async def stats(self) -> dict[str, Any]:
         async with self._lock:

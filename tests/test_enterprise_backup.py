@@ -61,6 +61,34 @@ def test_restore_clears_existing_data():
         os.unlink(path)
 
 
+def test_restore_leaves_store_unchanged_on_invalid_node():
+    """A malformed node mid-snapshot must not leave a partially restored store."""
+    import hashlib
+
+    brain = RustBrain()
+    brain.remember("existing", "before_restore")
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".gz") as f:
+        path = f.name
+
+    try:
+        brain.snapshot_to_file(path)
+        with open(path, "rb") as fh:
+            data = json.loads(gzip.decompress(fh.read()).decode("utf-8"))
+        data["nodes"].append({"key": "bad", "value": "x"})  # missing ts_ns
+        nodes_json = json.dumps(data["nodes"], sort_keys=True, ensure_ascii=False)
+        data["sha256"] = hashlib.sha256(nodes_json.encode("utf-8")).hexdigest()
+        with open(path, "wb") as fh:
+            fh.write(gzip.compress(json.dumps(data).encode("utf-8")))
+
+        with pytest.raises(ValueError, match="invalid snapshot node"):
+            brain.restore_from_file(path)
+        assert brain.recall("existing") == "before_restore"
+        assert len(brain) == 1
+    finally:
+        os.unlink(path)
+
+
 def test_corruption_detection():
     """Tampering with snapshot content is caught by the embedded SHA-256."""
     brain = RustBrain()
