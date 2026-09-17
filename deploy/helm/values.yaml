@@ -1,14 +1,21 @@
 replicaCount: 2
 
 image:
+  # No published image ships the API server today. Build one from this repo
+  # (see docker/Dockerfile.aarch64) or any image with `pip install .[server]`.
   repository: ghcr.io/djlougen/hive
   tag: latest
   pullPolicy: IfNotPresent
 
+# Bearer token required by scripts/hive_api_server.py on the data endpoints
+# (/route, /compress, /remember, /recall). REQUIRED: the chart refuses to
+# render without it. Pass with --set apiToken=... or a values file kept out
+# of version control.
+apiToken: ""
+
 service:
   type: ClusterIP
   port: 8080
-  metricsPort: 9090
 
 resources:
   requests:
@@ -18,13 +25,16 @@ resources:
     memory: 512Mi
     cpu: 500m
 
+# These names map to HiveConfig dataclass fields (hive/config.py), read via
+# HiveConfig.from_env(). NOTE: scripts/hive_api_server.py does not call
+# from_env() today — these take effect only for consumers that build a
+# HiveStack with a HiveConfig.
 env:
   HIVE_RATE_LIMIT: "1000"
   HIVE_TENANT_ISOLATION: "true"
   HIVE_VALIDATE_INPUTS: "true"
   HIVE_DEFAULT_TTL_S: "86400"
-  HIVE_MAX_NODES: "10000"
-  HIVE_MAX_CONTENT_BYTES: "1048576"
+  HIVE_MAX_MEMORY_NODES: "10000"
 
 livenessProbe:
   path: /health

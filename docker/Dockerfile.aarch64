@@ -1,12 +1,18 @@
 # Dockerfile.aarch64 — Hive on Jetson Thor / Grace / Orin (arm64)
 #
-# Build:
-#   docker build -f docker/Dockerfile.aarch64 -t hive:aarch64 .
+# Build (the build context MUST be the parent directory that also holds the
+# sibling checkouts busyBee-cpu/ and honey-comb/ — the COPY lines below reach
+# outside this repo, and a `docker build ... .` from the repo root fails with
+# "forbidden path outside the build context"):
+#   cd .. && docker build -f hive/docker/Dockerfile.aarch64 -t hive:aarch64 .
 #
-# Run on Jetson (host must have nvidia-container-toolkit installed):
+# Run the API server on Jetson (host must have nvidia-container-toolkit installed):
 #   docker run --rm --runtime nvidia --network host \
+#       -e HIVE_API_TOKEN="$(openssl rand -hex 32)" \
 #       -v /home/nvidia/models:/models:ro \
-#       hive:aarch64 python scripts/hive_benchmark.py --quiet
+#       hive:aarch64
+# (default CMD is scripts/hive_api_server.py --host 0.0.0.0 --port 8080;
+#  override with `... hive:aarch64 scripts/hive_benchmark.py --quiet` to benchmark)
 #
 # Native build (no Docker) on a Jetson:
 #   sudo apt-get update && sudo apt-get install -y python3-pip python3-venv
@@ -31,29 +37,32 @@ ENV DEBIAN_FRONTEND=noninteractive \
 ENV PIP_EXTRA_INDEX_URL=https://pypi.nvidia.com
 
 # busyBee-cpu / honey-comb are sibling packages. In a real deployment
-# we either git-clone them at build time or COPY them in. The example
-# below assumes the Hive repo is the build context and the siblings
-# are sibling directories on the host.
+# we either git-clone them at build time or COPY them in. The context for
+# every path below is the parent directory (see the build line at the top of
+# this file): this repo appears as `hive/`, the siblings as their own names.
 WORKDIR /opt/hive
 
 # Hive itself first (smallest, no ML deps).
-COPY pyproject.toml README.md ./
-COPY hive ./hive
-COPY scripts ./scripts
-COPY examples ./examples
+COPY hive/pyproject.toml hive/README.md ./
+COPY hive/hive ./hive
+COPY hive/scripts ./scripts
+COPY hive/examples ./examples
 
-# Sibling packages — assume the build context is a parent directory that
-# contains busyBee-cpu/ and honey-comb/. Adjust the COPY lines below for
-# your layout; the build will still work if you install them via git+url.
-COPY ../busyBee-cpu /opt/busyBee-cpu
-COPY ../honey-comb /opt/honey-comb
+# Sibling packages, resolved inside the same context. If you keep them
+# elsewhere, either add them to the context or install them via git+url.
+COPY busyBee-cpu /opt/busyBee-cpu
+COPY honey-comb /opt/honey-comb
 
 # Install runtime deps. numpy 2.x supported on JetPack 6.4+.
+# fastapi/uvicorn are the `server` extra (pyproject.toml) needed by
+# scripts/hive_api_server.py.
 RUN python3 -m pip install --upgrade pip \
     && python3 -m pip install "numpy>=1.26" \
         "scikit-learn>=1.4" \
         "joblib>=1.4" \
         "psutil>=5.9" \
+        "fastapi>=0.115" \
+        "uvicorn[standard]>=0.32" \
     && python3 -m pip install --no-deps /opt/busyBee-cpu /opt/honey-comb \
     && python3 -m pip install --no-deps .
 
@@ -62,4 +71,4 @@ RUN python3 -c "import hive, hive.rust_brain; print('hive ok', hive.__version__)
     && python3 scripts/smoke_rust_brain.py
 
 ENTRYPOINT ["python3"]
-CMD ["scripts/hive_benchmark.py", "--quiet"]
+CMD ["scripts/hive_api_server.py", "--host", "0.0.0.0", "--port", "8080"]

@@ -3,6 +3,10 @@
 **Control Environment**: Hive Agent Memory v0.6.1  
 **Trust Service Criteria**: Security, Availability
 
+This document maps controls to artifacts that exist in this repository.
+Controls whose evidence cells cannot be filled from committed code or tests
+are marked **not evidenced** — do not read a ✅ here as audit-ready.
+
 ---
 
 ## CC6.1 — Logical Access Controls
@@ -42,23 +46,28 @@
 - CHANGELOG.md maintained
 - Semantic versioning (currently v0.6.1)
 
-**Audit trail**: Git history + `hive/audit.py` signed logs.
+**Audit trail**: Git history + in-memory audit events in `hive/stack.py`
+(`audit_enabled`), exportable to SIEM formats via `hive/audit_export.py`.
+There is no `hive/audit.py` and no signed-log mechanism — treat "signed
+logs" as **not evidenced**.
 
 ---
 
 ## CC6.6 — Encryption at Rest
 
-**Evidence**:  provides AES-256-GCM transparent encryption.
+**Evidence**: `hive/encryption.py` provides AES-256-GCM transparent encryption
+(key derived from `HIVE_ENCRYPTION_KEY`).
 
-**Test**: 
+**Test**: `tests/test_enterprise_encryption.py`
 
 ---
 
 ## CC6.2 / CC6.3 — Authentication & Offboarding
 
-**Evidence**:  JWT validation with JWKS + RBAC.  for GDPR Article 17.
+**Evidence**: `hive/auth.py` JWT validation with JWKS + RBAC.
+`RustBrain.forget()` / tenant revocation for GDPR Article 17.
 
-**Test**: , 
+**Test**: `tests/test_enterprise_auth.py`, `tests/test_enterprise_offboarding.py`
 
 ---
 
@@ -68,7 +77,7 @@
 - `/health` — liveness (always 200 if process alive)
 - `/ready` — readiness (200 only if RustBrain + compressor responsive)
 
-**SLA targets** (aspirational):
+**SLA targets** (aspirational — no measured uptime or latency artifact exists):
 - Uptime: 99.9%
 - P95 routing latency: < 1ms
 - P95 memory read latency: < 0.01ms

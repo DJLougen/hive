@@ -110,15 +110,47 @@ impl Router {
                 };
             }
 
-            // Extract feature value
-            let feature = node.feature.as_ref().expect("Non-leaf node has feature");
-            let threshold = node.threshold.expect("Non-leaf node has threshold");
+            // A malformed non-leaf node (missing feature, threshold, or the
+            // child this branch needs) must not panic: the crate is built
+            // with panic = "abort", so a panic here kills the host Python
+            // process. Escalate instead and name the defect.
+            let malformed = |what: &str| -> Decision {
+                let latency_ms = start.elapsed().as_micros() as f64 / 1000.0;
+                Decision {
+                    action: "escalate".to_string(),
+                    confidence: 0.0,
+                    reasoning: format!(
+                        "Malformed model: non-leaf node at depth {} has no {}",
+                        depth, what
+                    ),
+                    latency_ms,
+                }
+            };
+
+            let (Some(feature), Some(threshold)) = (&node.feature, node.threshold)
+            else {
+                return malformed(if node.feature.is_none() {
+                    "feature"
+                } else {
+                    "threshold"
+                });
+            };
             let value = features.get(feature).copied().unwrap_or(0.0);
 
-            node = if value <= threshold {
-                node.left.as_ref().expect("Non-leaf node has left child")
+            let next = if value <= threshold {
+                node.left.as_ref()
             } else {
-                node.right.as_ref().expect("Non-leaf node has right child")
+                node.right.as_ref()
+            };
+            node = match next {
+                Some(child) => child,
+                None => {
+                    return malformed(if value <= threshold {
+                        "left child"
+                    } else {
+                        "right child"
+                    });
+                }
             };
             depth += 1;
         }
@@ -194,6 +226,89 @@ mod tests {
 
         let decision = router.decide(&state);
         assert_eq!(decision.action, "apply_patch");
+    }
+
+    fn bare_state() -> AgentState {
+        AgentState {
+            goal: "Fix bug".to_string(),
+            step: 3,
+            last_tool: None,
+            recent_observations: vec![],
+            open_files: vec![],
+            available_tools: vec![],
+        }
+    }
+
+    #[test]
+    fn test_malformed_node_missing_feature_escalates() {
+        // Non-leaf node with feature: null must not panic (crate is built
+        // with panic = "abort"; a panic would kill the host process).
+        let model = RouterModel {
+            root: DecisionTreeNode {
+                feature: None,
+                threshold: Some(5.0),
+                left: Some(Box::new(DecisionTreeNode {
+                    feature: None,
+                    threshold: None,
+                    left: None,
+                    right: None,
+                    action: Some("read_file".to_string()),
+                })),
+                right: None,
+                action: None,
+            },
+            feature_names: vec![],
+            tool_names: vec![],
+        };
+
+        let decision = Router::new(model).decide(&bare_state());
+        assert_eq!(decision.action, "escalate");
+        assert_eq!(decision.confidence, 0.0);
+        assert!(decision.reasoning.contains("feature"));
+    }
+
+    #[test]
+    fn test_malformed_node_missing_left_child_escalates() {
+        // Non-leaf node whose left child is null: a low feature value
+        // takes the missing branch and must escalate, not abort.
+        let model = RouterModel {
+            root: DecisionTreeNode {
+                feature: Some("step".to_string()),
+                threshold: Some(5.0),
+                left: None,
+                right: Some(Box::new(DecisionTreeNode {
+                    feature: None,
+                    threshold: None,
+                    left: None,
+                    right: None,
+                    action: Some("apply_patch".to_string()),
+                })),
+                action: None,
+            },
+            feature_names: vec!["step".to_string()],
+            tool_names: vec![],
+        };
+
+        let decision = Router::new(model).decide(&bare_state());
+        assert_eq!(decision.action, "escalate");
+        assert_eq!(decision.confidence, 0.0);
+        assert!(decision.reasoning.contains("left child"));
+    }
+
+    #[test]
+    fn test_malformed_model_json_still_decides() {
+        // End-to-end: model JSON straight from a caller, deserialized the
+        // same way rust_router_decide does.
+        let model: RouterModel = serde_json::from_str(
+            r#"{"root": {"feature": null, "threshold": null, "left": null,
+                        "right": null, "action": null},
+                "feature_names": [], "tool_names": []}"#,
+        )
+        .unwrap();
+
+        let decision = Router::new(model).decide(&bare_state());
+        assert_eq!(decision.action, "escalate");
+        assert_eq!(decision.confidence, 0.0);
     }
 
     #[test]

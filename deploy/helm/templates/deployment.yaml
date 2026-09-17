@@ -18,12 +18,19 @@ spec:
         - name: hive
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          # scripts/hive_api_server.py serves /health, /ready, /route,
+          # /compress, /remember, /recall on this port.
+          command: ["python3", "scripts/hive_api_server.py"]
+          args: ["--host", "0.0.0.0", "--port", "{{ .Values.service.port }}"]
           ports:
             - containerPort: {{ .Values.service.port }}
               name: http
-            - containerPort: {{ .Values.service.metricsPort }}
-              name: metrics
           env:
+            - name: HIVE_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-api
+                  key: HIVE_API_TOKEN
             {{- range $key, $val := .Values.env }}
             - name: {{ $key }}
               value: "{{ $val }}"

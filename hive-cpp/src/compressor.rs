@@ -11,16 +11,11 @@ use std::collections::HashMap;
 pub struct CompressionRules {
     /// Target compression ratio (2.0 = 2x compression)
     pub ratio: f64,
-    /// Preserve critical patterns (errors, commands, paths)
-    pub preserve_patterns: bool,
 }
 
 impl Default for CompressionRules {
     fn default() -> Self {
-        Self {
-            ratio: 2.0,
-            preserve_patterns: true,
-        }
+        Self { ratio: 2.0 }
     }
 }
 
@@ -214,10 +209,7 @@ mod tests {
 
     #[test]
     fn test_basic_compression() {
-        let rules = CompressionRules {
-            ratio: 2.0,
-            preserve_patterns: true,
-        };
+        let rules = CompressionRules { ratio: 2.0 };
         let compressor = Compressor::new(rules);
         
         let message = "This is a test message that should be compressed to roughly half its original length while preserving important information";
@@ -244,10 +236,7 @@ mod tests {
 
     #[test]
     fn test_pattern_preservation() {
-        let rules = CompressionRules {
-            ratio: 2.0,
-            preserve_patterns: true,
-        };
+        let rules = CompressionRules { ratio: 2.0 };
         let compressor = Compressor::new(rules);
         
         let msg = "Error occurred at /path/to/file.cpp line 42 causing system::failure";

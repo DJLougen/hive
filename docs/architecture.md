@@ -65,14 +65,14 @@ For each turn:
 
 | Stage        | Target (Jetson Thor) | Target (RTX 3090) | Measured (DGX Spark) |
 |--------------|----------------------|-------------------|---------------------|
-| route        | <30 ms               | <5 ms             | 9.0 ms / call (112 items/s) |
-| compress     | <5 ms / message      | <1 ms / message   | 50 µs (19.8K/s)     |
-| remember     | <1 µs / write        | <1 µs / write     | 5.7 µs (177K/s)     |
-| llm (when escalated) | model-dependent | model-dependent   |
+| route        | <30 ms               | <5 ms             | 9.0 ms / call — `busybee_cpu`, 112 items/s |
+| compress     | <5 ms / message      | <1 ms / message   | 50 µs — `compress[fast]`, 19.9K/s (rule-based `compress[honeycomb]`: 843 µs, 1.19K/s) |
+| remember     | <1 µs / write        | <1 µs / write     | 5.7 µs — `rust_brain`, 177K/s |
+| llm (when escalated) | model-dependent | model-dependent   | not measured |
 
 Measured column is from `docs/benchmarks/latest-micro.json` (DGX Spark, synthetic load, no trained
 routing policy loaded) — `busybee_cpu` at 112 items/s is the constant-escalate fallback path, not a
-policy-routed call. Targets are the original design budget.
+policy-routed call. The two target columns are the original design budget, not measurements.
 
 ## 5. Failure modes and recovery
 

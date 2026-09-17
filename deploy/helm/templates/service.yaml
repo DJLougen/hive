@@ -9,7 +9,4 @@ spec:
     - port: {{ .Values.service.port }}
       targetPort: {{ .Values.service.port }}
       name: http
-    - port: {{ .Values.service.metricsPort }}
-      targetPort: {{ .Values.service.metricsPort }}
-      name: metrics
   type: {{ .Values.service.type }}

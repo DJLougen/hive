@@ -3,9 +3,13 @@ kind: ConfigMap
 metadata:
   name: hive-config
 data:
+  # These names map to HiveConfig dataclass fields (hive/config.py), read via
+  # HiveConfig.from_env(). NOTE: scripts/hive_api_server.py does not call
+  # from_env() today — these take effect only for consumers that build a
+  # HiveStack with a HiveConfig. The server reads HIVE_API_TOKEN directly
+  # (see secret.yaml / deployment.yaml).
   HIVE_RATE_LIMIT: "1000"
   HIVE_TENANT_ISOLATION: "true"
   HIVE_VALIDATE_INPUTS: "true"
   HIVE_DEFAULT_TTL_S: "86400"
-  HIVE_MAX_NODES: "10000"
-  HIVE_MAX_CONTENT_BYTES: "1048576"
+  HIVE_MAX_MEMORY_NODES: "10000"

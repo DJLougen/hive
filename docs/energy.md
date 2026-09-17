@@ -9,10 +9,8 @@ Measured on RTX 3090 with GPT-2, 117M parameters:
 | Metric | Baseline | With Hive | Delta |
 |---|---:|---:|---:|
 | Joules per token | 1.64 J/tok | 1.46 J/tok | 11.2% lower |
-| Baseline tokens | 445 | - | - |
-| Hive tokens | - | 396 | - |
-| Baseline LLM calls | 3 | - | - |
-| Hive LLM calls | - | 1 | - |
+| Prompts measured | 3 | 3 | - |
+| Total tokens | 148 | 148 | - |
 
 Raw data:
 
@@ -23,7 +21,7 @@ results/energy_real.json
 Reproduce:
 
 ```bash
-python scripts/energy_benchmark_real.py --prompts 10
+python scripts/energy_benchmark_real.py --prompts 3 --output results/energy_real.json
 ```
 
 ## Hardware and protocol
@@ -34,8 +32,8 @@ python scripts/energy_benchmark_real.py --prompts 10
 - Power sampling: NVML
 - Sampling interval: 10 ms
 - Energy integration: trapezoidal integration
-- Prompt count: 10
-- Repeat count: 3
+- Prompt count: 3
+- Repeat count: 1 (each prompt measured once per arm; the artifact records no repeats)
 
 The benchmark measures inference waste reduction. Hive is not changing the model weights or making the model intrinsically more energy efficient. It reduces work sent to the GPU.
 

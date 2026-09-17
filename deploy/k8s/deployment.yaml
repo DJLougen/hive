@@ -16,13 +16,25 @@ spec:
     spec:
       containers:
         - name: hive
+          # No published image ships the API server today. Build one from
+          # this repo, e.g.:
+          #   docker build -f docker/Dockerfile.aarch64 -t hive:aarch64 .
+          # (that Dockerfile installs fastapi/uvicorn and defaults to the
+          # command below), or any image with `pip install .[server]`.
           image: ghcr.io/djlougen/hive:latest
+          # scripts/hive_api_server.py serves /health, /ready, /route,
+          # /compress, /remember, /recall on this port.
+          command: ["python3", "scripts/hive_api_server.py"]
+          args: ["--host", "0.0.0.0", "--port", "8080"]
           ports:
             - containerPort: 8080
               name: http
-            - containerPort: 9090
-              name: metrics
           env:
+            - name: HIVE_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: hive-api
+                  key: HIVE_API_TOKEN
             - name: HIVE_HEALTH_BIND
               value: "0.0.0.0"
             - name: HIVE_RATE_LIMIT
@@ -62,7 +74,4 @@ spec:
     - port: 8080
       targetPort: 8080
       name: http
-    - port: 9090
-      targetPort: 9090
-      name: metrics
   type: ClusterIP
