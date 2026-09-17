@@ -1,9 +1,13 @@
-"""Encryption at rest for Hive sensitive data.
+"""Encryption-at-rest helper for Hive sensitive data.
 
-Provides AES-256-GCM transparent encryption for RustBrain values.
-Keys are derived from ``HIVE_ENCRYPTION_KEY`` env var via PBKDF2.
-When encryption is disabled (no key configured) values pass through
-unchanged — fully backward compatible.
+NOTE: this module is a standalone utility — it is NOT wired into
+``RustBrain`` or ``HiveStack``, so stored values are not encrypted unless
+the caller encrypts them explicitly before ``remember()``.
+
+Provides AES-256-GCM encryption for values. Keys are derived from the
+``HIVE_ENCRYPTION_KEY`` env var via PBKDF2. When encryption is disabled
+(no key configured) values pass through unchanged — fully backward
+compatible.
 
 Usage::
 
@@ -34,7 +38,10 @@ except Exception:  # pragma: no cover
 
 
 class Encryptor:
-    """AES-256-GCM encryptor with PBKDF2 key derivation."""
+    """AES-256-GCM encryptor with PBKDF2 key derivation.
+
+    Standalone helper — not wired into RustBrain/HiveStack storage.
+    """
 
     def __init__(self, key: bytes) -> None:
         if len(key) not in (16, 24, 32):

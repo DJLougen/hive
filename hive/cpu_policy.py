@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 from collections import Counter
 from pathlib import Path
 from typing import Any
@@ -343,10 +344,51 @@ class CPURouterPolicy:
                      "metrics": self.train_metrics}, path)
 
     @classmethod
-    def load(cls, path: str | Path) -> CPURouterPolicy:
+    def load(cls, path: str | Path, *, trust_store: str | Path | None = None) -> CPURouterPolicy:
+        """Load a saved policy, enforcing signature verification.
+
+        A ``<name>.joblib.sig`` sidecar (written by
+        :meth:`hive.model_registry.ModelRegistry.sign_model`) is verified
+        cryptographically — an invalid signature always refuses the load.
+        When no sidecar exists the model is refused unless
+        ``HIVE_ALLOW_UNSIGNED_MODEL=1`` is set, because ``joblib.load``
+        unpickles arbitrary objects and an unsigned model is a code-
+        execution vector.
+
+        ``trust_store`` (or the ``HIVE_MODEL_TRUST_STORE`` env var) names a
+        JSON file of trusted signer fingerprints; without one the embedded
+        signer is trusted on first use (integrity, not authenticity).
+        """
         import joblib
 
-        blob = joblib.load(path)
+        from hive.model_registry import ModelRegistry, UnsignedModelError
+
+        path = Path(path)
+        sig_file = path.with_suffix(".joblib.sig")
+        store = trust_store or os.environ.get("HIVE_MODEL_TRUST_STORE")
+        registry = ModelRegistry(strict=True, trust_store=str(store) if store else None)
+        if sig_file.exists():
+            if not store:
+                # No trust store configured: pin the declared signer so the
+                # cryptographic check still runs (TOFU — integrity only).
+                try:
+                    declared = json.loads(sig_file.read_text("utf-8")).get("fingerprint")
+                except (json.JSONDecodeError, OSError):
+                    declared = None
+                if declared:
+                    registry.trust_signer(declared)
+            blob = registry.load(path)
+        elif os.environ.get("HIVE_ALLOW_UNSIGNED_MODEL") == "1":
+            _log.warning("Loading unsigned model %s (HIVE_ALLOW_UNSIGNED_MODEL=1)", path)
+            blob = joblib.load(path)
+        else:
+            raise UnsignedModelError(
+                f"Refusing to load unsigned model {path}: joblib unpickles "
+                "arbitrary objects, so an unsigned model is a code-execution "
+                "vector. Sign it with ModelRegistry.sign_model() to produce a "
+                ".joblib.sig sidecar, or set HIVE_ALLOW_UNSIGNED_MODEL=1 to "
+                "load unsigned models you trust."
+            )
         policy = cls(threshold=blob.get("threshold", 0.55),
                      tools=tuple(blob.get("tools") or TOOLS),
                      algorithm=blob.get("algorithm", "rf"))

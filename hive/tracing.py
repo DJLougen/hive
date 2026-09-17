@@ -1,16 +1,23 @@
-"""Distributed tracing support via W3C traceparent.
+"""W3C traceparent helpers for manual distributed tracing.
 
-Propagates trace context through route → compress → llm → remember so
-Jaeger/Zipkin shows the full agent turn end-to-end.
+This module is a standalone utility: ``TraceContext`` builds and parses
+W3C ``traceparent`` headers and ``Span`` times a block of work. Nothing in
+``HiveStack`` consumes a traceparent today — ``stack.route()`` and
+``stack.compress()`` do not accept one — so propagation is the caller's
+job: carry the header in your own state dict or telemetry exporter.
 
 Usage::
 
-    from hive.tracing import TraceContext
+    from hive.tracing import Span, TraceContext
 
-    trace = TraceContext.start()
-    decision = stack.route(state, traceparent=trace.traceparent)
-    compressed = stack.compress("user", text, traceparent=trace.traceparent)
-    # All telemetry spans share the same trace ID
+    trace = TraceContext()
+    state = {"goal": goal, "traceparent": trace.traceparent}
+    with Span("route", trace) as span:
+        decision = stack.route(state)
+    print(span.to_dict())  # hand to your exporter
+
+    # Continue a trace started upstream:
+    ctx = TraceContext.from_header(incoming_headers["traceparent"])
 """
 
 from __future__ import annotations

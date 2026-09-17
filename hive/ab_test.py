@@ -46,7 +46,7 @@ class ABTestHarness:
     split:
         Fraction of traffic to variant (0.0–1.0).
     min_samples:
-        Minimum outcomes before declaring a winner.
+        Minimum outcomes *per arm* before declaring a winner.
     improvement_threshold:
         Required relative improvement to promote variant.
     """
@@ -135,7 +135,10 @@ class ABTestHarness:
         if self._active_arm == "control":
             return False
         s = self.stats()
-        if s["variant_samples"] < self._min_samples:
+        # Both arms must meet the per-arm minimum: variant-only data says
+        # nothing about whether the variant beats control.
+        if (s["variant_samples"] < self._min_samples
+                or s["control_samples"] < self._min_samples):
             return False
         return s["improvement"] >= self._improvement_threshold
 

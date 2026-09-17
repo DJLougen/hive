@@ -21,6 +21,26 @@ python -m hive.mcp --help
 python -c "from hive.mcp_server import HIVE_MCP_TOOLS; print(HIVE_MCP_TOOLS)"
 ```
 
+## 1a. Routing policy (optional)
+
+`hive_route` needs a routing policy. By default the server uses the built-in
+rule-based policy (`--policy rule`), which routes mechanical agent-loop steps
+(list files, run tests, read the suggested file, finish on green) locally and
+escalates everything else. The `hive_route` response includes a `policy` field
+naming the router that answered.
+
+```bash
+# train one from logged trajectories
+python scripts/train_cpu_policy.py --trajectories traces.jsonl --out policy.joblib
+# sign it (CPURouterPolicy.load refuses unsigned models unless
+# HIVE_ALLOW_UNSIGNED_MODEL=1 is set)
+python -c "from hive.model_registry import ModelRegistry; \
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey; \
+ModelRegistry.sign_model('policy.joblib', Ed25519PrivateKey.generate())"
+# serve with it
+hive-mcp --policy path --policy-path policy.joblib
+```
+
 ## 2. Quick install (all clients)
 
 ```bash
@@ -112,7 +132,8 @@ Verify with `codex mcp list` (Codex CLI) or `/mcp` inside a Codex session.
 For HTTP clients that expect SSE instead of stdio:
 
 ```bash
-python scripts/hive_mcp_server.py --transport sse --port 8080
+hive-mcp --transport sse --port 8080
+# or: python -m hive.mcp_server --transport sse --port 8080
 ```
 
 Point remote MCP entries at `http://127.0.0.1:8080/sse`.

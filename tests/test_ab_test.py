@@ -39,6 +39,27 @@ def test_winner_needs_min_samples():
     assert not ab.is_winner()
 
 
+def test_winner_needs_both_arms():
+    """Variant-only data can never declare a winner, however good it looks."""
+    ab = ABTestHarness(control=MockPolicy(), variant=MockPolicy(), min_samples=5)
+    for _ in range(10):
+        d = ab.route({"goal": "test"})
+        d.source = "variant"  # force arm attribution for the outcome log
+        ab.record_outcome(d, "test_tool", OutcomeType.CORRECT.value)
+    assert ab.stats()["variant_samples"] == 10
+    assert ab.stats()["control_samples"] == 0
+    assert not ab.is_winner()
+
+
+def test_winner_when_both_arms_meet_minimum():
+    ab = ABTestHarness(control=MockPolicy(), variant=MockPolicy(), min_samples=5)
+    for i in range(10):
+        d = ab.route({"goal": "test"})
+        d.source = "variant" if i < 5 else "control"
+        outcome = OutcomeType.CORRECT.value if i < 5 else "incorrect"
+        ab.record_outcome(d, "test_tool", outcome)
+    assert ab.is_winner()
+
 def test_promote_and_rollback():
     ab = ABTestHarness(control=MockPolicy(), variant=MockPolicy())
     ab.promote_variant()

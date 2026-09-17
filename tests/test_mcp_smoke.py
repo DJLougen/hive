@@ -21,3 +21,23 @@ def test_hive_mcp_package_runnable():
 def test_mcp_main_requires_mcp_package(monkeypatch):
     monkeypatch.setattr("hive.mcp_server._HAS_MCP", False)
     assert main([]) == 1
+
+
+def test_build_stack_routes_with_default_policy():
+    """The default stack must route mechanically, not fall back to escalate."""
+    from hive.mcp_server import build_stack
+
+    stack = build_stack()
+    decision = stack.route({"goal": "run tests for the repo", "available_tools": []})
+    assert decision.source == "busybee"
+    assert decision.tool == "run_tests"
+    assert not decision.escalated
+
+
+def test_build_stack_path_policy_requires_path():
+    import pytest
+
+    from hive.mcp_server import build_stack
+
+    with pytest.raises(ValueError, match="policy-path"):
+        build_stack(policy="path")

@@ -94,7 +94,8 @@ def test_resolve_args_never_rereads():
     assert resolve_args("read_file", s) is None
 
 
-def test_save_load_roundtrip(tmp_path):
+def test_save_load_roundtrip(tmp_path, monkeypatch):
+    monkeypatch.setenv("HIVE_ALLOW_UNSIGNED_MODEL", "1")
     p = _fit()
     out = tmp_path / "m.joblib"
     p.save(out)
@@ -129,7 +130,8 @@ def test_markov_algorithm_routes_and_replays():
     assert d["tool"] == "read_file"
 
 
-def test_algorithm_validation_and_roundtrip(tmp_path):
+def test_algorithm_validation_and_roundtrip(tmp_path, monkeypatch):
+    monkeypatch.setenv("HIVE_ALLOW_UNSIGNED_MODEL", "1")
     with pytest.raises(ValueError):
         CPURouterPolicy(algorithm="quantum")
     p = CPURouterPolicy(threshold=0.3, algorithm="markov1")
@@ -147,3 +149,56 @@ def test_trajectory_row_shape():
     assert row["tool"] == "list_files" and row["ok"] is True
     assert "extra" not in row["state"]
     assert row["state"]["files_read"] == ["a"]
+
+
+def test_load_refuses_unsigned_model(tmp_path, monkeypatch):
+    from hive.model_registry import UnsignedModelError
+
+    monkeypatch.delenv("HIVE_ALLOW_UNSIGNED_MODEL", raising=False)
+    p = _fit()
+    out = tmp_path / "m.joblib"
+    p.save(out)
+    with pytest.raises(UnsignedModelError, match="HIVE_ALLOW_UNSIGNED_MODEL"):
+        CPURouterPolicy.load(out)
+
+
+def test_load_unsigned_model_with_env_opt_in(tmp_path, monkeypatch):
+    monkeypatch.setenv("HIVE_ALLOW_UNSIGNED_MODEL", "1")
+    p = _fit()
+    out = tmp_path / "m.joblib"
+    p.save(out)
+    q = CPURouterPolicy.load(out)
+    assert q.predict({"listed": False})["tool"] == "list_files"
+
+
+def test_load_signed_model(tmp_path, monkeypatch):
+    monkeypatch.delenv("HIVE_ALLOW_UNSIGNED_MODEL", raising=False)
+    pytest.importorskip("cryptography")
+    from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+
+    from hive.model_registry import ModelRegistry
+
+    p = _fit()
+    out = tmp_path / "m.joblib"
+    p.save(out)
+    ModelRegistry.sign_model(out, Ed25519PrivateKey.generate())
+    q = CPURouterPolicy.load(out)
+    assert q.predict({"listed": False})["tool"] == "list_files"
+
+
+def test_load_rejects_tampered_signed_model(tmp_path, monkeypatch):
+    monkeypatch.delenv("HIVE_ALLOW_UNSIGNED_MODEL", raising=False)
+    pytest.importorskip("cryptography")
+    from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+
+    from hive.model_registry import ModelRegistry, UnsignedModelError
+
+    p = _fit()
+    out = tmp_path / "m.joblib"
+    p.save(out)
+    ModelRegistry.sign_model(out, Ed25519PrivateKey.generate())
+    # Tamper: any change to the model bytes breaks the signed digest.
+    with open(out, "ab") as fh:
+        fh.write(b"tampered")
+    with pytest.raises(UnsignedModelError):
+        CPURouterPolicy.load(out)
