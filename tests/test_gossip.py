@@ -32,3 +32,30 @@ def test_gossip_start_stop():
     gossip.start()
     gossip.stop()
     # No crash
+
+
+def test_gossip_queue_is_bounded_and_counts_drops():
+    """An unstarted protocol must not grow without bound (or block callers)."""
+    brain = RustBrain()
+    gossip = GossipProtocol(brain, peers=[], interval=60.0, batch_size=1)
+    assert gossip.stats() == {"published": 0, "dropped": 0, "queued": 0}
+
+    for i in range(11):
+        gossip.publish({"key": f"k{i}", "value": i})
+
+    assert gossip.stats()["published"] == 10  # batch_size * 10
+    assert gossip.stats()["dropped"] == 1
+    assert gossip.stats()["queued"] == 10
+
+
+def test_gossip_stays_publishable_after_drops():
+    brain = RustBrain()
+    gossip = GossipProtocol(brain, peers=[], interval=60.0, batch_size=1)
+    for i in range(12):
+        gossip.publish({"key": f"k{i}", "value": i})
+
+    assert gossip.stats()["dropped"] == 2
+    # A drop must not poison later publishes.
+    gossip._queue.get_nowait()
+    gossip.publish({"key": "later", "value": 1})
+    assert gossip.stats()["published"] == 11

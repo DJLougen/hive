@@ -18,6 +18,7 @@ from __future__ import annotations
 import threading
 import time
 from dataclasses import dataclass, field
+from typing import Any
 
 
 @dataclass
@@ -59,15 +60,29 @@ class TokenBucket:
 class RateLimiter:
     """Per-tenant, per-operation token-bucket rate limiter."""
 
-    def __init__(self, *, default_capacity: int = 100, refill_rate: float = 10.0) -> None:
+    def __init__(
+        self,
+        *,
+        default_capacity: int = 100,
+        refill_rate: float = 10.0,
+        max_buckets: int = 4096,
+    ) -> None:
         self.default_capacity = default_capacity
         self.refill_rate = refill_rate
+        # One bucket per (tenant, operation) pair: without a cap a caller that
+        # varies the tenant id grows this dict without bound.
+        self.max_buckets = max_buckets
+        self._evictions = 0
         self._buckets: dict[tuple[str, str], TokenBucket] = {}
         self._lock = threading.Lock()
 
     def _bucket(self, tenant_id: str, operation: str) -> TokenBucket:
         key = (tenant_id, operation)
         if key not in self._buckets:
+            if len(self._buckets) >= self.max_buckets:
+                # dicts preserve insertion order: drop the oldest bucket.
+                del self._buckets[next(iter(self._buckets))]
+                self._evictions += 1
             self._buckets[key] = TokenBucket(
                 capacity=self.default_capacity,
                 refill_rate=self.refill_rate,
@@ -82,10 +97,21 @@ class RateLimiter:
         return bucket.consume(1)
 
     def get_remaining(self, tenant_id: str, operation: str) -> int:
-        """Return remaining tokens for the tenant/operation pair."""
+        """Return remaining tokens for the tenant/operation pair.
+
+        Read-only: a lookup for an unknown pair reports the full capacity and
+        does *not* create a bucket (a read must not grow the map).
+        """
         with self._lock:
-            bucket = self._bucket(tenant_id, operation)
+            bucket = self._buckets.get((tenant_id, operation))
+        if bucket is None:
+            return self.default_capacity
         return bucket.remaining()
+
+    def stats(self) -> dict[str, Any]:
+        """Bucket count and eviction count, for monitoring."""
+        with self._lock:
+            return {"buckets": len(self._buckets), "evictions": self._evictions}
 
     def reset(self, tenant_id: str) -> None:
         """Clear all buckets for a tenant (useful in tests)."""

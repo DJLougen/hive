@@ -50,7 +50,7 @@ _log = logging.getLogger("hive.telemetry")
 class RoutingEvent:
     """One routing decision."""
 
-    source: str  # "busybee" | "fallback"
+    source: str  # "busybee" | "fallback" | "ratelimit"
     action: str  # tool name or "escalate"
     confidence: float  # 0.0 – 1.0
     latency_ms: float  # ms to decide

@@ -141,7 +141,7 @@ hive/
 ├── hardware.py         # NVML power/util sampling (PowerSampler)
 │
 │   extensibility
-├── plugins.py          # register custom compressors / routers / memory backends
+├── plugins.py          # register custom compressors / routers (opt-in; not auto-wired)
 └── streaming.py        # WebSocket / SSE streaming (StreamRouter, StreamCompressor, SSETransport)
 ```
 

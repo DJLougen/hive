@@ -1,8 +1,15 @@
 """Plugin API for custom compressors, routers, and memory backends.
 
+**Opt-in registry only — not wired into ``HiveStack``.** ``hive.plugins``
+provides registration and lookup for third-party implementations; nothing in
+:mod:`hive.stack` consults it, so registering a plugin does not by itself change
+how a stack compresses, routes, or stores. Pass implementations explicitly
+(``HiveStack(honey_comb=..., busybee_policy=..., rust_brain=...)``) today, or
+read the registry yourself:
+
 Usage::
 
-    from hive.plugins import CompressorPlugin, RouterPlugin, register_compressor
+    from hive.plugins import CompressorPlugin, get_compressor, register_compressor
 
     class MyCompressor(CompressorPlugin):
         def compress(self, role: str, content: str) -> CompressedTurn:
@@ -10,9 +17,7 @@ Usage::
 
     register_compressor("my_compressor", MyCompressor())
 
-Then in HiveStack:
-
-    stack = HiveStack(plugins={"compressor": "my_compressor"})
+    stack = HiveStack(honey_comb=get_compressor("my_compressor"))
 """
 
 from __future__ import annotations

@@ -222,13 +222,32 @@ class HiveStack:
     def route(self, state: Mapping[str, Any]) -> RouteDecision:
         """Decide which tool to invoke next. CPU-only."""
         if self.rate_limiter is not None and not self.rate_limiter.check(self._tenant_id, "route"):
-            return RouteDecision(
+            decision = RouteDecision(
                 tool="escalate",
                 args={"reason": "rate limited"},
                 confidence=0.0,
                 escalated=True,
                 source="ratelimit",
             )
+            # Throttling is exactly what the observability layer exists for:
+            # record it like any other decision instead of returning silently.
+            if self.telemetry is not None:
+                self.telemetry.record_routing(
+                    source="ratelimit",
+                    action=decision.tool,
+                    confidence=decision.confidence,
+                    latency_ms=0.0,
+                    escalated=True,
+                )
+            self._last_decision = decision
+            self._pending_decisions.append((dict(state), decision))
+            self._audit(
+                "route",
+                tool=decision.tool,
+                source=decision.source,
+                escalated=decision.escalated,
+            )
+            return decision
         if self._validate:
             state = validate_state(dict(state))
         # Store state for later feedback

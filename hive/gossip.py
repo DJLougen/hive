@@ -69,7 +69,12 @@ class GossipProtocol:
         self._interval = interval
         self._batch_size = batch_size
         self._token = token
-        self._queue: queue.Queue[dict[str, Any]] = queue.Queue()
+        # Bounded: with no consumer running (never started, or a stalled peer)
+        # an unbounded queue grows until the process dies. At capacity we drop
+        # the event and say so rather than blocking the caller's write path.
+        self._queue: queue.Queue[dict[str, Any]] = queue.Queue(maxsize=batch_size * 10)
+        self._published = 0
+        self._dropped = 0
         self._thread: threading.Thread | None = None
         self._stop = threading.Event()
 
@@ -79,8 +84,28 @@ class GossipProtocol:
         For full-fidelity replication pass ``node.to_dict()`` — peers then
         preserve ts_ns/hlc/edges. Minimal ``{"key", "value"}`` events work
         too (fresh timestamps are assigned on receipt).
+
+        Drops (rather than blocks) when the queue is full; every drop is
+        counted and reported by :meth:`stats`.
         """
-        self._queue.put(event)
+        try:
+            self._queue.put_nowait(event)
+            self._published += 1
+        except queue.Full:
+            self._dropped += 1
+            if self._dropped == 1 or self._dropped % 1000 == 0:
+                _log.warning(
+                    "Gossip queue full; dropping event (%d dropped so far)",
+                    self._dropped,
+                )
+
+    def stats(self) -> dict[str, Any]:
+        """Queue depth and lifetime publish/drop counts."""
+        return {
+            "published": self._published,
+            "dropped": self._dropped,
+            "queued": self._queue.qsize(),
+        }
 
     def start(self) -> None:
         """Start the background gossip thread."""

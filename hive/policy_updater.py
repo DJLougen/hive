@@ -114,14 +114,22 @@ class PolicyUpdater:
 
         training_samples = [self._convert_to_training_format(o) for o in outcomes]
 
-        if isinstance(policy, LinUCBPolicy) or self.use_linucb:
-            if not isinstance(policy, LinUCBPolicy):
-                policy = LinUCBPolicy()
+        if isinstance(policy, LinUCBPolicy):
             try:
                 return policy.train(training_samples)
             except Exception as e:
                 _log.warning("LinUCB update failed: %s", e)
                 return False
+
+        if self.use_linucb:
+            # Training a throwaway LinUCBPolicy would return True while the
+            # caller's policy stayed untouched — refuse instead.
+            _log.warning(
+                "PolicyUpdater(use_linucb=True) received %s, not a LinUCBPolicy; "
+                "refusing to train a throwaway policy",
+                type(policy).__name__,
+            )
+            return False
 
         try:
             policy.train(training_samples)

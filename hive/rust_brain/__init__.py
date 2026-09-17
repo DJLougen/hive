@@ -33,6 +33,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 import threading
 import time
 import uuid
@@ -49,6 +50,8 @@ __all__ = [
     "MemoryNode",
     "RustBrain",
 ]
+
+_log = logging.getLogger("hive.rust_brain")
 
 # ---------------------------------------------------------------------------
 # Hybrid Logical Clock (HLC)
@@ -216,8 +219,10 @@ class RustBrain:
     """Timestamp-protected key→value graph store.
 
     The ``RustBrain`` is the user-facing entry point. It is safe to use from
-    multiple threads (writes are serialised by a single re-entrant lock;
-    reads are lock-free and take a snapshot of the index).
+    multiple threads (writes are serialised by a single re-entrant lock; reads
+    do not take the write lock, so a concurrent ``supersede()`` or a capacity
+    eviction may be observed mid-flight — use ``snapshot_to_file()`` when a
+    caller needs a consistent view).
 
     The internal data model — keyed storage + adjacency sets + monotonic
     timestamps — is the exact schema the upcoming Rust core will use, so an
@@ -233,6 +238,7 @@ class RustBrain:
         self._enforce_monotonic = enforce_monotonic
         self._default_ttl_s = default_ttl_s
         self._max_nodes = max_nodes
+        self._evictions = 0
         self._hlc_high_water: tuple[int, int, str] | None = None
         self._max_history_per_key = max_history_per_key
         # Superseded versions per storage key, oldest first. Kept outside
@@ -288,6 +294,7 @@ class RustBrain:
             self._nodes.pop(oldest_key, None)
             self._order_index.pop(oldest_key, None)
             self._history.pop(oldest_key, None)
+        self._evictions += 1
         self._order.pop(0)
         for k in list(self._order_index):
             self._order_index[k] -= 1
@@ -345,9 +352,18 @@ class RustBrain:
             if storage_key not in self._order_index:
                 self._order_index[storage_key] = len(self._order)
                 self._order.append(storage_key)
-            # Evict oldest entries if over capacity
+            # Evict oldest entries if over capacity. Capacity eviction is
+            # lossy, so say so once per write instead of dropping silently.
+            evicted = 0
             while len(self._nodes) > self._max_nodes:
                 self._evict_oldest()
+                evicted += 1
+            if evicted:
+                _log.warning(
+                    "RustBrain at capacity (%d nodes); evicted %d oldest entry/entries",
+                    self._max_nodes,
+                    evicted,
+                )
             return node
 
     def supersede(self, key: str, new_value: Any, **kwargs: Any) -> MemoryNode:
@@ -468,6 +484,7 @@ class RustBrain:
             "oldest_ts_ns": ts[0] if ts else None,
             "newest_ts_ns": ts[-1] if ts else None,
             "edge_kinds": sorted({k for n in self._nodes.values() for k in n.edges}),
+            "evictions": self._evictions,
         }
 
     def __len__(self) -> int:

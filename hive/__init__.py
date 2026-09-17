@@ -26,12 +26,20 @@ See :mod:`hive.stack` for the orchestrator.
 from __future__ import annotations
 
 __version__ = "0.6.1"
-__all__ = ["HiveStack", "__version__"]
+__all__ = ["HiveConfig", "HiveStack", "HiveUnavailable", "RouteDecision", "__version__"]
 
 
 def __getattr__(name: str):  # PEP 562 — lazy import
-    if name == "HiveStack":
-        from hive.stack import HiveStack
+    if name == "HiveStack" or name in ("HiveUnavailable", "RouteDecision"):
+        from hive.stack import HiveStack, HiveUnavailable, RouteDecision
 
-        return HiveStack
+        return {
+            "HiveStack": HiveStack,
+            "HiveUnavailable": HiveUnavailable,
+            "RouteDecision": RouteDecision,
+        }[name]
+    if name == "HiveConfig":
+        from hive.config import HiveConfig
+
+        return HiveConfig
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

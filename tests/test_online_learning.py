@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from hive.feedback import FeedbackBuffer, OutcomeType, RoutingOutcome
-from hive.policy_updater import PolicyUpdater
+from hive.policy_updater import LinUCBPolicy, PolicyUpdater
 from hive.telemetry import Telemetry
 
 
@@ -389,3 +391,40 @@ def test_feedback_clears_after_update():
     success = stack.update_policy()
     assert success is True
     assert len(fb) == 0
+
+
+def test_policy_updater_refuses_throwaway_linucb():
+    """use_linucb=True with a non-LinUCB policy must not silently 'succeed'."""
+    outcome = RoutingOutcome(
+        state={"goal": "read file"},
+        routed_action="read_file",
+        actual_action="read_file",
+        outcome_type=OutcomeType.CORRECT,
+    )
+
+    updater = PolicyUpdater(use_linucb=True)
+    # Previously this trained a throwaway LinUCBPolicy and returned True.
+    assert updater.update(object(), [outcome]) is False
+
+    policy = LinUCBPolicy()
+    assert updater.update(policy, [outcome]) is True
+
+
+def test_policy_updater_sklearn_path_still_updates_the_given_policy():
+    outcome = RoutingOutcome(
+        state={"goal": "read file"},
+        routed_action="read_file",
+        actual_action="read_file",
+        outcome_type=OutcomeType.CORRECT,
+    )
+
+    class RecordingPolicy:
+        def __init__(self) -> None:
+            self.trained: list[Any] = []
+
+        def train(self, samples: list[Any]) -> None:
+            self.trained.append(samples)
+
+    policy = RecordingPolicy()
+    assert PolicyUpdater().update(policy, [outcome]) is True
+    assert len(policy.trained) == 1
