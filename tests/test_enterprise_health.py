@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import time
+import urllib.error
 import urllib.request
 
 import pytest
@@ -10,6 +10,22 @@ import pytest
 from hive import HiveStack
 from hive.health import HealthServer, is_healthy
 from hive.rule_fast import RuleFastHoneyComb
+
+
+def _server_answers(url: str) -> bool:
+    """True once the endpoint responds (any status, including 503)."""
+    try:
+        urllib.request.urlopen(urllib.request.Request(url), timeout=2.0).close()
+    except urllib.error.HTTPError:
+        return True  # the server answered, with an error status
+    except OSError:
+        return False
+    return True
+
+
+def _get(url: str) -> str:
+    with urllib.request.urlopen(urllib.request.Request(url), timeout=2.0) as resp:
+        return resp.read().decode("utf-8")
 
 
 def test_is_healthy_returns_ready_with_stack():
@@ -21,37 +37,33 @@ def test_is_healthy_returns_ready_with_stack():
     assert "policy" in backends
 
 
-def test_health_server_returns_200():
+def test_health_server_returns_200(free_port, wait_until):
     stack = HiveStack(honey_comb=RuleFastHoneyComb())
-    with HealthServer(stack, port=18080, bind_address="127.0.0.1"):
-        time.sleep(0.3)
-        req = urllib.request.Request("http://127.0.0.1:18080/health")
-        with urllib.request.urlopen(req, timeout=2.0) as resp:
-            assert resp.status == 200
-            body = resp.read().decode("utf-8")
-            assert '"status": "healthy"' in body
-            assert '"uptime_s"' in body
+    url = f"http://127.0.0.1:{free_port}/health"
+    with HealthServer(stack, port=free_port, bind_address="127.0.0.1"):
+        wait_until(lambda: _server_answers(url))
+        body = _get(url)
+    assert '"status": "healthy"' in body
+    assert '"uptime_s"' in body
 
 
-def test_ready_endpoint_with_all_backends():
+def test_ready_endpoint_with_all_backends(free_port, wait_until):
     stack = HiveStack(honey_comb=RuleFastHoneyComb())
-    with HealthServer(stack, port=18081, bind_address="127.0.0.1"):
-        time.sleep(0.3)
-        req = urllib.request.Request("http://127.0.0.1:18081/ready")
-        with urllib.request.urlopen(req, timeout=2.0) as resp:
-            assert resp.status == 200
-            body = resp.read().decode("utf-8")
-            assert "rust_brain" in body
-            assert "ok" in body
+    url = f"http://127.0.0.1:{free_port}/ready"
+    with HealthServer(stack, port=free_port, bind_address="127.0.0.1"):
+        wait_until(lambda: _server_answers(url))
+        body = _get(url)
+    assert "rust_brain" in body
+    assert "ok" in body
 
 
-def test_ready_endpoint_returns_503_without_compressor():
+def test_ready_endpoint_returns_503_without_compressor(free_port, wait_until):
     stack = HiveStack(honey_comb=RuleFastHoneyComb())
     # Manually break compressor to simulate failure
     stack.comb = None
-    with HealthServer(stack, port=18082, bind_address="127.0.0.1"):
-        time.sleep(0.3)
-        req = urllib.request.Request("http://127.0.0.1:18082/ready")
+    url = f"http://127.0.0.1:{free_port}/ready"
+    with HealthServer(stack, port=free_port, bind_address="127.0.0.1"):
+        wait_until(lambda: _server_answers(url))
         with pytest.raises(urllib.error.HTTPError) as exc_info:
-            urllib.request.urlopen(req, timeout=2.0)
+            urllib.request.urlopen(urllib.request.Request(url), timeout=2.0)
         assert exc_info.value.code == 503

@@ -26,6 +26,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
+      - name: Lockfile check
+        run: |
+          pip install uv
+          uv lock --check
       - name: Install
         run: |
           python -m pip install --upgrade pip
@@ -33,7 +37,10 @@ jobs:
       - name: Test
         env:
           HIVE_NO_NVML: "1"
-        run: pytest -v
+        # Coverage floor: 80% — the measured TOTAL was 80.1% (2234/2790
+        # statements, CPython 3.12) when this gate was added, rounded down to
+        # the nearest multiple of 5. Raise it only after re-measuring.
+        run: pytest -v --cov=hive --cov-report=term-missing --cov-fail-under=80
       - name: Benchmark (smoke)
         env:
           HIVE_NO_NVML: "1"
@@ -166,7 +173,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e .[dev,monitor,observability]
       - name: Test
-        run: pytest -v -k "not integration"
+        run: pytest -v --ignore=tests/test_integration_llm.py
       - name: Benchmark
         run: |
           python scripts/hive_benchmark.py \
@@ -189,7 +196,7 @@ jobs:
       - name: Test
         env:
           HIVE_NO_NVML: "0"
-        run: pytest -v -k "not integration"
+        run: pytest -v --ignore=tests/test_integration_llm.py
       - name: Benchmark
         run: |
           python scripts/hive_benchmark.py \

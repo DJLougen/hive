@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import os
-
 import pytest
 
 from hive import HiveStack
@@ -11,27 +9,23 @@ from hive.config import HiveConfig
 from hive.rule_fast import RuleFastHoneyComb
 
 
-def test_from_env_reads_vars():
-    os.environ["HIVE_RATE_LIMIT"] = "50"
-    os.environ["HIVE_TENANT_ISOLATION"] = "false"
-    os.environ["HIVE_JWT_SECRET"] = "test-secret"
-    try:
-        cfg = HiveConfig.from_env()
-        assert cfg.rate_limit == 50
-        assert cfg.tenant_isolation is False
-        assert cfg.jwt_secret == "test-secret"
-    finally:
-        del os.environ["HIVE_RATE_LIMIT"]
-        del os.environ["HIVE_TENANT_ISOLATION"]
-        del os.environ["HIVE_JWT_SECRET"]
+def test_from_env_reads_vars(monkeypatch):
+    monkeypatch.setenv("HIVE_RATE_LIMIT", "50")
+    monkeypatch.setenv("HIVE_TENANT_ISOLATION", "false")
+    monkeypatch.setenv("HIVE_JWT_SECRET", "test-secret")
+
+    cfg = HiveConfig.from_env()
+
+    assert cfg.rate_limit == 50
+    assert cfg.tenant_isolation is False
+    assert cfg.jwt_secret == "test-secret"
 
 
 def test_from_env_uses_defaults():
-    # Ensure no HIVE_ vars leak in
-    for key in list(os.environ):
-        if key.startswith("HIVE_"):
-            del os.environ[key]
-    cfg = HiveConfig.from_env()
+    # A prefix no one sets yields pure defaults without touching the
+    # environment (deleting every HIVE_* var would also remove CI's
+    # HIVE_NO_NVML, and would leave the env mutated for the next test).
+    cfg = HiveConfig.from_env(prefix="HIVE_TEST_UNSET_")
     assert cfg.rate_limit == 0
     assert cfg.tenant_isolation is True
     assert cfg.jwt_secret is None

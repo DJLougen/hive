@@ -10,9 +10,11 @@ def test_semantic_index_no_model():
     brain = RustBrain()
     brain.remember("key", "value", tags={"tag1"})
     index = SemanticIndex(brain, model="nonexistent-model-xxx")
-    # Model fails to load, search falls back to tag scan
+    # Model fails to load, search falls back to a tag scan. The documented
+    # return type is list[(MemoryNode, score)], so assert the node is really
+    # found — not just that the list is non-negative in length.
     results = index.search("tag1")
-    assert len(results) >= 0
+    assert [(node.key, score) for node, score in results] == [("key", 1.0)]
 
 
 def test_semantic_index_add():

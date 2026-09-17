@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import tempfile
-import time
+import urllib.error
 import urllib.request
 
 import pytest
@@ -12,6 +12,15 @@ import pytest
 from hive import HiveStack
 from hive.rule_fast import RuleFastHoneyComb
 from hive.telemetry import Telemetry
+
+
+def _try_get(url: str) -> str | None:
+    """Return the body, or None while the server is not answering yet."""
+    try:
+        with urllib.request.urlopen(urllib.request.Request(url), timeout=2.0) as resp:
+            return resp.read().decode("utf-8")
+    except (OSError, urllib.error.HTTPError):
+        return None
 
 
 def test_telemetry_jsonl_export():
@@ -73,11 +82,11 @@ def test_telemetry_summary_shape():
     assert summary["compression"]["count"] >= 1
 
 
-def test_prometheus_server_metrics():
+def test_prometheus_server_metrics(free_port, wait_until):
     """Start Prometheus server and verify metrics endpoint returns data."""
     pytest.importorskip("prometheus_client", reason="prometheus-client not installed")
 
-    port = 9876
+    port = free_port
     tel = Telemetry()
     tel.start_prometheus_server(port=port)
 
@@ -87,12 +96,10 @@ def test_prometheus_server_metrics():
     stack.remember("k", "v")
     stack.recall("k")
 
-    # Give server time to start
-    time.sleep(0.5)
-
-    req = urllib.request.Request(f"http://127.0.0.1:{port}/metrics")
-    with urllib.request.urlopen(req, timeout=2.0) as resp:
-        body = resp.read().decode("utf-8")
+    url = f"http://127.0.0.1:{port}/metrics"
+    wait_until(lambda: _try_get(url) is not None, timeout=10.0)
+    body = _try_get(url)
+    assert body is not None
 
     assert "hive_routing_total" in body
     assert "hive_compression_total" in body

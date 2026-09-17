@@ -81,7 +81,6 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: dist/
-        continue-on-error: true
 
   create-release:
     name: Create GitHub Release
