@@ -62,6 +62,8 @@ jobs:
         run: python scripts/hive_long_context_eval.py --smoke
       - name: Claim check
         run: python scripts/check_claims.py
+      - name: Bench task oracles (no LLM, no cost)
+        run: python scripts/hive_bench.py --verify-tasks
       - name: Lint
         run: |
           python -m ruff check hive/ tests/

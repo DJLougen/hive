@@ -1,0 +1,11 @@
+{
+  "id": "interval-merge-tiebreak",
+  "family": "boundary",
+  "problem_statement": "Scheduling merges covered time expressed as closed integer ranges, and needs the free time too. Two ranges belong together whenever no integer between them is left uncovered, not only when they share a point: today 1-3 and 4-6 come back as two runs, and a single-point range such as 5-5 stays isolated from the run it touches. Fix that, and add `intervals.gaps`: `gaps(intervals)` returns the maximal uncovered runs strictly between covered integers, as `Interval`s in ascending order \u2014 the empty space outside the coverage is not a hole, a hole of one integer is a 1-1 interval, and the input may be unmerged.",
+  "test_cmd": "python -m pytest smoke -q",
+  "oracle_cmd": "python -m pytest tests -q",
+  "test_timeout_s": 60,
+  "oracle_dir": "oracle",
+  "solution_patch": "oracle/solution.patch",
+  "solutions_public_since": "2026-09-17"
+}

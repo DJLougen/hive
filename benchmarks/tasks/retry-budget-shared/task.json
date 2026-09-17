@@ -1,0 +1,11 @@
+{
+  "id": "retry-budget-shared",
+  "family": "resilience",
+  "problem_statement": "Our services retry through named attempt budgets, and a name is meant to be a process-wide cap: every attempt made by every caller using that name is charged to one shared budget, and the first caller to use a name fixes its limit. Today two callers that pass the same name each get a full cap of their own, so a downstream service that was supposed to see two attempts sees four. Make a name mean one budget shared by every caller that uses it. Waits must sit strictly between attempts \u2014 never before the first and never after the one that exhausts the budget, whatever fails. An attempt the exhausted budget cannot pay for must raise RetryBudgetExhausted, carrying the error that exhausted it.",
+  "test_cmd": "python -m pytest smoke -q",
+  "oracle_cmd": "python -m pytest tests -q",
+  "test_timeout_s": 60,
+  "oracle_dir": "oracle",
+  "solution_patch": "oracle/solution.patch",
+  "solutions_public_since": "2026-09-17"
+}

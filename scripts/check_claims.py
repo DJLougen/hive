@@ -13,6 +13,7 @@ Stdlib only; no network.
 from __future__ import annotations
 
 import json
+import math
 import re
 import sys
 from pathlib import Path
@@ -254,8 +255,8 @@ CHECKS: list[dict] = [
 # --------------------------------------------------------------------------- #
 
 
-def resolve(root: object, path: str) -> float:
-    """Traverse ``a.b`` / ``a[0]`` / ``components[name]`` paths."""
+def resolve_raw(root: object, path: str) -> object:
+    """Traverse ``a.b`` / ``a[0]`` / ``components[name]`` paths, value untyped."""
     cur = root
     for part in path.split("."):
         m = re.match(r"^([^\[\]]+)(?:\[(.+)\])?$", part)
@@ -275,7 +276,12 @@ def resolve(root: object, path: str) -> float:
             if len(matches) != 1:
                 raise KeyError(f"selector {sel!r} in {path!r} matched {len(matches)} entries")
             cur = matches[0]
-    return float(cur)  # type: ignore[arg-type]
+    return cur
+
+
+def resolve(root: object, path: str) -> float:
+    """Traverse a path and read the number at the end of it."""
+    return float(resolve_raw(root, path))  # type: ignore[arg-type]
 
 
 def load_artifact(path: str) -> object:
@@ -291,6 +297,45 @@ def num(text: str) -> float:
 
 def close(readme_value: float, artifact_value: float, rel_tol: float = REL_TOL) -> bool:
     return abs(readme_value - artifact_value) <= max(rel_tol * abs(artifact_value), ABS_TOL)
+
+
+def mcnemar_exact(a: list[bool], b: list[bool]) -> dict[str, int | float]:
+    """Exact two-sided McNemar over paired outcomes.
+
+    Deliberately reimplemented here rather than imported from the harness that
+    wrote the artifact: a claim gate that shares code with the producer checks
+    nothing. Stdlib only.
+    """
+    if len(a) != len(b):
+        raise ValueError("paired test needs equal-length outcome lists")
+    both = sum(1 for x, y in zip(a, b, strict=True) if x and y)
+    a_only = sum(1 for x, y in zip(a, b, strict=True) if x and not y)
+    b_only = sum(1 for x, y in zip(a, b, strict=True) if y and not x)
+    n = a_only + b_only
+    if n == 0:
+        p = 1.0
+    else:
+        k = min(a_only, b_only)
+        p = min(1.0, 2 * sum(math.comb(n, i) for i in range(k + 1)) / 2 ** n)
+    return {"both": both, "a_only": a_only, "b_only": b_only, "p": round(p, 6)}
+
+
+def paired_grid(artifact: dict, pair: str) -> tuple[list[bool], list[bool], int]:
+    """Recompute the paired (per-task) outcome vectors for ``"a_vs_b"``."""
+    arm_a, _, arm_b = pair.partition("_vs_")
+    if not arm_a or not arm_b:
+        raise ValueError(f"pair {pair!r} is not in 'a_vs_b' form")
+    grid: dict[str, dict[str, list[bool]]] = {arm_a: {}, arm_b: {}}
+    for row in artifact["results"]:
+        if row["arm"] in grid:
+            grid[row["arm"]].setdefault(row["task_id"], []).append(bool(row["resolved"]))
+    shared = sorted(set(grid[arm_a]) & set(grid[arm_b]))
+    if not shared:
+        raise ValueError(f"no task ran in both arms of {pair!r}")
+    def majority(arm: str) -> list[bool]:
+        return [sum(grid[arm][t]) * 2 > len(grid[arm][t]) for t in shared]
+    return majority(arm_a), majority(arm_b), len(shared)
+
 
 
 def run_check(check: dict, texts: dict[str, str]) -> list[str]:
@@ -385,6 +430,42 @@ def run_check(check: dict, texts: dict[str, str]) -> list[str]:
                 )
         if not problems:
             print(f"OK\t{label}\tmean of {len(group)} rows\tartifact={round(artifact_value, 4)}")
+        return problems
+
+    if check["kind"] == "comparison":
+        # Recompute the paired test from the artifact's own per-task grid and
+        # demand it match both the artifact's own summary and the README.
+        a, b, n_tasks = paired_grid(artifact, check["pair"])
+        recomputed = mcnemar_exact(a, b)
+        published = resolve(artifact, check["path"])
+        problems: list[str] = []
+        if not close(recomputed["p"], float(published)):
+            problems.append(
+                f"MISMATCH\t{label}\tartifact summary says p={published} but the "
+                f"per-task grid in {check['artifact']} gives p={recomputed['p']} "
+                f"(tasks={n_tasks} a_only={recomputed['a_only']} b_only={recomputed['b_only']})"
+            )
+        for where, g in all_hits:
+            if not close(num(str(g[0])), recomputed["p"]):
+                problems.append(
+                    f"MISMATCH\t{label}\t{where}: readme={num(str(g[0]))} "
+                    f"recomputed={recomputed['p']}"
+                )
+        if not problems:
+            print(f"OK\t{label}\trecomputed from {n_tasks} paired tasks\t"
+                  f"artifact={recomputed['p']}")
+        return problems
+
+    if check["kind"] == "verbatim":
+        # A claim that is a word, not a number (e.g. the verdict): the README
+        # must state exactly what the artifact computed.
+        value = str(resolve_raw(artifact, check["path"]))
+        problems = []
+        for name in files:
+            if value not in texts[name]:
+                problems.append(f"MISSING\t{label}\t{name} does not state {value!r}")
+        if not problems:
+            print(f"OK\t{label}\tverbatim\tartifact={value!r}")
         return problems
 
     artifact_value = resolve(artifact, check["path"])

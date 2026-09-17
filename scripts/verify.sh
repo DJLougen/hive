@@ -30,6 +30,7 @@ run "ruff (hive, tests, scripts)" "$PY" -m ruff check hive/ tests/ scripts/
 run "mypy (hive)" "$PY" -m mypy hive/ --ignore-missing-imports
 run "pytest + coverage floor" "$PY" -m pytest -q --cov=hive --cov-report=term-missing --cov-fail-under=80
 run "claim gate (README/docs vs committed artifacts)" "$PY" scripts/check_claims.py
+run "bench task oracles (no LLM, no cost)" "$PY" scripts/hive_bench.py --verify-tasks
 run "pentest (hive module)" "$PY" scripts/hive_pentest.py --module hive
 
 if command -v cargo >/dev/null 2>&1 && [[ -d hive-cpp ]]; then

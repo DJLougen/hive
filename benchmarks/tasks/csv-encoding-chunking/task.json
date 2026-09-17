@@ -1,0 +1,11 @@
+{
+  "id": "csv-encoding-chunking",
+  "family": "parsing",
+  "problem_statement": "Our CSV reader takes a stream in chunks and must produce the same records whatever the chunk size is: a record ends at a newline that is outside quotes, a quoted field may itself contain newlines, and two quote characters inside a quoted field mean one literal quote. Today the results depend on where the chunks fall \u2014 records whose quoted fields straddle a boundary come out split or merged. Make chunking invisible, and treat a stream that ends with a quoted field still open as malformed: that must raise ValueError rather than hand back a truncated record, while a quote closed at the very end is fine.",
+  "test_cmd": "python -m pytest smoke -q",
+  "oracle_cmd": "python -m pytest tests -q",
+  "test_timeout_s": 60,
+  "oracle_dir": "oracle",
+  "solution_patch": "oracle/solution.patch",
+  "solutions_public_since": "2026-09-17"
+}

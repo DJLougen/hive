@@ -86,6 +86,24 @@ class RuleBasedRoutingPolicy:
         return self._escalate("complex reasoning")
 
 
+class EscalateOnlyPolicy:
+    """Routes nothing: every decision goes back to the model.
+
+    Exists so a run can keep Hive's compression + causal memory while removing
+    routing, which separates "the policy decides for us" from "the context is
+    smaller and replayable". Without this arm a Hive-vs-baseline difference has
+    two candidate causes and no way to tell them apart.
+    """
+
+    def __init__(self) -> None:
+        self.stats = {"routed": 0, "escalated": 0}
+
+    def predict(self, state: dict[str, Any]) -> dict[str, Any]:
+        self.stats["escalated"] += 1
+        return {"tool": "escalate", "args": {"reason": "escalate-only control"},
+                "confidence": 0.5, "escalated": True}
+
+
 def load_routing_policy(*, model_path: str | Path | None = None) -> RoutingPolicy:
     """Return a trained busyBee policy when available, else a rule-based fallback."""
     if model_path is not None:
@@ -113,4 +131,6 @@ def policy_label(policy: RoutingPolicy) -> str:
     cls = type(policy).__name__
     if cls == "RuleBasedRoutingPolicy":
         return "rule-based"
+    if cls == "EscalateOnlyPolicy":
+        return "escalate-only"
     return cls

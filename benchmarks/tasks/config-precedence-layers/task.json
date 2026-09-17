@@ -1,0 +1,11 @@
+{
+  "id": "config-precedence-layers",
+  "family": "precedence",
+  "problem_statement": "Settings are assembled from four layers \u2014 built-in defaults, a config file, the environment, and explicit overrides \u2014 and a key resolves to the value from the highest-precedence layer that defines it: defaults < file < environment < explicit. Today an environment variable overrides an explicit override, so a caller that passes a value by hand still gets whatever the environment says. Make the layers compose in the documented order, and make that order come from one place so two copies cannot disagree. Callers also need to know where each value came from: expose the winning layer for every known setting, and report every invalid value at once rather than failing on the first.",
+  "test_cmd": "python -m pytest smoke -q",
+  "oracle_cmd": "python -m pytest tests -q",
+  "test_timeout_s": 60,
+  "oracle_dir": "oracle",
+  "solution_patch": "oracle/solution.patch",
+  "solutions_public_since": "2026-09-17"
+}

@@ -1,0 +1,11 @@
+{
+  "id": "cache-key-collision",
+  "family": "caching",
+  "problem_statement": "Our memo cache must key on the call, not on how the call was written. Two requests that pass the same values to the same parameters must share one entry, whatever the caller's spelling: the order of keyword arguments, positional versus keyword, and leaving a parameter to its default must all land on the same entry, at every level of nesting. Today the same request recomputes depending on that spelling, so the hit rate is noise. Keys must also stay sensitive to values: two calls that bind different values to a parameter must not share an entry, and values that merely look alike (the number 1 and the string \"1\") must not collide.",
+  "test_cmd": "python -m pytest smoke -q",
+  "oracle_cmd": "python -m pytest tests -q",
+  "test_timeout_s": 60,
+  "oracle_dir": "oracle",
+  "solution_patch": "oracle/solution.patch",
+  "solutions_public_since": "2026-09-17"
+}

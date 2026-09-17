@@ -1,0 +1,44 @@
+diff --git a/settings/resolve.py b/settings/resolve.py
+index ddb44ec..da17379 100644
+--- a/settings/resolve.py
++++ b/settings/resolve.py
+@@ -4,18 +4,33 @@ from __future__ import annotations
+ 
+ from typing import Any, Iterable
+ 
++from .layers import ordered_layers
+ from .schema import Schema, coerce
+ 
+-# Layer precedence, lowest first. Later entries replace earlier ones.
+-_PRECEDENCE: dict[str, int] = {"default": 0, "file": 1, "explicit": 2, "env": 3}
+-
+ 
+ def resolve(layers: Iterable[Any], schema: Schema) -> dict[str, tuple[Any, str]]:
+-    """Resolve every known key to ``(value, name of the layer that won)``."""
++    """Resolve every known key to ``(value, name of the layer that won)``.
++
++    Precedence lives in one place (``layers.LAYER_ORDER``, via
++    ``ordered_layers``) so a second copy of it cannot drift out of step with
++    the documented order. Values are coerced with the schema type of the
++    winning layer, and an invalid value is never silently ignored: every
++    invalid key is reported together, in one error.
++    """
+     resolved: dict[str, tuple[Any, str]] = {}
+-    for layer in sorted(layers, key=lambda layer: _PRECEDENCE[layer.name]):
++    problems: list[str] = []
++    for layer in ordered_layers(layers):
+         for key, raw in layer.items().items():
+             if not schema.defines(key):
+                 continue  # a value for a setting this app does not know about
+-            resolved[key] = (coerce(raw, schema.type_of(key)), layer.name)
++            try:
++                value = coerce(raw, schema.type_of(key))
++            except (TypeError, ValueError) as exc:
++                problems.append(f"{key} ({layer.name}): {exc}")
++                continue
++            resolved[key] = (value, layer.name)
++    if problems:
++        raise ValueError(
++            "invalid setting values: " + "; ".join(sorted(problems))
++        )
+     return resolved

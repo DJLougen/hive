@@ -1,0 +1,11 @@
+{
+  "id": "pagination-cursor-drift",
+  "family": "boundary",
+  "problem_statement": "Paging through our records must visit every row exactly once, in (created_at, id) order, however many rows share a created_at. It does not: when a page boundary falls inside a group of rows with the same created_at, rows from that group go missing from the walk, and clients that key on id see gaps. A cursor must carry everything the resume needs \u2014 decoding one must give back exactly the pair it was built from \u2014 and a resume must start strictly after the row the cursor names, so that every page size walks the same complete sequence. A token that was not produced by encode_cursor, or a page size below 1, must be rejected with ValueError rather than accepted.",
+  "test_cmd": "python -m pytest smoke -q",
+  "oracle_cmd": "python -m pytest tests -q",
+  "test_timeout_s": 60,
+  "oracle_dir": "oracle",
+  "solution_patch": "oracle/solution.patch",
+  "solutions_public_since": "2026-09-17"
+}

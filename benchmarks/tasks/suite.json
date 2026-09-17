@@ -1,7 +1,7 @@
 {
   "name": "hive-bench",
   "version": 1,
-  "description": "Real bug-fix tasks: real repos, real failing pytest suites, real resolve check. Order matters — tasks sharing a 'family' let the causal-memory arm recall prior fixes.",
+  "description": "Real bug-fix tasks: real repos, real failing pytest suites, real resolve check. Order matters \u2014 tasks sharing a 'family' let the causal-memory arm recall prior fixes.",
   "tasks": [
     "paginate-off-by-one",
     "csv-quoted-commas",
@@ -12,6 +12,12 @@
     "config-precedence",
     "merge-intervals",
     "log-error-count",
-    "token-exp-boundary"
+    "token-exp-boundary",
+    "interval-merge-tiebreak",
+    "config-precedence-layers",
+    "cache-key-collision",
+    "csv-encoding-chunking",
+    "retry-budget-shared",
+    "pagination-cursor-drift"
   ]
 }
