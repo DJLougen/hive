@@ -1,0 +1,13 @@
+{
+  "name": "hive-bench-capability",
+  "version": 1,
+  "description": "Original capability tier \u2014 the 6 tasks behind the published 97/87/93 table (docs/benchmarks/hive-bench-capability.json). Held-out oracle grading.",
+  "tasks": [
+    "interval-merge-tiebreak",
+    "config-precedence-layers",
+    "cache-key-collision",
+    "csv-encoding-chunking",
+    "retry-budget-shared",
+    "pagination-cursor-drift"
+  ]
+}

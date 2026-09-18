@@ -60,7 +60,9 @@ Four-tier modernization, validated locally and in CI on Python 3.10–3.13. Full
 
 ### Capability tier — held-out tasks, three arms
 
-Six harder tasks ([`benchmarks/tasks/`](benchmarks/tasks/)) graded against **held-out** pytest suites the agent never sees (`grade_patch` replays the agent's writes into a pristine repo and injects the hidden tests only there). The visible `smoke/` suite covers the *disclosed* spec — it fails on the buggy repo, so a green `run_tests` means the stated requirements are met; the oracle keeps the edge cases. 5 repeats × 6 tasks = 30 episodes per arm, `temperature=0.7`, memory fresh. **baseline** sends every decision to the LLM; **context** is the escalate-only control (CPU policy handles nothing, every decision is an LLM call); **hive** routes mechanical transitions through the CPU policy.
+Six harder tasks graded against **held-out** pytest suites the agent never sees (`grade_patch` replays the agent's writes into a pristine repo and injects the hidden tests only there). The visible `smoke/` suite covers the *disclosed* spec — it fails on the buggy repo, so a green `run_tests` means the stated requirements are met; the oracle keeps the edge cases. 5 repeats × 6 tasks = 30 episodes per arm, `temperature=0.7`, memory fresh. **baseline** sends every decision to the LLM; **context** is the escalate-only control (CPU policy handles nothing, every decision is an LLM call); **hive** routes mechanical transitions through the CPU policy.
+
+**Reproduce:** `python scripts/hive_bench.py --backend openai --endpoint <EP> --api-key-env <KEY> --model <M> --suite benchmarks/tasks/suite.capability.json --arm all --repeat 5 --temperature 0.7 --memory fresh`. The manifest [`benchmarks/tasks/suite.capability.json`](benchmarks/tasks/suite.capability.json) pins the exact 6-task list behind this table; `--suite benchmarks/tasks` runs the full 22-task pool instead.
 
 | Arm | Resolve rate | 95% CI | pass^5 | USD/resolved |
 |---|---|---|---|---|

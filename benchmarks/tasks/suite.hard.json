@@ -1,0 +1,13 @@
+{
+  "name": "hive-bench-hard",
+  "version": 1,
+  "description": "Hard discriminating tier \u2014 6 tasks authored to separate the arms (n=15 per-cell CIs). Held-out oracle grading with spec-covering smoke.",
+  "tasks": [
+    "sliding-window-limit",
+    "snapshot-event-fold",
+    "kway-merge-dedup",
+    "reservation-expiry",
+    "idempotent-outbox",
+    "lru-ttl-cache"
+  ]
+}

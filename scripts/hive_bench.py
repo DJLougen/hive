@@ -183,12 +183,18 @@ _DEFAULT_TEST_CMD = "python -m pytest tests -q"
 
 
 def load_tasks(suite_dir: Path, only: list[str] | None = None) -> list[Task]:
-    suite = json.loads((suite_dir / "suite.json").read_text())
+    # ``--suite`` names either a directory (uses its ``suite.json``) or a
+    # named tier manifest (``suite.<tier>.json``) so a published table can
+    # pin the exact task list that produced it. Task dirs resolve relative
+    # to the manifest's directory either way.
+    manifest = suite_dir if suite_dir.is_file() else suite_dir / "suite.json"
+    base = manifest.parent
+    suite = json.loads(manifest.read_text())
     tasks: list[Task] = []
     for task_id in suite["tasks"]:
         if only and task_id not in only:
             continue
-        task_dir = suite_dir / task_id
+        task_dir = base / task_id
         meta = json.loads((task_dir / "task.json").read_text())
         oracle_rel = meta.get("oracle_dir")
         patch_rel = meta.get("solution_patch")
