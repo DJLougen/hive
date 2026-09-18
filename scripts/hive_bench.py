@@ -1149,14 +1149,17 @@ def _verify_one(task: Task, scratch: Path, failures: list[str]) -> int:
 
     For a held-out task: the hidden suite must FAIL on the pristine repo, PASS
     once ``solution.patch`` is applied, and must not be visible in the
-    agent-facing repo. The visible smoke suite must PASS on the pristine repo
-    (if it failed, the defect would leak through its traceback and the task
-    would be a locate-the-failing-test exercise rather than a reasoning task).
+    agent-facing repo. The visible smoke suite covers the *disclosed* spec —
+    it must FAIL on the pristine repo (it is the reproduction signal the
+    agent sees) and PASS once ``solution.patch`` is applied, so a green
+    ``run_tests`` actually means the stated requirements are met. The oracle
+    stays held out for the edge cases the spec implies but does not spell out.
 
     Tasks with no ``oracle_dir`` (the original suite, graded in the workdir) get
     the broken check only; their oracle/hidden checks are reported as ``skip``
     because there is nothing held out to check.
     """
+    workdir = scratch / task.id
     workdir = scratch / task.id
     if task.oracle_dir is None:
         # Original suite: grade the workdir, so check the workdir gate.
@@ -1170,13 +1173,15 @@ def _verify_one(task: Task, scratch: Path, failures: list[str]) -> int:
               f"oracle=skip hidden=skip")
         return 0
 
-    # The visible smoke suite must be green before the fix, or the task
-    # degenerates into "find the failing test".
-    smoke_ok, smoke_out = ToolExecutor(
+    # The visible smoke suite must be RED before the fix: it covers the
+    # disclosed spec, so it is the agent's reproduction signal. If it passed
+    # on the buggy repo, a green run_tests would certify an incomplete fix.
+    smoke_ok, _smoke_out = ToolExecutor(
         task.repo_dir, task.test_cmd, task.test_timeout_s).run_tests()
-    if not smoke_ok:
-        tail = (smoke_out.strip().splitlines() or ["(no output)"])[-1]
-        failures.append(f"{task.id}: smoke suite fails on the pristine repo: {tail}")
+    smoke_red = not smoke_ok
+    if not smoke_red:
+        failures.append(f"{task.id}: smoke suite passes on the pristine repo — "
+                        "it does not cover the disclosed spec")
 
     pre_passed, _, _ = grade_patch(task, [], workdir=workdir)
     broken = not pre_passed
@@ -1189,6 +1194,7 @@ def _verify_one(task: Task, scratch: Path, failures: list[str]) -> int:
                         "oracle suite would be visible to the agent")
 
     fail_ok = False
+    smoke_fixed = False
     if task.solution_patch is None or not task.solution_patch.is_file():
         failures.append(f"{task.id}: no solution_patch — apply direction unverifiable")
     else:
@@ -1205,7 +1211,16 @@ def _verify_one(task: Task, scratch: Path, failures: list[str]) -> int:
                 tail = (out.strip().splitlines() or ["(no output)"])[-1]
                 failures.append(f"{task.id}: oracle still fails after "
                                 f"solution_patch: {tail}")
-    print(f"{task.id} smoke={'ok' if smoke_ok else 'FAIL'} "
+            # The reference fix must also turn the visible suite green —
+            # otherwise the task is unresolvable from the agent's seat.
+            smoke_fixed, smoke_out2 = ToolExecutor(
+                patched, task.test_cmd, task.test_timeout_s).run_tests()
+            if not smoke_fixed:
+                tail = (smoke_out2.strip().splitlines() or ["(no output)"])[-1]
+                failures.append(f"{task.id}: smoke suite still fails after "
+                                f"solution_patch: {tail}")
+    print(f"{task.id} smoke={'red-ok' if smoke_red else 'FAIL'} "
+          f"smoke-fixed={'ok' if smoke_fixed else 'FAIL'} "
           f"broken={'ok' if broken else 'FAIL'} "
           f"oracle={'ok' if fail_ok else 'FAIL'} "
           f"hidden={'ok' if hidden_ok else 'FAIL'} "

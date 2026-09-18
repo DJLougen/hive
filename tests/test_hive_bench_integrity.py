@@ -431,19 +431,32 @@ def test_summarize_nulls_usage_fields_for_unmeasured_rows():
 # ---------------------------------------------------------------------------
 
 
-def _oracle_task(tmp_path: Path, *, smoke_ok: bool = True,
+def _oracle_task(tmp_path: Path, *, smoke_red: bool = True,
                  patch: str = "oracle/solution.patch",
-                 write_patch: bool = True) -> Task:
-    """Author a miniature held-out task on disk, then point a Task at it."""
+                 write_patch: bool = True,
+                 patch_fixes_smoke: bool = True) -> Task:
+    """Author a miniature held-out task on disk, then point a Task at it.
+
+    The smoke suite covers the disclosed spec, so it must be RED on the
+    pristine repo (the reproduction signal) and GREEN once the reference
+    patch lands. ``smoke_red=False`` authors a suite that does not cover the
+    spec — the gate must reject it. ``patch_fixes_smoke=False`` authors a
+    patch that fixes the oracle but leaves smoke red — also a reject.
+    """
     task_dir = tmp_path / "tasks" / "mini"
     repo = task_dir / "repo"
     (repo / "smoke").mkdir(parents=True)
     (repo / "svc").mkdir(parents=True)
     (repo / "svc" / "__init__.py").write_text("")
     (repo / "svc" / "core.py").write_text("def budget(n):\n    return n\n")
+    # Two smoke tests: a happy-path check that passes either way, and a
+    # disclosed-spec check that is red on the buggy repo (budget(3) should be
+    # 1 after the fix, is 3 before) — like the real tasks.
     (repo / "smoke" / "test_smoke.py").write_text(
-        "from svc.core import budget\n\n\ndef test_smoke():\n    assert budget(3) == "
-        + ("3" if smoke_ok else "1") + "\n")
+        "from svc.core import budget\n\n\n"
+        "def test_happy_path():\n    assert budget(0) == 0\n\n\n"
+        "def test_spec_requirement():\n    assert budget(3) == "
+        + ("1" if smoke_red else "3") + "\n")
     (task_dir / "oracle" / "tests").mkdir(parents=True)
     (task_dir / "oracle" / "tests" / "test_hidden.py").write_text(
         "from svc.core import budget\n\n\ndef test_hidden():\n    assert budget(3) == 1\n")
@@ -454,7 +467,7 @@ def _oracle_task(tmp_path: Path, *, smoke_ok: bool = True,
             "@@ -1,2 +1,2 @@\n"
             " def budget(n):\n"
             "-    return n\n"
-            "+    return n // 3\n"
+            "+    return " + ("n // 3" if patch_fixes_smoke else "n + 1") + "\n"
         )
     return Task(id="mini", family="mini", problem_statement="fix it",
                 test_cmd="python -m pytest smoke -q", test_timeout_s=60, repo_dir=repo,
@@ -466,7 +479,7 @@ def test_verify_tasks_passes_a_well_formed_task(tmp_path, capsys):
     from scripts.hive_bench import verify_tasks
 
     assert verify_tasks([_oracle_task(tmp_path)]) == 0
-    assert "smoke=ok broken=ok oracle=ok hidden=ok" in capsys.readouterr().out
+    assert "smoke=red-ok smoke-fixed=ok broken=ok oracle=ok hidden=ok" in capsys.readouterr().out
 
 
 def test_verify_tasks_fails_when_the_repo_leaks_its_own_tests(tmp_path, capsys):
@@ -477,11 +490,20 @@ def test_verify_tasks_fails_when_the_repo_leaks_its_own_tests(tmp_path, capsys):
     assert verify_tasks([task]) == 1
     assert "hidden=FAIL" in capsys.readouterr().out
 
-
-def test_verify_tasks_fails_when_the_smoke_suite_is_already_red(tmp_path):
+def test_verify_tasks_fails_when_the_smoke_suite_does_not_cover_the_spec(tmp_path):
     from scripts.hive_bench import verify_tasks
 
-    assert verify_tasks([_oracle_task(tmp_path, smoke_ok=False)]) == 1
+    # Smoke green on the buggy repo means the disclosed spec is unchecked —
+    # a green run_tests would certify an incomplete fix.
+    assert verify_tasks([_oracle_task(tmp_path, smoke_red=False)]) == 1
+
+
+def test_verify_tasks_fails_when_the_fix_leaves_smoke_red(tmp_path):
+    from scripts.hive_bench import verify_tasks
+
+    # The reference patch fixes the oracle but not the visible suite — the
+    # task would be unresolvable from the agent's seat.
+    assert verify_tasks([_oracle_task(tmp_path, patch_fixes_smoke=False)]) == 1
 
 
 def test_verify_tasks_fails_when_the_fix_does_not_apply(tmp_path):

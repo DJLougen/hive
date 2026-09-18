@@ -60,7 +60,7 @@ Four-tier modernization, validated locally and in CI on Python 3.10–3.13. Full
 
 ### Capability tier — held-out tasks, three arms
 
-Six harder tasks ([`benchmarks/tasks/`](benchmarks/tasks/)) graded against **held-out** pytest suites the agent never sees (`grade_patch` replays the agent's writes into a pristine repo and injects the hidden tests only there). 5 repeats × 6 tasks = 30 episodes per arm, `temperature=0.7`, memory fresh. **baseline** sends every decision to the LLM; **context** is the escalate-only control (CPU policy handles nothing, every decision is an LLM call); **hive** routes mechanical transitions through the CPU policy.
+Six harder tasks ([`benchmarks/tasks/`](benchmarks/tasks/)) graded against **held-out** pytest suites the agent never sees (`grade_patch` replays the agent's writes into a pristine repo and injects the hidden tests only there). The visible `smoke/` suite covers the *disclosed* spec — it fails on the buggy repo, so a green `run_tests` means the stated requirements are met; the oracle keeps the edge cases. 5 repeats × 6 tasks = 30 episodes per arm, `temperature=0.7`, memory fresh. **baseline** sends every decision to the LLM; **context** is the escalate-only control (CPU policy handles nothing, every decision is an LLM call); **hive** routes mechanical transitions through the CPU policy.
 
 | Arm | Resolve rate | 95% CI | pass^5 | USD/resolved |
 |---|---|---|---|---|
@@ -74,7 +74,7 @@ Verdicts (exact McNemar over per-task majority outcomes, n=6 tasks): baseline vs
 
 *Note: an earlier revision of this README cited a "20-instance SWE-bench-lite" table (85% vs 0%). That harness simulated the agent loop and drew resolve outcomes from an RNG — the numbers were not real, and the script (`scripts/hive_swebench_eval.py`) has been replaced with a deprecation shim forwarding to `hive_bench.py`.*
 
-### Compression behavior
+*Note: the table above was measured when the smoke suite was happy-path only — a green `run_tests` did not certify the disclosed spec, which is the regime where hive's `finish`-on-green ends episodes after a partial patch. The smoke suites now cover the spec (red on the buggy repo, green only on a complete fix), so a re-run under the new contract is not comparable to these numbers.*
 
 `rule_fast` keeps small file reads verbatim (`CORE`) and compacts large ones to a code skeleton; test output is distilled to the pass/fail summary plus the failing asserts. On this suite the context payload appended to the transcript is ~1.2× smaller than raw observations — modest here because source files are (correctly) kept whole. Compression pays off on long tool output and logs; run `python scripts/hive_long_context_eval.py --smoke` for the long-context evidence.
 

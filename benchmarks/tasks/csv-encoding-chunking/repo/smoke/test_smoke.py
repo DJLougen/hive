@@ -32,3 +32,26 @@ def test_records_are_available_with_a_roomy_chunk_size():
 
 def test_chunks_cover_the_text_once():
     assert "".join(iter_chunks("abcdef", 2)) == "abcdef"
+
+
+# --- Spec coverage: the issue's stated requirements, not just the happy path.
+# These fail on the shipped repo; the held-out oracle checks the edge cases.
+
+
+def test_records_do_not_depend_on_the_chunk_size():
+    text = 'a,"x\ny",b\nc,d,e\n'
+    wide = list(iter_rows(iter_chunks(text, 4096)))
+    for size in (1, 2, 3, 5):
+        assert list(iter_rows(iter_chunks(text, size))) == wide, size
+
+
+def test_a_quoted_field_straddling_a_boundary_is_one_record():
+    chunks = ['a,"one', '\ntwo",b\n']
+    assert list(iter_rows(chunks)) == ['a,"one\ntwo",b']
+
+
+def test_an_unterminated_quoted_field_is_malformed():
+    import pytest
+
+    with pytest.raises(ValueError):
+        list(iter_rows(['a,"never closed\n']))
