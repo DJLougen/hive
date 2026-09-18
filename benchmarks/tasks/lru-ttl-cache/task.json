@@ -1,0 +1,11 @@
+{
+  "id": "lru-ttl-cache",
+  "family": "state",
+  "problem_statement": "Our cache bounds memory two ways at once: an entry lives at most `ttl` seconds from when it was set, and the cache holds at most `cap` entries, evicting the least-recently-used when full. Today neither is quite right: get returns an entry however stale it is, and when the cache is full it evicts the oldest-inserted key — not the least-recently-used — so a hot entry that was set first gets evicted while a cold one set later survives. get must return None for an expired entry (and drop it), a get must refresh the entry's recency, and eviction must remove the entry whose last use is oldest. A set on an existing key refreshes both its value and its expiry.",
+  "test_cmd": "python -m pytest smoke -q",
+  "oracle_cmd": "python -m pytest tests -q",
+  "test_timeout_s": 60,
+  "oracle_dir": "oracle",
+  "solution_patch": "oracle/solution.patch",
+  "solutions_public_since": "2026-09-18"
+}

@@ -1,0 +1,58 @@
+--- a/reserve/book.py	2026-09-18 12:47:29.048099963 -0400
++++ b/reserve/book.py	2026-09-18 12:47:46.893808311 -0400
+@@ -14,33 +14,46 @@
+ class Reservations:
+     """Reserve a slot for ``ttl`` seconds, then confirm or lose it.
+ 
+-    A hold is recorded with the time it was taken; nothing yet checks that
+-    time, so a hold lives forever.
++    A hold expires exactly at ``reserved_at + ttl``: the deadline is
++    inclusive, so a confirm at that instant still succeeds and one tick
++    later raises ``HoldExpired``. An expired hold frees the slot for a new
++    reserve; a confirmed booking is permanent.
+     """
+ 
+     def __init__(self, ttl: float) -> None:
+         if ttl <= 0:
+             raise ValueError("ttl must be positive")
+         self.ttl = ttl
+-        self._holds: dict[str, float] = {}      # slot -> reserved_at
++        self._holds: dict[str, float] = {}      # slot -> expiry time
+         self._confirmed: set[str] = set()
+ 
++    def _live(self, slot: str, now: float) -> bool:
++        """Is there an unexpired hold on ``slot`` at ``now``?"""
++        expiry = self._holds.get(slot)
++        if expiry is None:
++            return False
++        if now > expiry:
++            del self._holds[slot]  # the hold is dead; free the slot
++            return False
++        return True
++
+     def reserve(self, slot: str, now: float) -> float:
+         """Hold ``slot`` at ``now``; return the expiry time."""
+-        if slot in self._confirmed or slot in self._holds:
++        if slot in self._confirmed or self._live(slot, now):
+             raise SlotTaken(slot)
+-        self._holds[slot] = now
+-        return now + self.ttl
++        expiry = now + self.ttl
++        self._holds[slot] = expiry
++        return expiry
+ 
+     def confirm(self, slot: str, now: float) -> None:
+         """Finalize a held slot. Raises HoldExpired after the deadline."""
+         if slot in self._confirmed:
+             return
+-        if slot not in self._holds:
+-            raise HoldExpired(f"{slot}: no live hold")
++        if not self._live(slot, now):
++            raise HoldExpired(f"{slot}: no live hold at {now}")
+         del self._holds[slot]
+         self._confirmed.add(slot)
+ 
+     def is_free(self, slot: str, now: float) -> bool:
+         """Is ``slot`` available to reserve at ``now``?"""
+-        return slot not in self._confirmed and slot not in self._holds
++        return slot not in self._confirmed and not self._live(slot, now)

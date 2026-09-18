@@ -1,0 +1,11 @@
+{
+  "id": "reservation-expiry",
+  "family": "state",
+  "problem_statement": "Our booking service holds a slot for a fixed TTL: reserve(slot, now) takes the slot if free and returns an expiry time; confirm(slot, now) finalizes it only while the hold is still live. Today a hold never expires: confirm succeeds however late it arrives, and a slot stays reserved forever, so a second reserve always fails. A hold must expire exactly at reserve_time + ttl — confirm at that instant still succeeds (the deadline is inclusive), confirm after it must raise HoldExpired, and an expired hold frees the slot for a new reserve. A confirmed booking is permanent: it never expires and a reserve on a confirmed slot raises SlotTaken.",
+  "test_cmd": "python -m pytest smoke -q",
+  "oracle_cmd": "python -m pytest tests -q",
+  "test_timeout_s": 60,
+  "oracle_dir": "oracle",
+  "solution_patch": "oracle/solution.patch",
+  "solutions_public_since": "2026-09-18"
+}

@@ -1,0 +1,11 @@
+{
+  "id": "idempotent-outbox",
+  "family": "stream",
+  "problem_statement": "Our consumer applies account-update messages that the broker may redeliver or deliver out of order, each carrying a monotonically increasing sequence number per account. Applying the same message twice must not double-apply it — the second delivery is a no-op — and a message older than the newest applied sequence must be dropped, not applied, so a stale redelivery cannot resurrect an earlier balance. Today the consumer applies every message it receives: a redelivery double-counts the delta and an out-of-order older message rewinds the account. Track the newest applied sequence per account and apply a message only when its sequence is exactly the next one — gaps are held, not skipped.",
+  "test_cmd": "python -m pytest smoke -q",
+  "oracle_cmd": "python -m pytest tests -q",
+  "test_timeout_s": 60,
+  "oracle_dir": "oracle",
+  "solution_patch": "oracle/solution.patch",
+  "solutions_public_since": "2026-09-18"
+}

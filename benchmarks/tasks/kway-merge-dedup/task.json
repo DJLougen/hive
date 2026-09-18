@@ -1,0 +1,11 @@
+{
+  "id": "kway-merge-dedup",
+  "family": "stream",
+  "problem_statement": "We merge k sorted streams of (key, value) records into one sorted stream, and a key that appears in several streams must yield only the first occurrence in merge order — later duplicates are dropped. Today the merge materializes every stream and re-sorts, which is fine for order but keeps every duplicate: a key in two streams comes out twice. Make the merge lazy (it must not read past the record it yields next, so an infinite stream still works), keep the first occurrence of each key in merge order, and drop the rest. Streams may be empty, and a key may repeat inside a single stream — that repeats too is a duplicate to drop.",
+  "test_cmd": "python -m pytest smoke -q",
+  "oracle_cmd": "python -m pytest tests -q",
+  "test_timeout_s": 60,
+  "oracle_dir": "oracle",
+  "solution_patch": "oracle/solution.patch",
+  "solutions_public_since": "2026-09-18"
+}

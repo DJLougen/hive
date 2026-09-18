@@ -1,0 +1,73 @@
+--- a/lrucache/cache.py	2026-09-18 12:50:33.347467084 -0400
++++ b/lrucache/cache.py	2026-09-18 12:50:52.520049448 -0400
+@@ -2,13 +2,16 @@
+ 
+ from __future__ import annotations
+ 
++from collections import OrderedDict
++
+ 
+ class LruTtlCache:
+     """Hold at most ``cap`` entries, each living at most ``ttl`` seconds.
+ 
+-    Entries are stored with the time they were set and evicted in insertion
+-    order when the cache is full — neither the TTL nor the access recency is
+-    consulted.
++    An entry expires ``ttl`` after it was *set* — a get refreshes recency,
++    never the deadline. When the cache is full, eviction removes the
++    least-recently-used live entry, preferring an already-expired entry over
++    a live one.
+     """
+ 
+     def __init__(self, cap: int, ttl: float) -> None:
+@@ -18,18 +21,43 @@
+             raise ValueError("ttl must be positive")
+         self.cap = cap
+         self.ttl = ttl
+-        self._store: dict[str, tuple[object, float]] = {}  # key -> (value, set_at)
++        # Ordered by last use: the leftmost is the least recently used.
++        self._store: OrderedDict[str, tuple[object, float]] = OrderedDict()
++
++    def _expired(self, set_at: float, now: float) -> bool:
++        return now > set_at + self.ttl
++
++    def _drop_expired(self, now: float) -> None:
++        for key in [k for k, (_, at) in self._store.items() if self._expired(at, now)]:
++            del self._store[key]
+ 
+     def get(self, key: str, now: float) -> object | None:
+-        """Return the value for ``key``, or None if absent or expired."""
++        """Return the value for ``key``, or None if absent or expired.
++
++        A hit moves the key to most-recently-used; an expired entry is
++        dropped, not just hidden.
++        """
+         entry = self._store.get(key)
+-        return entry[0] if entry is not None else None
++        if entry is None:
++            return None
++        value, set_at = entry
++        if self._expired(set_at, now):
++            del self._store[key]
++            return None
++        self._store.move_to_end(key)  # a use refreshes recency
++        return value
+ 
+     def set(self, key: str, value: object, now: float) -> None:
+-        """Store ``value`` under ``key`` set at ``now``."""
+-        if key not in self._store and len(self._store) >= self.cap:
+-            oldest = next(iter(self._store))  # insertion order, not recency
+-            del self._store[oldest]
++        """Store ``value`` under ``key`` set at ``now``.
++
++        Re-setting an existing key refreshes its value, its expiry, and its
++        recency. Eviction first drops expired entries, then the LRU live one.
++        """
++        self._drop_expired(now)
++        if key in self._store:
++            del self._store[key]
++        elif len(self._store) >= self.cap:
++            self._store.popitem(last=False)  # the least recently used
+         self._store[key] = (value, now)
+ 
+     def __len__(self) -> int:

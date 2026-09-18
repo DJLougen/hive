@@ -1,0 +1,11 @@
+{
+  "id": "snapshot-event-fold",
+  "family": "state",
+  "problem_statement": "Our event-sourced counter rebuilds state by folding events, and a snapshot lets a rebuild skip the events the snapshot already covers. A snapshot is only valid for the event prefix it was taken at: loading one must verify the snapshot's covered count against the log, then fold only the events after it. Today the loader trusts any snapshot and folds the whole log on top, so a snapshot taken mid-stream double-counts the events it already includes — the state is inflated by whatever the snapshot covered. Validate the snapshot, fold the tail, and reject a snapshot whose covered count exceeds the log's length (it claims events that never happened).",
+  "test_cmd": "python -m pytest smoke -q",
+  "oracle_cmd": "python -m pytest tests -q",
+  "test_timeout_s": 60,
+  "oracle_dir": "oracle",
+  "solution_patch": "oracle/solution.patch",
+  "solutions_public_since": "2026-09-18"
+}
