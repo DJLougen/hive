@@ -1,0 +1,138 @@
+{
+  "schema": "researchmax-provenance/v0",
+  "title": "hive-bench hard tier — CPU-routing vs LLM-everything, n=15",
+  "inspired_by": {
+    "pattern": "GLM-5.3-style benchmark card + SWE-bench held-out grading",
+    "arxiv": ""
+  },
+  "benchmark": {
+    "id": "hive-bench/suite.hard.json (6 held-out tasks)",
+    "official_score": {
+      "value": null,
+      "authority": "none — no sealed external score; the artifact IS the record",
+      "direction": "higher",
+      "note": "resolve_rate is the local metric; there is no organizer-sealed analog"
+    },
+    "frontier": {
+      "score": 0.8556,
+      "commit": "79a24c72d71817b41c0fa973732827654eb16d1c",
+      "submission": "docs/benchmarks/hive-bench-hard.json"
+    }
+  },
+  "local_metric": {
+    "name": "resolve_rate",
+    "formula": "resolved_episodes / total_episodes, per arm; resolved = hidden oracle pytest passes on the agent's replayed patch",
+    "direction": "higher",
+    "secondary": {
+      "mean_llm_calls": "LLM invocations per episode — the routing-cost metric",
+      "usd_total": "endpoint-reported cost across all episodes in the arm"
+    },
+    "gate_deviations": [
+      {
+        "gate": "oracle_privacy",
+        "state": "partial",
+        "reason": "oracle/tests/* remain git-tracked (CI + --verify-tasks need them); oracle/solution.patch untracked this session. A model trained on this repo may have seen the hidden tests — absolute resolve rates are contaminated; the routing/cost delta is not."
+      }
+    ]
+  },
+  "hardware": {
+    "device": "Apple M3 Max (arm64), local harness",
+    "model_endpoint": "Fireworks AI — accounts/fireworks/models/deepseek-v4p1-flash",
+    "temperature": 0.7,
+    "repeat": 15
+  },
+  "gates": {
+    "smoke_red_on_pristine": "required — visible suite must fail on the buggy repo (reproduction signal)",
+    "smoke_green_after_patch": "required — visible suite must pass under solution.patch",
+    "oracle_green_after_patch": "required — hidden oracle must pass under solution.patch",
+    "oracle_absent_from_repo": "required — hidden tests never in the agent's workdir",
+    "pytest_control_blocked": "conftest.py/pytest.ini/sitecustomize.py writes rejected in write_file + grade_patch",
+    "enforced_by": "scripts/hive_bench.py --verify-tasks (12/12 tasks pass)"
+  },
+  "runs": [
+    {
+      "id": "capability4",
+      "role": "discard",
+      "tree": "58e1b3d (pre-disclosure)",
+      "change": "first n=5 pass on the 6-task hard tier",
+      "resolve_rate": {"baseline": 0.67, "context": 0.53, "hive": 0.53},
+      "note": "superseded — two tasks were undisclosed-rule traps (lru-ttl sweep, snapshot negative-coverage); numbers describe a buggy suite, not capability"
+    },
+    {
+      "id": "capability5",
+      "role": "discard",
+      "tree": "48d1570 (post-escalation-note, pre-deconfound)",
+      "change": "spec-carrying escalation added, hive-only",
+      "resolve_rate": {"baseline": 0.60, "context": 0.80, "hive": 0.63},
+      "note": "superseded — the spec note fired only for hive's policy, so hive-vs-baseline was not a clean routing contrast; also n=5 noise band ±2-3/5"
+    },
+    {
+      "id": "discriminating",
+      "role": "discard",
+      "tree": "8404719 (pre-deconfound, pre-blocklist)",
+      "change": "n=15 on the 3 discriminating tasks",
+      "resolve_rate": {"baseline": 0.64, "context": 0.56, "hive": 0.49},
+      "note": "superseded — predates the equalized spec review, the conftest gate, the vacuous-smoke fix, and the smoke_note prompt truth fix"
+    },
+    {
+      "id": "hard-tier-final",
+      "role": "keep",
+      "tree": "79a24c7 clean (all disclosure + deconfound + blocklist + prompt fixes)",
+      "change": "definitive n=15 run on suite.hard.json, spec review equalized across all arms",
+      "resolve_rate": {"baseline": 0.8556, "context": 0.8222, "hive": 0.8222},
+      "mean_llm_calls": {"baseline": 7.31, "context": 7.20, "hive": 3.04},
+      "usd_total": {"baseline": 0.368, "context": 0.394, "hive": 0.214},
+      "mcnemar": "all pairs not_separable (p=1.0, zero discordant tasks)",
+      "gates_passed": true,
+      "score_path": "docs/benchmarks/hive-bench-hard.json"
+    }
+  ],
+  "flagged_runs": [
+    {
+      "id": "capability4",
+      "reason": "two tasks were undisclosed-rule traps — all three arms failed the same oracle test (lru-ttl sweep, snapshot negative-coverage) that the problem_statement never disclosed; the 0/5s measured mind-reading, not capability. Tell: the all-arms-common-fail sweep replayed every patch and found one oracle test failing for ALL arms."
+    },
+    {
+      "id": "capability5",
+      "reason": "the spec-carrying escalation fired only for hive's RuleBasedRoutingPolicy (reason 'verify green'); baseline/context never got the post-green spec re-check, so the routing delta was confounded by a prompt advantage. Tell: escalation_note only constructed under `if uses_hive:` and gated on a prose reason string."
+    },
+    {
+      "id": "sliding-window-limit-0/5",
+      "reason": "hive's early 0/5 on sliding-window-limit was initially read as a routing deficiency; the real cause was a vacuous smoke test (one key, <=1 trivially passes) that never taught the eviction rule, plus a stale smoke_note telling agents the suite 'is NOT the criterion'. Tell: the smoke test passed on the buggy repo."
+    }
+  ],
+  "closed_levers": [
+    {
+      "key": "undisclosed-oracle-rules",
+      "detail": "oracle tests asserting behavior the problem_statement never states (lru-ttl sweep, snapshot negative-coverage) produce 0/5 for every arm and zero separation — a mind-read tax, not difficulty. Closed by disclosing the rule in the statement + smoke, or dropping the oracle test."
+    },
+    {
+      "key": "vacuous-smoke-tests",
+      "detail": "a smoke test that passes on the buggy repo teaches nothing (sliding-window quiet-keys used one key, <=1 trivially true). Closed by making smoke assert the real invariant (two-key case, ==1)."
+    },
+    {
+      "key": "hive-only-spec-note",
+      "detail": "delivering the post-green spec re-check only to hive's policy confounds the routing contrast. Closed by a finish-intercept that gives every arm one identical spec-review turn before finishing."
+    },
+    {
+      "key": "pytest-control-write-gaming",
+      "detail": "conftest.py/pytest.ini/sitecustomize.py can deselect or skip oracle tests without fixing source. Closed by a basename blocklist in write_file + grade_patch."
+    },
+    {
+      "key": "n5-noise-band",
+      "detail": "at 5 repeats, temp 0.7, per-cell rates swing ±2-3/5 with no intervention (context moved 0→3/5 on unchanged prompts). Closed by n=15 for any per-task claim."
+    }
+  ],
+  "harness": {
+    "local_loop": "scripts/hive_bench.py — real tool-execution agent loop",
+    "engine_commit": "79a24c72d71817b41c0fa973732827654eb16d1c",
+    "verify_gate": "scripts/hive_bench.py --verify-tasks",
+    "claim_gate": "scripts/check_claims.py"
+  },
+  "do_not": [
+    "equate resolve_rate with a sealed external score — there is none; this is the local record",
+    "restate capability4/capability5/discriminating numbers as current — all three are superseded by hard-tier-final",
+    "cite absolute resolve rates as capability evidence for a model that has seen this repo — oracle/tests/ are public (oracle_public_in_git=13); only the routing/cost delta survives contamination",
+    "read hive's 3.04-vs-7.2 call delta as a learned-policy result — the arm runs the rule-based state machine, not the trained CPURouterPolicy"
+  ]
+}

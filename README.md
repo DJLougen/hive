@@ -80,6 +80,30 @@ Verdicts (exact McNemar over per-task majority outcomes, n=6 tasks): baseline vs
 
 `rule_fast` keeps small file reads verbatim (`CORE`) and compacts large ones to a code skeleton; test output is distilled to the pass/fail summary plus the failing asserts. On this suite the context payload appended to the transcript is ~1.2× smaller than raw observations — modest here because source files are (correctly) kept whole. Compression pays off on long tool output and logs; run `python scripts/hive_long_context_eval.py --smoke` for the long-context evidence.
 
+### Hard tier — discriminating tasks, n=15
+
+Six harder tasks ([`benchmarks/tasks/suite.hard.json`](benchmarks/tasks/suite.hard.json)) authored to separate the arms — each oracle rule disclosed in the problem statement, spec review equalized across all arms. 15 repeats × 6 tasks = 90 episodes per arm, `temperature=0.7`, memory fresh, commit `79a24c7` (clean tree).
+
+| Task | baseline | context | hive |
+|---|---|---|---|
+| sliding-window-limit | 15/15 | 15/15 | 15/15 |
+| snapshot-event-fold | 15/15 | 15/15 | 15/15 |
+| kway-merge-dedup | 15/15 | 13/15 | 10/15 |
+| reservation-expiry | 15/15 | 15/15 | 15/15 |
+| idempotent-outbox | 15/15 | 15/15 | 15/15 |
+| lru-ttl-cache | 2/15 | 1/15 | 4/15 |
+| **Total** | **77/90 (86%)** | **74/90 (82%)** | **74/90 (82%)** |
+
+| Arm | mean LLM calls | USD total | USD/resolved |
+|---|---|---|---|
+| baseline | 7.31 | $0.368 | $0.0048 |
+| context | 7.20 | $0.394 | $0.0053 |
+| hive | **3.04** | **$0.214** | **$0.0029** |
+
+Verdicts (exact McNemar, n=6 tasks): all pairs **not_separable** (p=1.0, zero discordant tasks). Hive matches baseline/context task-for-task at **58% fewer LLM calls** and ~45% lower cost. `lru-ttl-cache` is the only task still discriminating (hive leads it 4/15 vs 2/15, 1/15).
+
+**Provenance:** [`docs/benchmarks/hive-bench-hard.json`](docs/benchmarks/hive-bench-hard.json) (git_sha `79a24c7`, clean). Full run history, retractions, and closed levers: [`docs/benchmarks/PROVENANCE.md`](docs/benchmarks/PROVENANCE.md) + [`PROVENANCE.json`](docs/benchmarks/PROVENANCE.json). **Contamination note:** `oracle/tests/` are git-tracked (`oracle_public_in_git=13`), so absolute resolve rates are contaminated for a model that has seen this repo — the routing/cost delta is not. **Reproduce:** `python scripts/hive_bench.py --backend openai --endpoint <EP> --api-key-env <KEY> --model <M> --suite benchmarks/tasks/suite.hard.json --arm all --repeat 15 --temperature 0.7 --memory fresh`.
+
 ---
 
 ## What Hive does
