@@ -128,6 +128,16 @@ report = {
 }
 report["summary"]["comparisons"] = compare_arms(
     objs, arms, price_in=PRICE_IN, price_out=PRICE_OUT)
+# Baseline's USD/resolved must be a single-sample ratio: the recount's own
+# usage over the recount's own resolved count — not recount USD over the
+# original run's resolved count, which mixes two different draws.
+report["summary"]["baseline"]["usd_per_resolved_task"] = (
+    RECOUNT["summary"]["baseline"]["usd_per_resolved_task"]
+)
+report["summary"]["baseline"]["usd_per_resolved_task_note"] = (
+    "recount usage / recount resolved — a single-sample ratio from the "
+    "re-measurement pass, not mixed with the original outcome grid"
+)
 out = Path("docs/benchmarks/hive-bench-capability.json")
 out.write_text(json.dumps(report, indent=2))
 print("wrote", out)

@@ -64,7 +64,7 @@ Six harder tasks ([`benchmarks/tasks/`](benchmarks/tasks/)) graded against **hel
 
 | Arm | Resolve rate | 95% CI | pass^5 | USD/resolved |
 |---|---|---|---|---|
-| baseline | **73%** (22/30) | [56%, 86%] | **50%** pass^5 | $0.0180/resolved |
+| baseline | **73%** (22/30) | [56%, 86%] | **50%** pass^5 | $0.0152/resolved |
 | context | **87%** (26/30) | [70%, 95%] | **67%** pass^5 | —/resolved |
 | hive | **47%** (14/30) | [30%, 64%] | **33%** pass^5 | $0.0097/resolved |
 

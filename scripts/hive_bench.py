@@ -980,9 +980,11 @@ def summarize(results: list[AgentResult], arm: str, *, price_in: float = 0.22,
         "mean_prompt_tokens": round(prompt_tokens / n, 1) if measured else None,
         "mean_completion_tokens": round(completion_tokens / n, 1) if measured else None,
         "mean_wall_clock_s": round(sum(r.wall_clock_s for r in outcome_rows) / n, 2) if measured else None,
-        "memory_hits": sum(r.memory_hit for r in outcome_rows),
-        "total_observation_chars": sum(r.observation_chars for r in outcome_rows),
-        "total_context_chars": sum(r.context_chars for r in outcome_rows),
+        "memory_hits": sum(r.memory_hit for r in outcome_rows) if measured else None,
+        "total_observation_chars": (
+            sum(r.observation_chars for r in outcome_rows) if measured else None),
+        "total_context_chars": (
+            sum(r.context_chars for r in outcome_rows) if measured else None),
         "prompt_tokens": prompt_tokens,
         "completion_tokens": completion_tokens,
         "usd_total": round(usd_total, 6) if usd_total is not None else None,
@@ -1066,8 +1068,9 @@ def _print_report(results: list[AgentResult], arms: list[str] | None = None,
                 print(f"\n[{arm} pass {p}] resolve={s['resolved']}/{s['tasks']} "
                       f"({s['resolve_rate']*100:.0f}%) llm_calls={calls} "
                       f"prompt_tok={toks} turns={turns} "
-                      f"mem_hits={s['memory_hits']} "
-                      f"ctx_chars={s['total_context_chars']}/{s['total_observation_chars']}")
+                      f"mem_hits={s['memory_hits'] if s['memory_hits'] is not None else 'n/a'} "
+                      f"ctx_chars={s['total_context_chars'] if s['total_context_chars'] is not None else 'n/a'}"
+                      f"/{s['total_observation_chars'] if s['total_observation_chars'] is not None else 'n/a'}")
         s = summarize(results, arm, price_in=price_in, price_out=price_out)
         if not s:
             continue

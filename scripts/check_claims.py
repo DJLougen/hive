@@ -312,10 +312,10 @@ CHECKS: list[dict] = [
     },
     {
         "label": "capability context usd is null (not measured)",
-        "kind": "verbatim",
+        "kind": "null_expected",
         "artifact": CAPABILITY,
         "path": "summary.context.usd_per_resolved_task",
-        "regex": r"context \| .*? \| .*? \| —",
+        "regex": r"context \| .*? \| .*? \| (—)",
     },
     {
         "label": "capability baseline_vs_hive verdict",
@@ -580,6 +580,20 @@ def run_check(check: dict, texts: dict[str, str]) -> list[str]:
         if not problems:
             print(f"OK\t{label}\trecomputed from {n_tasks} paired tasks\t"
                   f"artifact={recomputed['p']}")
+        return problems
+
+    if check["kind"] == "null_expected":
+        # The claim is that the artifact publishes null (not measured) and the
+        # README shows a dash — both halves are asserted.
+        value = resolve_raw(artifact, check["path"])
+        problems = []
+        if value is not None:
+            problems.append(f"MISMATCH\t{label}\tartifact has {value!r}, expected null")
+        for where, g in all_hits:
+            if str(g[0]).strip() not in ("—", "-", "n/a", "null"):
+                problems.append(f"MISMATCH\t{label}\t{where}: readme={g[0]!r}, expected a dash")
+        if not problems:
+            print(f"OK\t{label}\tnull in artifact, dash in README")
         return problems
 
     if check["kind"] == "verbatim":
