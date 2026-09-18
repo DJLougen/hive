@@ -1,4 +1,7 @@
-"""Hive: unified agent memory & context compression stack.
+"""Hive: CPU-side action routing, context compression, and causal memory.
+
+Fewer LLM calls at the same resolve rate — mechanical agent-loop decisions
+(list/read/run-tests) run on the CPU; only reasoning escalates to the model.
 
 A meta-package that wires together three components:
 

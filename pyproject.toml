@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "hive-agent-memory"
 version = "0.7.0"
-description = "Hive: unified agent memory & context compression stack for 2026 NVIDIA + edge"
+description = "Hive: CPU-side action routing, context compression, and causal memory for AI agents — fewer LLM calls at the same resolve rate"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
@@ -13,7 +13,7 @@ authors = [{ name = "Hive Authors" }]
 keywords = [
     "agent", "memory", "context-compression", "honeycomb",
     "busybee", "rust-brain", "hive", "llm", "jetson", "grace",
-    "nvidia", "edge-ai", "cpu-offload",
+    "nvidia", "edge-ai", "cpu-offload", "action-routing", "llm-cost",
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
