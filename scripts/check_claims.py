@@ -311,11 +311,12 @@ CHECKS: list[dict] = [
         "regex": r"hive \| .*? \| .*? \| \$([\d.]+)/resolved",
     },
     {
-        "label": "capability context usd is null (not measured)",
-        "kind": "null_expected",
+        "label": "capability context usd/resolved",
+        "kind": "single",
         "artifact": CAPABILITY,
         "path": "summary.context.usd_per_resolved_task",
-        "regex": r"context \| .*? \| .*? \| (—)",
+        "abs_tol": 1e-4,
+        "regex": r"context \| .*? \| .*? \| \$([\d.]+)/resolved",
     },
     {
         "label": "capability baseline_vs_hive verdict",
@@ -330,8 +331,8 @@ CHECKS: list[dict] = [
         "artifact": CAPABILITY,
         "pair": "baseline_vs_hive",
         "path": "summary.comparisons.baseline_vs_hive.p",
+        "regex": r"baseline vs hive: \*\*\w+\*\* \(p=([\d.]+)[^)]*\)",
         "abs_tol": 1e-4,
-        "regex": r"baseline vs hive: \*\*\w+\*\* \(p=([\d.]+)\)",
     },
     {
         "label": "capability context_vs_hive verdict",

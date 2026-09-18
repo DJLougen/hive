@@ -64,17 +64,17 @@ Six harder tasks ([`benchmarks/tasks/`](benchmarks/tasks/)) graded against **hel
 
 | Arm | Resolve rate | 95% CI | pass^5 | USD/resolved |
 |---|---|---|---|---|
-| baseline | **73%** (22/30) | [56%, 86%] | **50%** pass^5 | $0.0152/resolved |
-| context | **87%** (26/30) | [70%, 95%] | **67%** pass^5 | —/resolved |
-| hive | **47%** (14/30) | [30%, 64%] | **33%** pass^5 | $0.0097/resolved |
+| baseline | **97%** (29/30) | [83%, 99%] | **83%** pass^5 | $0.0103/resolved |
+| context | **87%** (26/30) | [70%, 95%] | **67%** pass^5 | $0.0129/resolved |
+| hive | **93%** (28/30) | [79%, 98%] | **83%** pass^5 | $0.0084/resolved |
 
-Verdicts (exact McNemar over per-task majority outcomes, n=6 tasks): baseline vs context: **not_separable** (p=1.0); baseline vs hive: **not_separable** (p=1.0); context vs hive: **not_separable** (p=0.5). At this suite size no pair separates — the honest read is that the held-out tier discriminates *within* an arm (per-task spread: hive drops `interval-merge-tiebreak`, `cache-key-collision`, `retry-budget-shared` entirely) but cannot yet rank arms. The suite was hardened after a first calibration showed saturation (20/20 at temp 0.3); the published numbers are the post-hardening run.
+Verdicts (exact McNemar over per-task majority outcomes, n=6 tasks): baseline vs context: **not_separable** (p=1.0); baseline vs hive: **not_separable** (p=1.0, zero discordant tasks); context vs hive: **not_separable** (p=1.0). The honest read: hive matches baseline task-for-task while spending **37% fewer LLM calls** (7.33 vs 11.6 mean) — the CPU routing is now free capability, not a capability tax. The suite was hardened after a first calibration showed saturation (20/20 at temp 0.3); the published numbers are the post-hardening run under the spec-covering smoke contract.
 
-**Provenance:** baseline outcomes are the original run's; its token usage was re-measured on an identical 30-episode pass (that pass independently resolved 26/30 — a second draw, recorded in the artifact). Context's USD is `—` because 15/30 episodes lost their token record when the run was interrupted; the field is null, not zero. Raw artifact: [`docs/benchmarks/hive-bench-capability.json`](docs/benchmarks/hive-bench-capability.json).
+**Provenance:** all three arms fully measured in one run (90 episodes, no interrupted or unmeasured rows). Raw artifact: [`docs/benchmarks/hive-bench-capability.json`](docs/benchmarks/hive-bench-capability.json).
 
 *Note: an earlier revision of this README cited a "20-instance SWE-bench-lite" table (85% vs 0%). That harness simulated the agent loop and drew resolve outcomes from an RNG — the numbers were not real, and the script (`scripts/hive_swebench_eval.py`) has been replaced with a deprecation shim forwarding to `hive_bench.py`.*
 
-*Note: the table above was measured when the smoke suite was happy-path only — a green `run_tests` did not certify the disclosed spec, which is the regime where hive's `finish`-on-green ends episodes after a partial patch. The smoke suites now cover the spec (red on the buggy repo, green only on a complete fix), so a re-run under the new contract is not comparable to these numbers.*
+*Note: an earlier table (baseline 73%, context 87%, hive 47%) was measured when the smoke suite was happy-path only — a green `run_tests` did not certify the disclosed spec, so hive's `finish`-on-green ended episodes after a partial patch. The smoke suites now cover the spec and `finish` escalates to the model; the table above is the re-run under that contract.*
 
 `rule_fast` keeps small file reads verbatim (`CORE`) and compacts large ones to a code skeleton; test output is distilled to the pass/fail summary plus the failing asserts. On this suite the context payload appended to the transcript is ~1.2× smaller than raw observations — modest here because source files are (correctly) kept whole. Compression pays off on long tool output and logs; run `python scripts/hive_long_context_eval.py --smoke` for the long-context evidence.
 
