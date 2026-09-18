@@ -42,3 +42,15 @@ def test_a_set_on_an_existing_key_refreshes_expiry():
     c.set("a", 2, 150.0)       # re-set: new value, new expiry
     assert c.get("a", 200.0) == 2
     assert c.get("a", 211.0) is None
+
+
+def test_a_set_drops_an_expired_entry_before_evicting():
+    # The disclosed rule: an expired entry never occupies capacity, so a set
+    # frees it before recency eviction — even when a live entry is the LRU.
+    c = LruTtlCache(2, 60.0)
+    c.set("a", 1, 100.0)   # expires at 160
+    c.set("b", 2, 130.0)   # live until 190
+    c.get("a", 140.0)      # a still live; now a is most-recently-used
+    c.set("c", 3, 170.0)   # a is expired — dropped, NOT the live b
+    assert c.get("b", 171.0) == 2
+    assert c.get("a", 171.0) is None

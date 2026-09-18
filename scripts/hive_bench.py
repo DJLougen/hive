@@ -639,12 +639,28 @@ def run_episode(
             if decision.escalated:
                 # Orchestration: tell the model what the policy already
                 # gathered so it spends the call on reasoning, not re-reads.
-                escalation_note = (
-                    "CONTEXT READY — the failing test output and the unit "
-                    "under test are already in this conversation. If you can "
-                    "produce the fix, emit write_file now; otherwise take the "
-                    "single most useful action."
-                )
+                reason = str(decision.args.get("reason", ""))
+                if reason.startswith("verify green"):
+                    # Post-verify escalation: the smoke suite is green but the
+                    # held-out spec may not be done. Re-surface the issue so
+                    # the model confirms each stated requirement before
+                    # finishing — the call is for spec reasoning, not a patch.
+                    escalation_note = (
+                        "VERIFY PASSED — the visible suite is green. Before "
+                        "finishing, re-check the issue against your patch: "
+                        "every stated requirement must be met, including the "
+                        "ones the visible tests do not exercise.\n\n"
+                        f"ISSUE:\n{task.problem_statement}\n\n"
+                        "If the patch fully implements the issue, emit finish; "
+                        "otherwise emit the write_file that completes it."
+                    )
+                else:
+                    escalation_note = (
+                        "CONTEXT READY — the failing test output and the unit "
+                        "under test are already in this conversation. If you can "
+                        "produce the fix, emit write_file now; otherwise take the "
+                        "single most useful action."
+                    )
                 messages.append({"role": "user", "content": escalation_note})
                 resp = chat_with_retry(backend, messages, max_tokens=max_tokens,
                                        temperature=temperature)
