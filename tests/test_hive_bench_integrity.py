@@ -101,6 +101,42 @@ def test_episode_runs_when_suite_fails(tmp_path):
     assert not result.resolved  # scripted driver never fixes anything
 
 
+class _WriteThenFinishDriver:
+    """Emits write_file -> run_tests -> finish, then keeps finishing."""
+
+    _SCRIPT = ("write_file", "run_tests", "finish")
+
+    def __init__(self) -> None:
+        self._i = 0
+        self.seen_notes: list[str] = []
+
+    def chat(self, messages, *, max_tokens=0, temperature=0.0, tools=None,
+             tool_choice=None):
+        for m in messages:
+            if isinstance(m.get("content"), str) and "re-check the issue" in m["content"]:
+                self.seen_notes.append(m["content"])
+        tool = self._SCRIPT[min(self._i, len(self._SCRIPT) - 1)]
+        self._i += 1
+        from hive.llm import ModelResponse
+        if tool == "write_file":
+            text = 'ACTION: write_file\nPATH: svc/core.py\nCONTENT:\ndef budget(n):\n    return n // 3\n'
+        else:
+            text = f"ACTION: {tool}"
+        return ModelResponse(text=text, prompt_tokens=0, completion_tokens=0,
+                             duration_s=0.0, model="scripted", finish_reason="stop")
+
+
+def test_finish_after_green_triggers_one_spec_review(tmp_path):
+    """Deconfound: every arm gets one spec-review turn before finishing."""
+    task = _held_out_task(tmp_path)
+    driver = _WriteThenFinishDriver()
+    run_episode(task, arm="baseline", backend=driver, stack=None,
+                max_turns=8, max_tokens=100, workdir=tmp_path / "work")
+    # The spec-review note must reach the model exactly once before finish.
+    assert len(driver.seen_notes) == 1
+    assert "budget is not shared" in driver.seen_notes[0]
+
+
 # --- provenance --------------------------------------------------------------
 
 

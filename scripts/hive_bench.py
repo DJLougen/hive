@@ -74,6 +74,22 @@ ARM_COMBOS: dict[str, list[str]] = {
 }
 
 
+# Post-green spec review — the one turn every arm gets before finishing. A
+# green visible suite does not prove the held-out spec is met, so the model
+# re-reads the issue and confirms each stated requirement. Delivered via the
+# escalation note for hive (its policy escalates on green) and via the
+# finish-intercept for baseline/context — identical text, identical one-call
+# cost, so the routing contrast stays clean. ``{issue}`` is the task's
+# problem_statement.
+_SPEC_REVIEW_NOTE = (
+    "Before finishing, re-check the issue against your patch: every stated "
+    "requirement must be met, including the ones the visible tests do not "
+    "exercise.\n\nISSUE:\n{issue}\n\n"
+    "If the patch fully implements the issue, emit finish; otherwise emit "
+    "the write_file that completes it."
+)
+
+
 def arms_for(arm: str) -> list[str]:
     """Expand an ``--arm`` value into the arms to run."""
     return list(ARM_COMBOS.get(arm, [arm]))
@@ -130,6 +146,18 @@ Rules: make exactly one tool call per reply (or one ACTION: block if tool calls 
 # Tasks
 # ---------------------------------------------------------------------------
 
+# Files that let a patch control pytest's outcome without fixing the source:
+# conftest hooks can deselect tests, ini/cfg can inject addopts, sitecustomize
+# runs at interpreter startup. Writing any of these is gaming the gate, so both
+# the agent's write_file and the grader's grade_patch reject them.
+_PYTEST_CONTROL_BASENAMES = frozenset({
+    "conftest.py", "pytest.ini", "tox.ini", "setup.cfg", "pyproject.toml",
+    "sitecustomize.py", ".pytest.ini",
+})
+
+def _is_pytest_control(rel_parts: tuple[str, ...]) -> bool:
+    """True when the path's basename can steer pytest collection/options."""
+    return bool(rel_parts) and rel_parts[-1] in _PYTEST_CONTROL_BASENAMES
 
 @dataclass(slots=True)
 class Task:
@@ -281,7 +309,6 @@ class ToolExecutor:
             return False, f"ERROR: test_cmd {self.test_cmd!r} failed to run: {exc}"
         text = (out.stdout + "\n" + out.stderr).strip()
         return out.returncode == 0, text
-
     def write_file(self, rel: str, content: str) -> str:
         try:
             p = self._resolve(rel)
@@ -297,6 +324,11 @@ class ToolExecutor:
             if rel_parts[: len(dparts)] == dparts:
                 return (f"ERROR: {declared}/ is the declared test path — "
                         "fix the source, not the tests")
+        # Pytest-control files are read-only too: conftest/ini/sitecustomize
+        # can deselect or skip the oracle tests, so writing one games the gate.
+        if _is_pytest_control(rel_parts):
+            return ("ERROR: pytest-control files are read-only — "
+                    "fix the source, not the test harness")
         try:
             p.parent.mkdir(parents=True, exist_ok=True)
             p.write_text(content, encoding="utf-8")
@@ -517,9 +549,9 @@ def grade_patch(task: Task, steps: list[StepLog], *, workdir: Path) -> tuple[boo
         except ValueError as exc:
             return False, f"ERROR: graded patch path rejected: {exc}", grade_dir
         parts = target.relative_to(gate.workdir).parts
-        if "tests" in parts or any(
+        if ("tests" in parts or _is_pytest_control(parts) or any(
             parts[: len(Path(d).parts)] == Path(d).parts for d in gate.test_paths
-        ):
+        )):
             return False, f"ERROR: graded patch touches a read-only test path: {rel}", grade_dir
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(content, encoding="utf-8")
@@ -640,20 +672,13 @@ def run_episode(
                 # Orchestration: tell the model what the policy already
                 # gathered so it spends the call on reasoning, not re-reads.
                 reason = str(decision.args.get("reason", ""))
-                if reason.startswith("verify green"):
-                    # Post-verify escalation: the smoke suite is green but the
-                    # held-out spec may not be done. Re-surface the issue so
-                    # the model confirms each stated requirement before
-                    # finishing — the call is for spec reasoning, not a patch.
-                    escalation_note = (
-                        "VERIFY PASSED — the visible suite is green. Before "
-                        "finishing, re-check the issue against your patch: "
-                        "every stated requirement must be met, including the "
-                        "ones the visible tests do not exercise.\n\n"
-                        f"ISSUE:\n{task.problem_statement}\n\n"
-                        "If the patch fully implements the issue, emit finish; "
-                        "otherwise emit the write_file that completes it."
-                    )
+                if reason.startswith("verify green") and not state.get("spec_reviewed"):
+                    # Post-verify escalation = this arm's spec-review turn.
+                    # Mark it so the finish-intercept doesn't fire a second
+                    # one — every arm gets exactly one spec review.
+                    state["spec_reviewed"] = True
+                    escalation_note = _SPEC_REVIEW_NOTE.format(
+                        issue=task.problem_statement)
                 else:
                     escalation_note = (
                         "CONTEXT READY — the failing test output and the unit "
@@ -702,8 +727,20 @@ def run_episode(
         if tool is None:
             observation = "INVALID ACTION — reply with exactly one ACTION: block."
         elif tool == "finish":
-            done = True
-            observation = "finished"
+            # Deconfound: a green visible suite does not prove the held-out
+            # spec is met. Before accepting finish, every arm gets one
+            # spec-review turn — the same post-green re-check hive's policy
+            # escalates for — so the routing contrast is clean. The note goes
+            # back as the observation and the loop continues; the model
+            # re-decides next turn. Fires once per episode.
+            if (task.oracle_dir is not None and state.get("writes", 0) > 0
+                    and not state.get("spec_reviewed")):
+                state["spec_reviewed"] = True
+                observation = _SPEC_REVIEW_NOTE.format(
+                    issue=task.problem_statement)
+            else:
+                done = True
+                observation = "finished"
         elif tool == "list_files":
             observation = executor.list_files()
             state["listed"] = True
@@ -1315,6 +1352,22 @@ def build_provenance(*, args: Any, stack: Any | None, policy: Any | None,
     if tasks:
         dates = [t.solutions_public_since for t in tasks if t.solutions_public_since]
         solutions_public_since = max(dates) if dates else None
+    # Contamination gate: once the reference fixes are public, a model trained
+    # on this repo may have memorized them. Warn (don't block) so an operator
+    # running a capability claim sees the exposure in the log.
+    if solutions_public_since:
+        try:
+            cutoff = datetime.fromisoformat(solutions_public_since).replace(
+                tzinfo=timezone.utc)
+            if datetime.now(timezone.utc) > cutoff:
+                _log.warning(
+                    "capability claim at risk: reference fixes for this suite "
+                    "have been public since %s — a model trained on this repo "
+                    "may have memorized them; absolute resolve rates are "
+                    "contaminated (routing/cost deltas are not)",
+                    solutions_public_since)
+        except ValueError:
+            pass
     return {
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "git_sha": sha,

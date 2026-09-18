@@ -50,6 +50,7 @@ def test_keys_are_independent():
 
 def test_quiet_keys_do_not_leak_memory():
     rl = RateLimiter(1, 60.0)
-    rl.call("gone", 0.0)
-    rl.call("gone", 61.0)  # first call expired out of the window
-    assert rl.active_keys() <= 1
+    rl.call("old", 0.0)
+    rl.call("new", 1000.0)
+    # 'old' has no calls inside [940, 1000) — it must not linger in memory.
+    assert rl.active_keys() == 1
