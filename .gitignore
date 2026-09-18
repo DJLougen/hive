@@ -47,3 +47,8 @@ benchmarks/traces-all/
 
 # Local review evidence (never part of the package)
 .jev-review/
+
+# Reference fixes for held-out bench tasks — kept out of the public index so a
+# model trained on this repo cannot memorize the gold patch. oracle/tests/
+# stays tracked (CI + --verify-tasks need it); only the patch is private.
+benchmarks/tasks/*/oracle/solution.patch

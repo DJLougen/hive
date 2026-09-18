@@ -1,7 +1,7 @@
 {
   "id": "sliding-window-limit",
   "family": "boundary",
-  "problem_statement": "Our API rate limiter must cap each key at N calls in any sliding window of W seconds: a call is allowed when fewer than N calls by the same key landed in the last W seconds, and denied otherwise. Today the limiter counts calls in fixed clock windows, so a caller that fires N calls at the end of one window and N more at the start of the next gets 2N through inside W seconds — the cap is not a cap. Make the window slide with the caller's own history. Calls at exactly W seconds after an earlier call must not count that earlier call (the window is [now-W, now), left-open), and the limiter must not grow memory with keys that have gone quiet.",
+  "problem_statement": "Our API rate limiter must cap each key at N calls in any sliding window of W seconds: a call is allowed when fewer than N calls by the same key landed in the last W seconds, and denied otherwise. Today the limiter counts calls in fixed clock windows, so a caller that fires N calls at the end of one window and N more at the start of the next gets 2N through inside W seconds \u2014 the cap is not a cap. Make the window slide with the caller's own history. Calls at exactly W seconds after an earlier call must not count that earlier call (the window is [now-W, now), left-open), and the limiter must not grow memory with keys that have gone quiet: a call for any key must sweep expired keys elsewhere, so `active_keys()` stays bounded by the keys active in the window.",
   "test_cmd": "python -m pytest smoke -q",
   "oracle_cmd": "python -m pytest tests -q",
   "test_timeout_s": 60,

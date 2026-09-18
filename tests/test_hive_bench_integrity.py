@@ -44,7 +44,9 @@ def _task(repo: Path, test_cmd: str = "python -m pytest tests -q") -> Task:
 
 def test_write_blocked_for_any_tests_segment(tmp_path):
     ex = ToolExecutor(tmp_path, "python -m pytest tests -q", 60)
-    for rel in ("tests/test_x.py", "pkg/tests/test_x.py", "tests/nested/deep.py"):
+    for rel in ("tests/test_x.py", "pkg/tests/test_x.py", "tests/nested/deep.py",
+                "conftest.py", "pyproject.toml", "sitecustomize.py",
+                "pkg/conftest.py"):  # pytest-control files steer the oracle
         out = ex.write_file(rel, "x = 1\n")
         assert out.startswith("ERROR"), rel
         assert not (tmp_path / rel).exists()
@@ -323,6 +325,12 @@ def test_grade_patch_ignores_failed_writes_and_refuses_test_paths(tmp_path):
     resolved, out, _ = grade_patch(task, [cheat],
                                    workdir=tmp_path / "work")
     assert not resolved and "read-only test path" in out
+    # A pytest-control file (conftest.py) must also be refused: it could
+    # deselect the oracle tests without fixing any source.
+    harness = _write_step("conftest.py",
+                          "def pytest_collection_modifyitems(items):\n    del items[:]\n")
+    resolved, out, _ = grade_patch(task, [harness], workdir=tmp_path / "work")
+    assert not resolved and "read-only" in out
 
 
 def test_episode_grades_the_patch_not_the_workdir(tmp_path):

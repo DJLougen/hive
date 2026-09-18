@@ -212,6 +212,14 @@ def load_tasks(suite_dir: Path, only: list[str] | None = None) -> list[Task]:
                 solutions_public_since=meta.get("solutions_public_since"),
             )
         )
+    if only:
+        # A typo in --tasks (or a task renamed out of the manifest) must fail
+        # loudly: a silently short run would redefine the tier it reports on.
+        missing = sorted(set(only) - {t.id for t in tasks})
+        if missing:
+            raise SystemExit(
+                f"--tasks matched nothing in {manifest}: {missing}; "
+                f"available ids: {sorted(suite['tasks'])}")
     return tasks
 
 
@@ -640,13 +648,15 @@ def run_episode(
                 )
     state["memory_hit"] = memory_hit
 
-    # Held-out tasks ship a visible smoke suite that passes before the fix.
-    # Saying so is not a hint — it stops the agent from reading green smoke
-    # output as "already fixed" and finishing without doing the work.
+    # Held-out tasks ship a visible smoke suite covering the *disclosed*
+    # spec: it is RED on the buggy repo and goes green only when the fix is
+    # correct. Saying so makes the red output usable as the reproduction
+    # signal instead of harness noise the agent feels free to ignore.
     smoke_note = (
-        "\nThe repo ships a smoke suite (`smoke/`) covering the public API "
-        "happy path; it passes before and after the fix and is NOT the "
-        "criterion. Fix the source so the behaviour described above holds."
+        "\nThe repo ships a visible smoke suite (`smoke/`) covering the "
+        "stated requirements; it FAILS until the fix is correct, so use "
+        "`run_tests` as your reproduction signal and make it pass before "
+        "finishing."
         if task.oracle_dir is not None else ""
     )
 
@@ -1219,7 +1229,6 @@ def _verify_one(task: Task, scratch: Path, failures: list[str]) -> int:
     because there is nothing held out to check.
     """
     workdir = scratch / task.id
-    workdir = scratch / task.id
     if task.oracle_dir is None:
         # Original suite: grade the workdir, so check the workdir gate.
         workdir.mkdir(parents=True)
@@ -1334,6 +1343,22 @@ def _git_sha() -> tuple[str | None, bool | None]:
     except (OSError, subprocess.TimeoutExpired):
         return None, None
 
+def _oracle_files_in_git() -> int | None:
+    """Count of ``benchmarks/tasks/*/oracle`` files tracked in the git index,
+    or None when git isn't available. Nonzero means the hidden tests and
+    reference patches are public — recorded so the artifact self-describes
+    the contamination exposure."""
+    try:
+        out = subprocess.run(
+            ["git", "ls-files", "benchmarks/tasks/*/oracle/*"],
+            cwd=_REPO_ROOT, capture_output=True, text=True, timeout=10,
+        )
+        if out.returncode != 0:
+            return None
+        return sum(1 for ln in out.stdout.splitlines() if ln.strip())
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+
 
 def build_provenance(*, args: Any, stack: Any | None, policy: Any | None,
                      arms: list[str], stacks: dict[str, Any] | None = None,
@@ -1363,8 +1388,9 @@ def build_provenance(*, args: Any, stack: Any | None, policy: Any | None,
     # running a capability claim sees the exposure in the log.
     if solutions_public_since:
         try:
-            cutoff = datetime.fromisoformat(solutions_public_since).replace(
-                tzinfo=timezone.utc)
+            cutoff = datetime.fromisoformat(solutions_public_since)
+            if cutoff.tzinfo is None:
+                cutoff = cutoff.replace(tzinfo=timezone.utc)
             if datetime.now(timezone.utc) > cutoff:
                 _log.warning(
                     "capability claim at risk: reference fixes for this suite "
@@ -1396,6 +1422,12 @@ def build_provenance(*, args: Any, stack: Any | None, policy: Any | None,
         "suite_path": str(getattr(args, "suite", "")),
         "tasks_with_oracle": sum(1 for t in (tasks or []) if t.oracle_dir is not None),
         "solutions_public_since": solutions_public_since,
+        # How many oracle files (hidden tests + reference patches) are tracked
+        # in this checkout's git index — nonzero means the answers are public
+        # and absolute resolve rates are contaminated for any model that has
+        # seen the repo. Recorded so a reader of the artifact can tell a
+        # held-out tier from a leaked one without re-running git.
+        "oracle_public_in_git": _oracle_files_in_git(),
     }
 
 
