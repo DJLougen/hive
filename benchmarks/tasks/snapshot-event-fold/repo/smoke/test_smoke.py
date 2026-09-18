@@ -31,3 +31,10 @@ def test_a_snapshot_covering_more_than_the_log_is_rejected():
 
 def test_fold_adds_the_event():
     assert fold(10, 5) == 15
+
+
+def test_a_negative_coverage_is_rejected():
+    # The disclosed rule: covered must lie in [0, len(log)] — a negative count
+    # is as invalid as one past the end.
+    with pytest.raises(ValueError):
+        load_state([1, 2, 3], Snapshot(state=0, covered=-1))
