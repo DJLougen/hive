@@ -58,6 +58,20 @@ Four-tier modernization, validated locally and in CI on Python 3.10–3.13. Full
 
 **Where the boundary is — measured on real agent traces.** `benchmarks/traces/` + `scripts/trace_bench.py` evaluate the same policy on 100 deidentified tool-call sequences from real omp/prime-agent sessions (5 workflow families), training on a separate 1,595-trace pool (~148k decisions). An 8-algorithm bake-off (rf, rf-deep, extratrees, hgb, logreg, mlp, markov1/2) found the best state-only model — mlp — at 48% raw next-tool accuracy vs 43% for a repeat-last baseline, and a learning curve showing the gain saturates fast: tool choice is mostly *sequential*, and the missing signal is tool-output content, which deidentified state can't carry. So: CPU routing works where the workflow shape is known (this suite: ~85% of calls, 0-call replays), and open-ended planning still needs the model — which is why the next experiment is reading tool decisions from model hidden states rather than observable state. Full table + the label-leakage bug this experiment caught: [`docs/benchmarks/trace-bakeoff.json`](docs/benchmarks/trace-bakeoff.json), [`benchmarks/README.md`](benchmarks/README.md).
 
+### Capability tier — held-out tasks, three arms
+
+Six harder tasks ([`benchmarks/tasks/`](benchmarks/tasks/)) graded against **held-out** pytest suites the agent never sees (`grade_patch` replays the agent's writes into a pristine repo and injects the hidden tests only there). 5 repeats × 6 tasks = 30 episodes per arm, `temperature=0.7`, memory fresh. **baseline** sends every decision to the LLM; **context** is the escalate-only control (CPU policy handles nothing, every decision is an LLM call); **hive** routes mechanical transitions through the CPU policy.
+
+| Arm | Resolve rate | 95% CI | pass^5 | USD/resolved |
+|---|---|---|---|---|
+| baseline | **73%** (22/30) | [56%, 86%] | **50%** pass^5 | $0.0180/resolved |
+| context | **87%** (26/30) | [70%, 95%] | **67%** pass^5 | —/resolved |
+| hive | **47%** (14/30) | [30%, 64%] | **33%** pass^5 | $0.0097/resolved |
+
+Verdicts (exact McNemar over per-task majority outcomes, n=6 tasks): baseline vs context: **not_separable** (p=1.0); baseline vs hive: **not_separable** (p=1.0); context vs hive: **not_separable** (p=0.5). At this suite size no pair separates — the honest read is that the held-out tier discriminates *within* an arm (per-task spread: hive drops `interval-merge-tiebreak`, `cache-key-collision`, `retry-budget-shared` entirely) but cannot yet rank arms. The suite was hardened after a first calibration showed saturation (20/20 at temp 0.3); the published numbers are the post-hardening run.
+
+**Provenance:** baseline outcomes are the original run's; its token usage was re-measured on an identical 30-episode pass (that pass independently resolved 26/30 — a second draw, recorded in the artifact). Context's USD is `—` because 15/30 episodes lost their token record when the run was interrupted; the field is null, not zero. Raw artifact: [`docs/benchmarks/hive-bench-capability.json`](docs/benchmarks/hive-bench-capability.json).
+
 *Note: an earlier revision of this README cited a "20-instance SWE-bench-lite" table (85% vs 0%). That harness simulated the agent loop and drew resolve outcomes from an RNG — the numbers were not real, and the script (`scripts/hive_swebench_eval.py`) has been replaced with a deprecation shim forwarding to `hive_bench.py`.*
 
 ### Compression behavior

@@ -421,6 +421,11 @@ class AgentResult:
     context_chars: int
     pass_idx: int = 0               # which repeat pass (memory replay check)
     held_out: bool = False          # graded against tests the agent never saw
+    # False when this row's per-episode usage (tokens, calls, turns, wall clock)
+    # was not recorded — a resumed episode regraded from its patch. Cost fields
+    # for such an arm are published as null, never as zero.
+    usage_recorded: bool = True
+    crashed: bool = False             # episode aborted on an exception, not a model failure
     steps: list[StepLog] = field(default_factory=list)
 
 
@@ -860,19 +865,23 @@ def dispersion(values: list[float]) -> dict[str, Any]:
 
 def task_grid(results: list[AgentResult], arm: str) -> dict[str, list[bool]]:
     """``{task_id: [resolved, …]}`` in pass order — the grid the paired tests
-    and pass^k need, and the grid a reader can recompute every statistic from."""
+    and pass^k need, and the grid a reader can recompute every statistic from.
+    Crashed episodes are excluded: an infrastructure abort is not a model
+    outcome."""
     grid: dict[str, list[bool]] = {}
-    for r in sorted((r for r in results if r.arm == arm), key=lambda r: r.pass_idx):
+    for r in sorted((r for r in results if r.arm == arm and not r.crashed),
+                    key=lambda r: r.pass_idx):
         grid.setdefault(r.task_id, []).append(bool(r.resolved))
     return grid
 
 
-def pass_hat_k(results: list[AgentResult], arm: str, k: int) -> float | None:
+def pass_hat_k(results: list[AgentResult], arm: str, k: int) -> dict[str, Any]:
     """Unbiased pass^k — mean over tasks of ``C(resolved, k) / C(n, k)``.
 
     The probability that *all* k independent attempts on one task succeed,
-    estimated from the repeats actually run. Tasks with fewer than k repeats
-    are skipped (not counted as failures); ``None`` when no task qualifies.
+    estimated from the repeats actually run. Tasks with fewer than k clean
+    repeats are skipped (not counted as failures); the contributing count is
+    returned alongside the estimate so a shrunken task set is never silent.
     """
     if k < 1:
         raise ValueError("k must be >= 1")
@@ -883,8 +892,10 @@ def pass_hat_k(results: list[AgentResult], arm: str, k: int) -> float | None:
             continue
         values.append(math.comb(sum(outcomes), k) / math.comb(n, k))
     if not values:
-        return None
-    return round(sum(values) / len(values), 4)
+        return {"value": None, "tasks_used": 0}
+    return {"value": round(sum(values) / len(values), 4),
+            "tasks_used": len(values)}
+
 
 
 def mcnemar_exact(a: list[bool], b: list[bool]) -> dict[str, Any]:
@@ -934,46 +945,76 @@ def summarize(results: list[AgentResult], arm: str, *, price_in: float = 0.22,
     rows = [r for r in results if r.arm == arm]
     if not rows:
         return {}
-    n = len(rows)
-    resolved = sum(r.resolved for r in rows)
+    crashed = sum(r.crashed for r in rows)
+    # Outcome statistics count only episodes that actually ran to a verdict;
+    # an infrastructure abort is not a model failure.
+    outcome_rows = [r for r in rows if not r.crashed]
+    n = len(outcome_rows)
+    if n == 0:
+        return {"arm": arm, "tasks": 0, "resolved": 0,
+                "episodes_crashed": crashed}
+    resolved = sum(r.resolved for r in outcome_rows)
     grid = task_grid(results, arm)
-    prompt_tokens = sum(r.prompt_tokens for r in rows)
-    completion_tokens = sum(r.completion_tokens for r in rows)
-    usd_total = (prompt_tokens * price_in + completion_tokens * price_out) / 1e6
+    # Usage-derived fields are only honest when every *outcome* episode
+    # recorded its usage. A crashed episode has none and is already excluded;
+    # a resumed episode (regraded from its patch) has none — publish null,
+    # never a zero that reads as "free".
+    unmeasured = sum(not getattr(r, "usage_recorded", True) for r in outcome_rows)
+    measured = unmeasured == 0
+    if measured:
+        prompt_tokens: int | None = sum(r.prompt_tokens for r in outcome_rows)
+        completion_tokens: int | None = sum(r.completion_tokens for r in outcome_rows)
+        usd_total: float | None = (
+            (prompt_tokens * price_in + completion_tokens * price_out) / 1e6
+        )
+    else:
+        prompt_tokens = completion_tokens = usd_total = None
     summary = {
         "arm": arm,
         "tasks": n,
         "resolved": resolved,
         "resolve_rate": round(resolved / n, 4),
         "resolve_ci95": list(wilson(resolved, n)),
-        "mean_turns": round(sum(r.turns for r in rows) / n, 2),
-        "mean_llm_calls": round(sum(r.llm_calls for r in rows) / n, 2),
-        "mean_prompt_tokens": round(prompt_tokens / n, 1),
-        "mean_completion_tokens": round(completion_tokens / n, 1),
-        "mean_wall_clock_s": round(sum(r.wall_clock_s for r in rows) / n, 2),
-        "memory_hits": sum(r.memory_hit for r in rows),
-        "total_observation_chars": sum(r.observation_chars for r in rows),
-        "total_context_chars": sum(r.context_chars for r in rows),
+        "mean_turns": round(sum(r.turns for r in outcome_rows) / n, 2) if measured else None,
+        "mean_llm_calls": round(sum(r.llm_calls for r in outcome_rows) / n, 2) if measured else None,
+        "mean_prompt_tokens": round(prompt_tokens / n, 1) if measured else None,
+        "mean_completion_tokens": round(completion_tokens / n, 1) if measured else None,
+        "mean_wall_clock_s": round(sum(r.wall_clock_s for r in outcome_rows) / n, 2) if measured else None,
+        "memory_hits": sum(r.memory_hit for r in outcome_rows),
+        "total_observation_chars": sum(r.observation_chars for r in outcome_rows),
+        "total_context_chars": sum(r.context_chars for r in outcome_rows),
         "prompt_tokens": prompt_tokens,
         "completion_tokens": completion_tokens,
-        "usd_total": round(usd_total, 6),
-        "usd_per_resolved_task": round(usd_total / resolved, 6) if resolved else 0.0,
+        "usd_total": round(usd_total, 6) if usd_total is not None else None,
+        # cost/0 is undefined, not free — null either way.
+        "usd_per_resolved_task": (
+            round(usd_total / resolved, 6)
+            if usd_total is not None and resolved else None
+        ),
+        "episodes_crashed": crashed,
+        "episodes_without_usage": unmeasured,
         "per_task_resolved": {t: f"{sum(v)}/{len(v)}" for t, v in grid.items()},
-        "held_out_episodes": sum(r.held_out for r in rows),
-        "tasks_with_oracle": len({r.task_id for r in rows if r.held_out}),
+        "held_out_episodes": sum(r.held_out for r in outcome_rows),
+        "tasks_with_oracle": len({r.task_id for r in outcome_rows if r.held_out}),
     }
     # pass^k over this arm's repeats (k = the number of passes actually run).
-    passes = len({r.pass_idx for r in rows})
+    passes = len({r.pass_idx for r in outcome_rows})
     summary["passes"] = passes
     summary["pass_hat_k"] = {str(k): pass_hat_k(results, arm, k) for k in range(1, passes + 1)}
     # Dispersion over passes, so a single-run table cannot be read as a point
     # estimate with a known spread. `passes == 1` means "not measurable here".
-    summary["per_pass_mean_llm_calls"] = {
-        str(p): round(v, 2) for p, v in per_pass_means(results, arm).items()
-    }
-    summary["llm_calls_dispersion"] = dispersion(
-        list(per_pass_means(results, arm).values())
-    )
+    # Same measured-gate as the other usage fields: a partly-resumed arm has
+    # no honest per-pass call counts.
+    if measured:
+        summary["per_pass_mean_llm_calls"] = {
+            str(p): round(v, 2) for p, v in per_pass_means(results, arm).items()
+        }
+        summary["llm_calls_dispersion"] = dispersion(
+            list(per_pass_means(results, arm).values())
+        )
+    else:
+        summary["per_pass_mean_llm_calls"] = None
+        summary["llm_calls_dispersion"] = None
     return summary
 
 
@@ -1019,20 +1060,26 @@ def _print_report(results: list[AgentResult], arms: list[str] | None = None,
         for p in sorted({r.pass_idx for r in results if r.arm == arm}):
             s = summarize([r for r in results if r.pass_idx == p], arm)
             if s:
+                calls = s['mean_llm_calls'] if s['mean_llm_calls'] is not None else "n/a"
+                toks = s['mean_prompt_tokens'] if s['mean_prompt_tokens'] is not None else "n/a"
+                turns = s['mean_turns'] if s['mean_turns'] is not None else "n/a"
                 print(f"\n[{arm} pass {p}] resolve={s['resolved']}/{s['tasks']} "
-                      f"({s['resolve_rate']*100:.0f}%) llm_calls={s['mean_llm_calls']} "
-                      f"prompt_tok={s['mean_prompt_tokens']} turns={s['mean_turns']} "
+                      f"({s['resolve_rate']*100:.0f}%) llm_calls={calls} "
+                      f"prompt_tok={toks} turns={turns} "
                       f"mem_hits={s['memory_hits']} "
                       f"ctx_chars={s['total_context_chars']}/{s['total_observation_chars']}")
         s = summarize(results, arm, price_in=price_in, price_out=price_out)
         if not s:
             continue
+        usd = f"${s['usd_total']:.4f}" if s["usd_total"] is not None else "n/a"
+        upr = (f"${s['usd_per_resolved_task']:.4f}"
+               if s["usd_per_resolved_task"] is not None else "n/a")
         print(f"[{arm} all passes] resolve={s['resolved']}/{s['tasks']} "
               f"({s['resolve_rate']*100:.0f}%) ci95={s['resolve_ci95']} "
               f"pass_hat_k={s['pass_hat_k']} "
-              f"usd=${s['usd_total']:.4f} usd/resolved=${s['usd_per_resolved_task']:.4f}")
+              f"usd={usd} usd/resolved={upr}")
         print(f"[{arm} per task] {s['per_task_resolved']}")
-        disp = s.get("llm_calls_dispersion", {})
+        disp = s.get("llm_calls_dispersion") or {}
         if disp.get("passes", 0) >= 2:
             print(f"[{arm} across passes] llm_calls mean={disp['mean']} "
                   f"stderr={disp['stderr']} range={disp['min']}..{disp['max']} "
@@ -1069,6 +1116,29 @@ def _apply_patch(patch_text: str, cwd: Path) -> tuple[bool, str]:
     out = subprocess.run([patch_bin, "-p1", "--forward"], cwd=cwd, input=patch_text,
                          capture_output=True, text=True)
     return out.returncode == 0, (out.stderr or out.stdout).strip()
+
+
+def _steps_from_workdir(task: Task, workdir: Path) -> list[StepLog]:
+    """Rebuild the episode's write steps from the workdir it left behind.
+
+    Used only by ``--skip-existing``: the patched files are the difference
+    between the workdir and the pristine repo, so the verdict can be regraded
+    without re-running the model.
+    """
+    steps: list[StepLog] = []
+    for path in sorted(workdir.rglob("*")):
+        if not path.is_file() or "__pycache__" in path.parts or ".pytest_cache" in path.parts:
+            continue
+        rel = str(path.relative_to(workdir))
+        original = task.repo_dir / rel
+        content = path.read_text(encoding="utf-8", errors="replace")
+        if not original.is_file() or original.read_text(encoding="utf-8",
+                                                        errors="replace") != content:
+            steps.append(StepLog(turn=0, decision_source="resume", tool="write_file",
+                                 args={"path": rel, "content": content},
+                                 observation_bytes=0, context_bytes=0, ok=True,
+                                 write={"path": rel, "content": content}))
+    return steps
 
 
 def _verify_one(task: Task, scratch: Path, failures: list[str]) -> int:
@@ -1282,6 +1352,11 @@ def main() -> int:
     ap.add_argument("--verify-tasks", action="store_true",
                     help="no-LLM pre-flight: every held-out task must fail on the "
                          "pristine repo and pass with its solution.patch applied")
+    ap.add_argument("--skip-existing", action="store_true",
+                    help="resume: an episode whose grade dir already exists in --scratch "
+                         "is not re-run; its verdict is regraded from the recorded patch")
+    ap.add_argument("--scratch", default=None,
+                    help="scratch dir to resume from (default: a fresh temp dir)")
     args = ap.parse_args()
 
     logging.basicConfig(level=logging.INFO, format="%(message)s")
@@ -1356,7 +1431,8 @@ def main() -> int:
     policy = policies.get("hive")
 
     results: list[AgentResult] = []
-    scratch = Path(tempfile.mkdtemp(prefix="hive-bench-"))
+    scratch = Path(args.scratch) if args.scratch else Path(tempfile.mkdtemp(prefix="hive-bench-"))
+    scratch.mkdir(parents=True, exist_ok=True)
     log_fh = open(args.log, "a", encoding="utf-8") if args.log else None
     _log.info("workdirs under %s", scratch)
     try:
@@ -1367,6 +1443,22 @@ def main() -> int:
                 for task in tasks:
                     workdir = scratch / f"{arm}-p{rep}-{task.id}"
                     workdir.mkdir(parents=True, exist_ok=True)
+                    if args.skip_existing and (scratch / f"{workdir.name}-grade").is_dir():
+                        # Resume: this episode already ran to a verdict in a
+                        # previous (interrupted) invocation. Regrade it from
+                        # the recorded patch; token usage was not recorded.
+                        _log.info("skipping %s (already graded)", workdir.name)
+                        steps = _steps_from_workdir(task, workdir)
+                        resolved, _, _grade = grade_patch(task, steps, workdir=workdir)
+                        results.append(AgentResult(
+                            task_id=task.id, arm=arm, resolved=resolved,
+                            pre_failed=False, pass_idx=rep, turns=0, llm_calls=0,
+                            prompt_tokens=0, completion_tokens=0, wall_clock_s=0.0,
+                            memory_hit=False, observation_chars=0, context_chars=0,
+                            held_out=task.oracle_dir is not None,
+                            usage_recorded=False,   # regraded from the patch
+                        ))
+                        continue
                     try:
                         result = run_episode(
                             task, arm=arm, backend=backend, stack=stacks[arm],
@@ -1382,12 +1474,13 @@ def main() -> int:
                             llm_calls=0, prompt_tokens=0, completion_tokens=0,
                             wall_clock_s=0.0, memory_hit=False,
                             observation_chars=0, context_chars=0,
+                            crashed=True, usage_recorded=False,
                         )
                     results.append(result)
     finally:
         if log_fh is not None:
             log_fh.close()
-        if not args.keep_workdirs:
+        if not args.keep_workdirs and not args.scratch:
             shutil.rmtree(scratch, ignore_errors=True)
 
     _print_report(results, arms, price_in=args.price_in, price_out=args.price_out)

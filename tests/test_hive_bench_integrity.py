@@ -171,6 +171,7 @@ class _R:
         self.context_chars = 0
         self.task_id = task_id
         self.held_out = False
+        self.crashed = False
 
 
 def test_per_pass_means_groups_by_pass_and_arm():
@@ -344,10 +345,10 @@ def test_pass_hat_k_needs_every_repeat_to_pass():
         [_R("hive", p, 0, task_id="a", resolved=p < 3) for p in range(4)]
         + [_R("hive", p, 0, task_id="b", resolved=True) for p in range(4)]
     )
-    assert pass_hat_k(results, "hive", 1) == 0.875
-    assert pass_hat_k(results, "hive", 4) == 0.5
+    assert pass_hat_k(results, "hive", 1) == {"value": 0.875, "tasks_used": 2}
+    assert pass_hat_k(results, "hive", 4) == {"value": 0.5, "tasks_used": 2}
     # A task with fewer repeats than k is skipped, not scored as a failure.
-    assert pass_hat_k(results[:2], "hive", 4) is None
+    assert pass_hat_k(results[:2], "hive", 4) == {"value": None, "tasks_used": 0}
 
 
 def test_mcnemar_exact_counts_discordant_pairs():
@@ -395,10 +396,34 @@ def test_summarize_reports_usd_and_the_grid():
     assert s["usd_total"] == pytest.approx(4.0)
     assert s["usd_per_resolved_task"] == pytest.approx(2.0)
     assert s["per_task_resolved"] == {"a": "2/2"}
-    assert s["pass_hat_k"] == {"1": 1.0, "2": 1.0}
+    assert s["pass_hat_k"] == {"1": {"value": 1.0, "tasks_used": 1},
+                               "2": {"value": 1.0, "tasks_used": 1}}
     assert s["resolve_ci95"][0] < 1.0  # Wilson, not a bare point estimate
+    # cost/0 is undefined, not free — the field is null, never a fake 0.0.
     assert summarize([_R("hive", 0, 1, task_id="a", resolved=False)], "hive")[
-        "usd_per_resolved_task"] == 0.0
+        "usd_per_resolved_task"] is None
+
+def test_summarize_nulls_usage_fields_for_unmeasured_rows():
+    """A partly-resumed arm publishes null usage, never a zero that reads free."""
+    from scripts.hive_bench import summarize
+
+    measured = _R("hive", 0, 1, task_id="a", resolved=True)
+    measured.prompt_tokens, measured.completion_tokens = 1000, 500
+    resumed = _R("hive", 0, 1, task_id="b", resolved=True)
+    resumed.usage_recorded = False
+    s = summarize([measured, resumed], "hive")
+
+    assert s["resolved"] == 2                       # outcomes still count
+    assert s["usd_total"] is None                   # usage unknown, not $0
+    assert s["usd_per_resolved_task"] is None
+    assert s["prompt_tokens"] is None
+    assert s["mean_llm_calls"] is None
+    assert s["per_pass_mean_llm_calls"] is None
+    assert s["llm_calls_dispersion"] is None
+    assert s["episodes_without_usage"] == 1
+    # resolve-side fields stay real
+    assert s["resolve_rate"] == 1.0
+    assert s["per_task_resolved"] == {"a": "1/1", "b": "1/1"}
 
 
 # ---------------------------------------------------------------------------

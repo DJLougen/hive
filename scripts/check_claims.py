@@ -36,6 +36,7 @@ MICRO = "docs/benchmarks/latest-micro.json"
 SMOKE = "docs/benchmarks/long-context-smoke.json"
 BAKEOFF = "docs/benchmarks/trace-bakeoff.json"
 CPU_POLICY = "docs/benchmarks/hive-bench-cpu-policy.json"
+CAPABILITY = "docs/benchmarks/hive-bench-capability.json"  # 5 repeats x 6 held-out tasks, 3 arms
 
 CHECKS: list[dict] = [
     # ---- A1: real-workload A/B table (summary of hive-bench-flash.json) ----
@@ -247,6 +248,123 @@ CHECKS: list[dict] = [
         "percent": True,
         "regex": r"and ([\d.]+)% majority",
     },
+    # ---- capability bench: held-out tasks, 3 arms, verdicts ----
+    {
+        "label": "capability baseline resolve rate",
+        "kind": "single",
+        "artifact": CAPABILITY,
+        "path": "summary.baseline.resolve_rate",
+        "percent": True,
+        "abs_tol": 0.5,
+        "regex": r"^\| baseline \| \*\*([\d.]+)%\*\* \(",
+    },
+    {
+        "label": "capability context resolve rate",
+        "kind": "single",
+        "artifact": CAPABILITY,
+        "path": "summary.context.resolve_rate",
+        "percent": True,
+        "abs_tol": 0.5,
+        "regex": r"^\| context \| \*\*([\d.]+)%\*\* \(",
+    },
+    {
+        "label": "capability hive resolve rate",
+        "kind": "single",
+        "artifact": CAPABILITY,
+        "path": "summary.hive.resolve_rate",
+        "percent": True,
+        "abs_tol": 0.5,
+        "regex": r"^\| hive \| \*\*([\d.]+)%\*\* \(",
+    },
+    {
+        "label": "capability baseline pass^5",
+        "kind": "single",
+        "artifact": CAPABILITY,
+        "path": "summary.baseline.pass_hat_k[5].value",
+        "percent": True,
+        "abs_tol": 0.5,
+        "regex": r"baseline \| .*? \| \*\*([\d.]+)%\*\* pass\^5",
+    },
+    {
+        "label": "capability hive pass^5",
+        "kind": "single",
+        "artifact": CAPABILITY,
+        "path": "summary.hive.pass_hat_k[5].value",
+        "percent": True,
+        "abs_tol": 0.5,
+        "regex": r"hive \| .*? \| \*\*([\d.]+)%\*\* pass\^5",
+    },
+    {
+        "label": "capability baseline usd/resolved",
+        "kind": "single",
+        "artifact": CAPABILITY,
+        "path": "summary.baseline.usd_per_resolved_task",
+        "abs_tol": 1e-4,
+        "regex": r"baseline \| .*? \| .*? \| \$([\d.]+)/resolved",
+    },
+    {
+        "label": "capability hive usd/resolved",
+        "kind": "single",
+        "artifact": CAPABILITY,
+        "path": "summary.hive.usd_per_resolved_task",
+        "abs_tol": 1e-4,
+        "regex": r"hive \| .*? \| .*? \| \$([\d.]+)/resolved",
+    },
+    {
+        "label": "capability context usd is null (not measured)",
+        "kind": "verbatim",
+        "artifact": CAPABILITY,
+        "path": "summary.context.usd_per_resolved_task",
+        "regex": r"context \| .*? \| .*? \| —",
+    },
+    {
+        "label": "capability baseline_vs_hive verdict",
+        "kind": "verbatim",
+        "artifact": CAPABILITY,
+        "path": "summary.comparisons.baseline_vs_hive.verdict",
+        "regex": r"baseline vs hive: \*\*(\w+)\*\*",
+    },
+    {
+        "label": "capability baseline_vs_hive McNemar p",
+        "kind": "comparison",
+        "artifact": CAPABILITY,
+        "pair": "baseline_vs_hive",
+        "path": "summary.comparisons.baseline_vs_hive.p",
+        "abs_tol": 1e-4,
+        "regex": r"baseline vs hive: \*\*\w+\*\* \(p=([\d.]+)\)",
+    },
+    {
+        "label": "capability context_vs_hive verdict",
+        "kind": "verbatim",
+        "artifact": CAPABILITY,
+        "path": "summary.comparisons.context_vs_hive.verdict",
+        "regex": r"context vs hive: \*\*(\w+)\*\*",
+    },
+    {
+        "label": "capability context_vs_hive McNemar p",
+        "kind": "comparison",
+        "artifact": CAPABILITY,
+        "pair": "context_vs_hive",
+        "path": "summary.comparisons.context_vs_hive.p",
+        "abs_tol": 1e-4,
+        "regex": r"context vs hive: \*\*\w+\*\* \(p=([\d.]+)\)",
+    },
+    {
+        "label": "capability baseline_vs_context verdict",
+        "kind": "verbatim",
+        "artifact": CAPABILITY,
+        "path": "summary.comparisons.baseline_vs_context.verdict",
+        "regex": r"baseline vs context: \*\*(\w+)\*\*",
+    },
+    {
+        "label": "capability baseline_vs_context McNemar p",
+        "kind": "comparison",
+        "artifact": CAPABILITY,
+        "pair": "baseline_vs_context",
+        "path": "summary.comparisons.baseline_vs_context.p",
+        "abs_tol": 1e-4,
+        "regex": r"baseline vs context: \*\*\w+\*\* \(p=([\d.]+)\)",
+    },
 ]
 
 
@@ -266,10 +384,10 @@ def resolve_raw(root: object, path: str) -> object:
         cur = cur[key]  # type: ignore[index]
         if sel is None:
             continue
-        if sel.isdigit():
-            cur = cur[int(sel)]  # type: ignore[index]
-        elif isinstance(cur, dict) and sel in cur:
+        if isinstance(cur, dict) and sel in cur:
             cur = cur[sel]
+        elif sel.isdigit() and isinstance(cur, list):
+            cur = cur[int(sel)]  # type: ignore[index]
         else:
             # list-of-dicts containers (e.g. latest-micro.json components) match on "name"
             matches = [c for c in cur if isinstance(c, dict) and c.get("name") == sel]  # type: ignore[union-attr]
@@ -281,7 +399,10 @@ def resolve_raw(root: object, path: str) -> object:
 
 def resolve(root: object, path: str) -> float:
     """Traverse a path and read the number at the end of it."""
-    return float(resolve_raw(root, path))  # type: ignore[arg-type]
+    value = resolve_raw(root, path)
+    if value is None:
+        raise ValueError(f"{path!r} is null — the artifact marks it not measured")
+    return float(value)  # type: ignore[arg-type]
 
 
 def load_artifact(path: str) -> object:
@@ -295,8 +416,9 @@ def num(text: str) -> float:
     return float(text.replace(",", ""))
 
 
-def close(readme_value: float, artifact_value: float, rel_tol: float = REL_TOL) -> bool:
-    return abs(readme_value - artifact_value) <= max(rel_tol * abs(artifact_value), ABS_TOL)
+def close(readme_value: float, artifact_value: float, rel_tol: float = REL_TOL,
+          abs_tol: float = ABS_TOL) -> bool:
+    return abs(readme_value - artifact_value) <= max(rel_tol * abs(artifact_value), abs_tol)
 
 
 def mcnemar_exact(a: list[bool], b: list[bool]) -> dict[str, int | float]:
@@ -372,13 +494,15 @@ def run_check(check: dict, texts: dict[str, str]) -> list[str]:
         art_baseline = resolve(artifact, check["baseline"])
         art_hive = resolve(artifact, check["hive"])
         art_delta = (art_hive - art_baseline) / art_baseline * 100
+        rel_tol = check.get("rel_tol", REL_TOL)
+        abs_tol = check.get("abs_tol", ABS_TOL)
         for where, g in all_hits:
             readme_baseline, readme_hive = num(str(g[0])), num(str(g[1]))
             for part, rv, av in (
                 ("baseline", readme_baseline, art_baseline),
                 ("hive", readme_hive, art_hive),
             ):
-                if not close(rv, av):
+                if not close(rv, av, rel_tol, abs_tol):
                     problems.append(f"MISMATCH\t{label} [{part}]\t{where}: readme={rv} artifact={av}")
             if "delta_sign" in check:
                 readme_delta = num(str(g[2])) * check["delta_sign"]
@@ -439,14 +563,16 @@ def run_check(check: dict, texts: dict[str, str]) -> list[str]:
         recomputed = mcnemar_exact(a, b)
         published = resolve(artifact, check["path"])
         problems: list[str] = []
-        if not close(recomputed["p"], float(published)):
+        if not close(recomputed["p"], float(published),
+                     check.get("rel_tol", REL_TOL), check.get("abs_tol", ABS_TOL)):
             problems.append(
                 f"MISMATCH\t{label}\tartifact summary says p={published} but the "
                 f"per-task grid in {check['artifact']} gives p={recomputed['p']} "
                 f"(tasks={n_tasks} a_only={recomputed['a_only']} b_only={recomputed['b_only']})"
             )
         for where, g in all_hits:
-            if not close(num(str(g[0])), recomputed["p"]):
+            if not close(num(str(g[0])), recomputed["p"],
+                         check.get("rel_tol", REL_TOL), check.get("abs_tol", ABS_TOL)):
                 problems.append(
                     f"MISMATCH\t{label}\t{where}: readme={num(str(g[0]))} "
                     f"recomputed={recomputed['p']}"
@@ -472,9 +598,10 @@ def run_check(check: dict, texts: dict[str, str]) -> list[str]:
     if check.get("percent"):
         artifact_value *= 100
     rel_tol = check.get("rel_tol", REL_TOL)
+    abs_tol = check.get("abs_tol", ABS_TOL)
     for where, g in all_hits:
         readme_value = num(str(g[0]))
-        if not close(readme_value, artifact_value, rel_tol):
+        if not close(readme_value, artifact_value, rel_tol, abs_tol):
             problems.append(f"MISMATCH\t{label}\t{where}: readme={readme_value} artifact={round(artifact_value, 4)}")
     if not problems:
         print(f"OK\t{label}\t{len(all_hits)} occurrence(s)\tartifact={round(artifact_value, 4)}")
