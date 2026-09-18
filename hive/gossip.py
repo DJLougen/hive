@@ -63,13 +63,14 @@ class GossipProtocol:
         interval: float = 5.0,
         batch_size: int = 100,
         token: str | None = None,
+        max_queue_size: int = 10_000,
     ) -> None:
         self._brain = brain
         self._peers = peers
         self._interval = interval
         self._batch_size = batch_size
         self._token = token
-        self._queue: queue.Queue[dict[str, Any]] = queue.Queue()
+        self._queue: queue.Queue[dict[str, Any]] = queue.Queue(maxsize=max_queue_size)
         self._thread: threading.Thread | None = None
         self._stop = threading.Event()
 
@@ -80,7 +81,12 @@ class GossipProtocol:
         preserve ts_ns/hlc/edges. Minimal ``{"key", "value"}`` events work
         too (fresh timestamps are assigned on receipt).
         """
-        self._queue.put(event)
+        try:
+            self._queue.put_nowait(event)
+        except queue.Full:
+            _log.warning(
+                "Gossip queue full; dropping event for key %s", event.get("key")
+            )
 
     def start(self) -> None:
         """Start the background gossip thread."""
@@ -108,15 +114,26 @@ class GossipProtocol:
                 pass
 
             if batch:
-                self._gossip_batch(batch)
+                if not self._gossip_batch(batch):
+                    for event in batch:
+                        try:
+                            self._queue.put_nowait(event)
+                        except queue.Full:
+                            _log.error(
+                                "Gossip queue full; dropping event for key %s after send failure",
+                                event.get("key"),
+                            )
 
             self._stop.wait(self._interval)
 
-    def _gossip_batch(self, batch: list[dict[str, Any]]) -> None:
+    def _gossip_batch(self, batch: list[dict[str, Any]]) -> bool:
+        if not self._peers:
+            return True
         payload = json.dumps({"events": batch}).encode("utf-8")
         headers = {"Content-Type": "application/json"}
         if self._token is not None:
             headers["Authorization"] = f"Bearer {self._token}"
+        delivered = False
         for peer in self._peers:
             try:
                 req = urllib.request.Request(
@@ -127,9 +144,11 @@ class GossipProtocol:
                 )
                 with urllib.request.urlopen(req, timeout=2.0) as resp:  # nosec B310
                     if resp.status == 200:
+                        delivered = True
                         _log.debug("Gossiped %d events to %s", len(batch), peer)
             except Exception as exc:
                 _log.warning("Gossip to %s failed: %s", peer, exc)
+        return delivered
 
     def receive(
         self, events: list[dict[str, Any]], *, token: str | None = None
