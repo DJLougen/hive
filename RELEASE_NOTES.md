@@ -2,6 +2,51 @@
 
 This document contains release notes for tagged versions of Hive.
 
+## v0.7.0 (2026-09-18)
+
+### Highlights
+**Hive now matches an LLM-everything agent on a held-out benchmark built to separate the arms — at 58% fewer LLM calls and ~45% lower cost.** This release is a benchmark-integrity pass: the number that was always true (CPU routing is free capability) is now *provably* true, on tasks hard enough to discriminate, with the grading exploits closed and the contamination vectors flagged.
+
+### The headline — hard tier, n=15, held-out oracle
+
+| | baseline (LLM-everything) | context (escalate-only) | **hive (CPU-routed)** |
+|---|---|---|---|
+| **Resolve rate** | 77/90 (86%) | 74/90 (82%) | **74/90 (82%)** |
+| **Mean LLM calls** | 7.31 | 7.20 | **3.04** |
+| **Total cost** | $0.368 | $0.394 | **$0.214** |
+| **McNemar vs baseline** | — | not_separable (p=1.0) | **not_separable (p=1.0)** |
+
+Six tasks authored to discriminate (`benchmarks/tasks/suite.hard.json`), every oracle rule disclosed in the problem statement, spec review equalized across all arms, hidden tests injected only at grading. Artifact: [`docs/benchmarks/hive-bench-hard.json`](docs/benchmarks/hive-bench-hard.json) (commit `79a24c7`, clean tree).
+
+### What made it trustworthy (the integrity pass)
+
+The routing result was always there; this release makes it *mean* something:
+
+- **Closed the grading exploit** — `write_file` and `grade_patch` now reject writes to `conftest.py`, `pytest.ini`, `pyproject.toml`, `setup.cfg`, `tox.ini`, and `sitecustomize.py`/`usercustomize.py`. Previously an agent could deselect the hidden oracle tests and get `resolved` without fixing anything.
+- **Deconfounded the routing claim** — every arm now gets one identical spec-review turn before `finish` is accepted (`_SPEC_REVIEW_NOTE`). Previously only hive's policy escalated on green, so the routing delta was confounded by a prompt advantage.
+- **Fixed the trap tasks** — three tasks had oracle tests asserting behavior the problem statement never disclosed (lru-ttl sweep rule, snapshot negative-coverage, kway ordering); one had a vacuous smoke test green on the buggy repo. All disclosed or dropped — the suite now measures capability, not mind-reading.
+- **Fixed the prompt** — `smoke_note` was telling agents the visible suite "is NOT the criterion" (the opposite of the gate). It now tells the truth: smoke is RED until fixed, `run_tests` is the reproduction signal.
+- **Closed the contamination vector** — `oracle/solution.patch` files are untracked + gitignored (a memorized gold patch flips `resolved` directly); `oracle_public_in_git` is recorded in provenance so the exposure is honest.
+
+### Added
+- `benchmarks/tasks/suite.hard.json` — the 6-task discriminating tier manifest.
+- `docs/benchmarks/PROVENANCE.json` + `PROVENANCE.md` — researchMax provenance record: the kept run, three retracted runs (each with the tell that exposed it), five closed levers, and the do-not list.
+- `--verify-tasks` self-check: smoke RED on pristine, smoke GREEN after patch, oracle GREEN after patch, oracle absent from repo, pytest-control blocked.
+- `oracle_public_in_git` provenance field — counts tracked `oracle/` files so contamination exposure is recorded, not guessed.
+
+### Changed
+- `load_tasks` strict `--tasks` (fails loudly on unknown ids), deduped scratch workdirs, `tzinfo` guard on the `solutions_public_since` cutoff.
+- `smoke_note` prompt now states the real gate contract.
+- README: hard-tier headline table at the top; capability tier and A1 suite retained below with full provenance.
+
+### Honest caveats
+- `oracle/tests/` remain git-tracked (CI + `--verify-tasks` need them), so **absolute resolve rates are contaminated** for a model that has seen this repo — the routing/cost delta is the defensible claim.
+- `lru-ttl-cache` is the only task still discriminating (hive leads it 4/15 vs 2/15, 1/15); the other five are near-ceiling for all arms.
+- The hive arm runs the rule-based state machine (`RuleBasedRoutingPolicy`), not the trained `CPURouterPolicy` — read the 3.04-vs-7.2 call delta as a routing result, not a learned-policy result.
+
+### Migration
+No code changes required. The benchmark harness is additive; `hive_bench.py` flags are backward compatible.
+
 ## v0.6.1 (2026-06-29)
 
 ### Highlights

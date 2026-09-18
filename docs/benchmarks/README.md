@@ -1,9 +1,10 @@
 # Benchmark numbers
 
 Raw JSON reports from `scripts/hive_benchmark.py` and
-`scripts/hive_benchmark_micro.py` runs on real hardware. The README
-device matrix links to the `latest-*.json` files; older runs are
-kept here for trend analysis.
+`scripts/hive_benchmark_micro.py` runs on real hardware. The component
+throughput table in [`../benchmarks/README.md`](../../benchmarks/README.md)
+links to the `latest-*.json` files; older runs are kept here for trend
+analysis.
 
 ## Layout
 
@@ -32,13 +33,15 @@ the README links to. Per-run files are never overwritten.
        --runs 3 --output docs/benchmarks/<your-host>/latest-macro.json
    ```
 
-2. Open a PR that adds the JSON and updates the device matrix in the
-   README with your row. Use the `performance` issue template first if
-   you want to discuss the numbers before committing them.
+2. Open a PR that adds the JSON and adds your row to the component
+   throughput table in [`../benchmarks/README.md`](../../benchmarks/README.md).
+   Use the `performance` issue template first if you want to discuss the
+   numbers before committing them.
 
 ## DGX Spark (spark-d500)
 
-The first validated aarch64 row in the README device matrix comes from
+The first validated aarch64 row (in the component throughput table in
+[`../benchmarks/README.md`](../../benchmarks/README.md)) comes from
 `djl@spark-d500`. The manifest at
 [`spark-d500/20260601T145528Z.json`](spark-d500/20260601T145528Z.json)
 captures host, date, and pointers to the macro / micro envelopes.

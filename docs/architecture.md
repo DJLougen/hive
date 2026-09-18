@@ -74,6 +74,19 @@ Measured column is from `docs/benchmarks/latest-micro.json` (DGX Spark, syntheti
 routing policy loaded) — `busybee_cpu` at 112 items/s is the constant-escalate fallback path, not a
 policy-routed call. The two target columns are the original design budget, not measurements.
 
+### Routing-accuracy caveat: in-distribution vs OOD
+
+CPU routing is a proven win **in-distribution** — where the workflow shape is
+known, as in the structured bug-fix suites (see
+[`../benchmarks/README.md`](../benchmarks/README.md)), where ~85% of calls are
+mechanical and the hard tier shows a 58% LLM-call reduction at equal resolve
+rate. **Out-of-distribution performance is unproven**: on the deidentified
+real-session trace bake-off, the best state-only model reaches only 48.0%
+next-tool accuracy — barely above a repeat-last baseline — because real-session
+tool choice is driven by tool-output *content*, which observable state does not
+carry. The design answer is the same in both regimes: **out-of-distribution
+states escalate to the LLM rather than guess.**
+
 ## 5. Failure modes and recovery
 
 * **GPU OOM** — escalate to a smaller model, or fall through to busyBee

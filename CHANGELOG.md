@@ -5,7 +5,23 @@ All notable changes to Hive are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.7.0] - 2026-09-18
+
+### Benchmark integrity + hard tier
+
+- **Hard-tier result (the headline):** on `benchmarks/tasks/suite.hard.json` (6 discriminating tasks × 15 repeats × 3 arms, commit `79a24c7`), hive matched baseline/context task-for-task — all McNemar `not_separable`, p=1.0 — at **58% fewer LLM calls** (3.04 vs 7.2–7.3) and **~45% lower cost** ($0.214 vs $0.368–0.394). Artifact: `docs/benchmarks/hive-bench-hard.json`; provenance: `docs/benchmarks/PROVENANCE.{json,md}`.
+- **Grading exploit closed:** `write_file` and `grade_patch` reject writes to `conftest.py`, `pytest.ini`, `pyproject.toml`, `setup.cfg`, `tox.ini`, `sitecustomize.py`/`usercustomize.py` — an agent can no longer deselect the hidden oracle tests and get `resolved` without fixing.
+- **Routing claim deconfounded:** every arm gets one identical spec-review turn before `finish` is accepted (`_SPEC_REVIEW_NOTE`); previously only hive's policy escalated on green, confounding the routing delta with a prompt advantage.
+- **Trap tasks fixed:** three tasks had oracle tests asserting undisclosed behavior (lru-ttl sweep, snapshot negative-coverage, kway ordering); one had a vacuous smoke test green on the buggy repo. All disclosed or dropped.
+- **Prompt truth:** `smoke_note` now tells agents the visible suite is RED until fixed and `run_tests` is the reproduction signal (was claiming the opposite).
+- **Contamination telemetry:** `oracle/solution.patch` untracked + gitignored; `oracle_public_in_git` recorded in provenance.
+- `load_tasks` strict `--tasks`, deduped scratch workdirs, `tzinfo` guard on `solutions_public_since`.
+- `--verify-tasks` self-check: smoke RED on pristine, smoke GREEN after patch, oracle GREEN after patch, oracle absent from repo, pytest-control blocked.
+- `benchmarks/tasks/suite.hard.json` — the 6-task discriminating tier manifest.
+- `docs/benchmarks/PROVENANCE.json` + `PROVENANCE.md` — researchMax record: kept run, three retracted runs with their tells, five closed levers, do-not list.
+
+### Prior unreleased work (held-out grading, arms, statistics)
+
 
 - `hive_bench.py` held-out grading (`grade_patch`): the agent's writes are replayed into a pristine copy of the task repo and graded by a hidden pytest suite injected only there — held-out tests never appear in the agent's workdir. `Task`/`load_tasks` gain `oracle_dir`/`oracle_cmd`/`solution_patch`; `StepLog.ok` records write success; `--verify-tasks` is a no-cost gate that fails closed (smoke green before, hidden suite red before, green after the reference patch, no `tests/` shipped in the repo) and is wired into `verify.sh` + CI.
 - `hive_bench.py` arms and statistics: `--arm context` (escalate-only control) and `--arm all`, `--memory {fresh,shared}`, `--price-in/--price-out`; Wilson 95% CI, unbiased pass^k, exact McNemar over per-task majority outcomes, and a `verdict` that can say `at_ceiling` / `not_separable` / `separated`. Resumed episodes (`--skip-existing` + `--scratch`) mark `usage_recorded=False`; `summarize` publishes null usage fields for any arm containing them — never a zero that reads as "free".

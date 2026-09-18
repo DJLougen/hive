@@ -10,10 +10,119 @@ Real tool-execution benchmark for Hive. Nothing is simulated:
 - LLM calls are real calls to an OpenAI-compatible endpoint (native function
   calling); token counts come from the API `usage` field
 
-**Baseline** sends every action decision to the LLM. **Hive** routes mechanical
+**Baseline** sends every action decision to the LLM. **Context** is the
+escalate-only control (CPU policy handles nothing). **Hive** routes mechanical
 transitions through `hive.harness.load_routing_policy()`, compresses tool
 observations via `stack.compress()`, and recalls/records fixes via causal
-memory (`stack.brain`) — tasks sharing a `family` exercise recall.
+memory (`stack.brain`).
+
+---
+
+## Results
+
+Three tiers, easiest to hardest. The hard tier is the headline — it's the one
+built to *separate* the arms.
+
+### Hard tier — discriminating tasks, n=15 (the headline)
+
+Six tasks ([`tasks/suite.hard.json`](tasks/suite.hard.json)) authored to
+separate the arms — every oracle rule disclosed in the problem statement, spec
+review equalized across all arms, hidden tests injected only at grading.
+15 repeats × 6 tasks = 90 episodes per arm, `temperature=0.7`, memory fresh,
+commit `79a24c7` (clean tree).
+
+| Task | baseline | context | hive |
+|---|---|---|---|
+| sliding-window-limit | 15/15 | 15/15 | 15/15 |
+| snapshot-event-fold | 15/15 | 15/15 | 15/15 |
+| kway-merge-dedup | 15/15 | 13/15 | 10/15 |
+| reservation-expiry | 15/15 | 15/15 | 15/15 |
+| idempotent-outbox | 15/15 | 15/15 | 15/15 |
+| lru-ttl-cache | 2/15 | 1/15 | 4/15 |
+| **Total** | **77/90 (86%)** | **74/90 (82%)** | **74/90 (82%)** |
+
+| Arm | mean LLM calls | USD total | USD/resolved |
+|---|---|---|---|
+| baseline | 7.31 | $0.368 | $0.0048 |
+| context | 7.20 | $0.394 | $0.0053 |
+| hive | **3.04** | **$0.214** | **$0.0029** |
+
+Verdicts (exact McNemar, n=6 tasks): all pairs **not_separable** (p=1.0, zero
+discordant tasks). Hive matches baseline/context task-for-task at **58% fewer
+LLM calls** and ~45% lower cost. `lru-ttl-cache` is the only task still
+discriminating (hive leads it 4/15 vs 2/15, 1/15).
+
+**Provenance:** [`docs/benchmarks/hive-bench-hard.json`](../docs/benchmarks/hive-bench-hard.json)
+(git_sha `79a24c7`, clean). Full run history, retractions, and closed levers:
+[`docs/benchmarks/PROVENANCE.md`](../docs/benchmarks/PROVENANCE.md) +
+[`PROVENANCE.json`](../docs/benchmarks/PROVENANCE.json). **Contamination note:**
+`oracle/tests/` are git-tracked (`oracle_public_in_git=13`), so absolute
+resolve rates are contaminated for a model that has seen this repo — the
+routing/cost delta is not.
+
+**Reproduce:** `python scripts/hive_bench.py --backend openai --endpoint <EP>
+--api-key-env <KEY> --model <M> --suite benchmarks/tasks/suite.hard.json
+--arm all --repeat 15 --temperature 0.7 --memory fresh`.
+
+### Capability tier — held-out tasks, three arms
+
+Six harder tasks graded against **held-out** pytest suites the agent never
+sees (`grade_patch` replays the agent's writes into a pristine repo and
+injects the hidden tests only there). The visible `smoke/` suite covers the
+*disclosed* spec — it fails on the buggy repo, so a green `run_tests` means
+the stated requirements are met; the oracle keeps the edge cases. 5 repeats ×
+6 tasks = 30 episodes per arm, `temperature=0.7`, memory fresh.
+
+| Arm | Resolve rate | 95% CI | pass^5 | USD/resolved |
+|---|---|---|---|---|
+| baseline | **97%** (29/30) | [83%, 99%] | **83%** pass^5 | $0.0103/resolved |
+| context | **87%** (26/30) | [70%, 95%] | **67%** pass^5 | $0.0129/resolved |
+| hive | **93%** (28/30) | [79%, 98%] | **83%** pass^5 | $0.0084/resolved |
+
+Verdicts (exact McNemar over per-task majority outcomes, n=6 tasks): baseline vs context: **not_separable** (p=1.0); baseline vs hive: **not_separable** (p=1.0, zero discordant tasks); context vs hive: **not_separable** (p=1.0). Hive matches baseline task-for-task while spending **37% fewer LLM calls** (7.33 vs 11.6 mean).
+
+**Provenance:** all three arms fully measured in one run (90 episodes).
+Raw artifact: [`docs/benchmarks/hive-bench-capability.json`](../docs/benchmarks/hive-bench-capability.json).
+
+**Reproduce:** `python scripts/hive_bench.py --backend openai --endpoint <EP>
+--api-key-env <KEY> --model <M> --suite benchmarks/tasks/suite.capability.json
+--arm all --repeat 5 --temperature 0.7 --memory fresh`.
+
+### A1 suite — 10 tasks, 3 repeats
+
+10 real bug-fix tasks, 3 repeats each = 30 episodes per arm, `temperature=0`.
+The Hive arm runs the rule-based state machine
+(`hive.harness.RuleBasedRoutingPolicy`, the `--policy rule` default) — *not*
+the trained `CPURouterPolicy`. Per-pass means: baseline LLM calls 5.9 / 6.1 / 6.0 (stderr 0.06), Hive 1.0 / 1.0 / 1.0 (stderr 0.00).
+
+| Metric | Baseline | Hive | Delta |
+|---|---|---|---|
+| Resolve rate | 100% (30/30) | 100% (30/30) | **0 pp** |
+| Mean LLM calls | 6.0 | 1.0 | **−83.3%** |
+| Mean prompt tokens | 8,590 | 1,534 | **−82.1%** |
+| Mean completion tokens | 441 | 227 | **−48.5%** |
+| Mean turns | 6.0 | 7.0 | +16.7% |
+| Mean wall clock (s) | 8.94 | 2.80 | **−68.7%** |
+| Memory recall hits | — | 24/30 | — |
+
+**Why it works:** each episode runs ~6 mechanical turns (`list_files`,
+reproduce `run_tests`, read the file the traceback names, verify `run_tests`).
+Without Hive every one is a paid LLM call with the full transcript attached.
+With Hive the CPU policy executes them locally; the model is called once —
+with the failing test output and the unit under test already in context — and
+writes the patch. `finish` is deliberately *not* routed: done-ness is a
+judgment about the spec, so a green verify escalates to the model.
+
+**Raw run:** [`docs/benchmarks/hive-bench-flash-r3.json`](../docs/benchmarks/hive-bench-flash-r3.json)
+(30 episodes per arm). The earlier single-pass run
+([`hive-bench-flash.json`](../docs/benchmarks/hive-bench-flash.json)) is superseded.
+
+*Note: an earlier revision cited a "20-instance SWE-bench-lite" table
+(85% vs 0%). That harness simulated the agent loop and drew resolve outcomes
+from an RNG — the numbers were not real, and the script has been replaced
+with a deprecation shim forwarding to `hive_bench.py`.*
+
+---
 
 ## Run
 
@@ -24,12 +133,13 @@ python scripts/hive_bench.py \
     --output docs/benchmarks/hive-bench-<tag>.json
 ```
 
-Useful flags: `--tasks <ids...>`, `--arm baseline|hive|both`, `--max-turns`,
-`--keep-workdirs`, `--driver scripted` (no-LLM plumbing smoke; resolve rate
-is meaningless in that mode), `--log <file.jsonl>` (log every turn's
-`state -> action` for training), `--repeat N` (run each task N times against
-the same stack — exercises memory replay), `--policy rule|trained` and
-`--policy-path <file.joblib>`.
+Useful flags: `--tasks <ids...>`, `--arm baseline|context|hive|all`,
+`--max-turns`, `--keep-workdirs`, `--driver scripted` (no-LLM plumbing smoke;
+resolve rate is meaningless in that mode), `--log <file.jsonl>` (log every
+turn's `state -> action` for training), `--repeat N` (run each task N times
+against the same stack — exercises memory replay), `--policy rule|trained`,
+`--policy-path <file.joblib>`, `--suite <manifest>` (pin a task list),
+`--memory {fresh,shared}`, `--verify-tasks` (no-cost integrity gate).
 
 ## Trained CPU policy
 
@@ -123,8 +233,7 @@ markov saturates almost immediately (~45% at 2% of data) — tool choice is
 largely *sequential*: the previous one or two calls carry most of the
 predictable signal, and observable state adds only a few points.
 
-Headline finding, updated: the best state-only model (mlp, 48.0%) beats
-repeat-last (43.1%) by ~5 points but remains far from safe-routing
+Headline finding, updated: the best state-only model (mlp) reaches **48.0%** raw next-tool accuracy vs 43.1% repeat-last and 37.9% majority — ~5 points better than repeat-last but far from safe-routing
 territory — next-tool choice in real sessions is driven by tool-output
 *content*, which deidentified state does not carry. Contrast with the
 structured bug-fix suite above, where the workflow shape makes ~85% of
@@ -142,3 +251,34 @@ probes) rather than from observable state alone.**
 
 Every task must fail its suite on a fresh checkout — verified by the harness
 before an episode starts.
+
+## Component throughput
+
+Micro-benchmarks on one host (synthetic load; raw data in
+[`docs/benchmarks/latest-micro.json`](../docs/benchmarks/latest-micro.json)):
+
+| Component | Items/s (measured host) |
+|---|---|
+| rust_brain | 176,796 |
+| compress[fast] | 19,914 |
+| compress[honeycomb] | 1,185 |
+| busybee_cpu | 112 |
+
+`busybee_cpu` measures 111.7 items/s in `latest-micro.json`. `latest-macro.json`
+reports 1,734,892/s for the same component **with `policy_loaded: false`** — a
+constant-escalate fallback, not routing — so that figure is not published until
+it is re-measured with a policy loaded.
+
+```bash
+python scripts/hive_benchmark.py          # macro (full stack)
+python scripts/hive_benchmark_micro.py    # micro (per component)
+```
+
+Energy methodology and raw NVML samples live in
+[`docs/energy.md`](../docs/energy.md).
+
+## Long-context compression
+
+`python scripts/hive_long_context_eval.py --smoke` — up to **153.8×** compression on 50k+ char synthetic logs, measured in
+[`docs/benchmarks/long-context-smoke.json`](../docs/benchmarks/long-context-smoke.json)
+(short agent turns stay near 1×; routing is the win there).

@@ -37,6 +37,8 @@ SMOKE = "docs/benchmarks/long-context-smoke.json"
 BAKEOFF = "docs/benchmarks/trace-bakeoff.json"
 CPU_POLICY = "docs/benchmarks/hive-bench-cpu-policy.json"
 CAPABILITY = "docs/benchmarks/hive-bench-capability.json"  # 5 repeats x 6 held-out tasks, 3 arms
+HARD = "docs/benchmarks/hive-bench-hard.json"  # 15 repeats x 6 held-out tasks, 3 arms
+BENCH_README = "benchmarks/README.md"  # all benchmark detail lives here now
 
 CHECKS: list[dict] = [
     # ---- A1: real-workload A/B table (summary of hive-bench-flash.json) ----
@@ -143,7 +145,7 @@ CHECKS: list[dict] = [
     {
         "label": "cpu-policy pass 0 mean LLM calls (README)",
         "kind": "group_mean",
-        "file": "README.md",
+        "file": BENCH_README,
         "artifact": CPU_POLICY,
         "list": "results",
         "group_by": "pass_idx",
@@ -166,7 +168,7 @@ CHECKS: list[dict] = [
     {
         "label": "baseline per-pass LLM-call stderr (README)",
         "kind": "dispersion",
-        "file": "README.md",
+        "file": BENCH_README,
         "artifact": BENCH,
         "list": "results",
         "group_by": "pass_idx",
@@ -178,7 +180,7 @@ CHECKS: list[dict] = [
     {
         "label": "hive per-pass LLM-call stderr (README)",
         "kind": "dispersion",
-        "file": "README.md",
+        "file": BENCH_README,
         "artifact": BENCH,
         "list": "results",
         "group_by": "pass_idx",
@@ -366,6 +368,61 @@ CHECKS: list[dict] = [
         "abs_tol": 1e-4,
         "regex": r"baseline vs context: \*\*\w+\*\* \(p=([\d.]+)\)",
     },
+    # ---- hard tier: the README headline table ----
+    # README headline table is 3-arm: | label | baseline | context | hive |
+    {
+        "label": "hard hive resolve count (README headline)",
+        "kind": "single",
+        "file": "README.md",
+        "artifact": HARD,
+        "path": "summary.hive.resolved",
+        "abs_tol": 0.5,
+        "regex": r"^\| \*\*Resolve rate\*\* \| \d+/\d+ \(\d+%\) \| \d+/\d+ \(\d+%\) \| \*\*(\d+)/\d+ \(\d+%\)\*\*",
+    },
+    {
+        "label": "hard hive mean LLM calls (README headline)",
+        "kind": "single",
+        "file": "README.md",
+        "artifact": HARD,
+        "path": "summary.hive.mean_llm_calls",
+        "regex": r"^\| \*\*Mean LLM calls\*\* \| [\d.]+ \| [\d.]+ \| \*\*([\d.]+)\*\*",
+    },
+    {
+        "label": "hard hive usd total (README headline)",
+        "kind": "single",
+        "file": "README.md",
+        "artifact": HARD,
+        "path": "summary.hive.usd_total",
+        "abs_tol": 2e-3,
+        "regex": r"^\| \*\*Total cost\*\* \| \$[\d.]+ \| \$[\d.]+ \| \*\*\$([\d.]+)\*\*",
+    },
+    # benchmarks/README hard tier: per-task total row + per-arm summary rows
+    {
+        "label": "hard baseline resolve count (benchmarks/README total row)",
+        "kind": "single",
+        "file": BENCH_README,
+        "artifact": HARD,
+        "path": "summary.baseline.resolved",
+        "abs_tol": 0.5,
+        "regex": r"^\| \*\*Total\*\* \| \*\*(\d+)/\d+ \(\d+%\)\*\* \| \*\*\d+/\d+ \(\d+%\)\*\* \| \*\*\d+/\d+ \(\d+%\)\*\*",
+    },
+    {
+        "label": "hard hive mean LLM calls (benchmarks/README hive row)",
+        "kind": "single",
+        "file": BENCH_README,
+        "artifact": HARD,
+        "path": "summary.hive.mean_llm_calls",
+        "regex": r"^\| hive \| \*\*([\d.]+)\*\* \| \*\*\$[\d.]+\*\* \| \*\*\$",
+    },
+    {
+        "label": "hard hive usd total (benchmarks/README hive row)",
+        "kind": "single",
+        "file": BENCH_README,
+        "artifact": HARD,
+        "path": "summary.hive.usd_total",
+        "abs_tol": 2e-3,
+        "regex": r"^\| hive \| \*\*[\d.]+\*\* \| \*\*\$([\d.]+)\*\* \| \*\*\$",
+    },
 ]
 
 
@@ -469,7 +526,7 @@ def run_check(check: dict, texts: dict[str, str]) -> list[str]:
     artifact — a number restated in three places is checked in all three.
     """
     label = check["label"]
-    files = check.get("file", "README.md")
+    files = check.get("file", BENCH_README)
     files = [files] if isinstance(files, str) else list(files)
     pattern = re.compile(check["regex"], re.MULTILINE)
 
@@ -629,7 +686,7 @@ def main() -> int:
         return 1
     wanted: set[str] = set()
     for check in CHECKS:
-        files = check.get("file", "README.md")
+        files = check.get("file", BENCH_README)
         wanted.update([files] if isinstance(files, str) else files)
     texts: dict[str, str] = {}
     for name in sorted(wanted):
