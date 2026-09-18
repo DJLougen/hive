@@ -49,7 +49,7 @@ Four-tier modernization, validated locally and in CI on Python 3.10–3.13. Full
 | Mean wall clock (s) | 8.94 | 2.80 | **−68.7%** |
 | Memory recall hits | — | 24/30 | — |
 
-**Why it works:** each episode runs ~6 mechanical turns (`list_files`, reproduce `run_tests`, read the file the traceback names, verify `run_tests`, `finish`). Without Hive every one of those is a paid LLM call with the full transcript attached. With Hive the CPU policy executes them locally; the model is called once — with the failing test output and the unit under test already in context — and writes the patch. Resolve rate is unchanged because the reasoning still goes to the same model.
+**Why it works:** each episode runs ~6 mechanical turns (`list_files`, reproduce `run_tests`, read the file the traceback names, verify `run_tests`). Without Hive every one of those is a paid LLM call with the full transcript attached. With Hive the CPU policy executes them locally; the model is called once — with the failing test output and the unit under test already in context — and writes the patch. `finish` is deliberately *not* routed: done-ness is a judgment about the spec, so a green verify escalates to the model. Resolve rate is unchanged because the reasoning still goes to the same model.
 
 - **Reproduce:** `python scripts/hive_bench.py --backend openai --endpoint <openai-compatible-url> --api-key-env <KEY> --model <model>`
 - **Raw run (this table):** [`docs/benchmarks/hive-bench-flash-r3.json`](docs/benchmarks/hive-bench-flash-r3.json) — 30 episodes per arm, provenance and per-pass dispersion recorded. The earlier single-pass run is kept at [`docs/benchmarks/hive-bench-flash.json`](docs/benchmarks/hive-bench-flash.json) and is superseded by this one.

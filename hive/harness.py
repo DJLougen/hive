@@ -20,12 +20,13 @@ class RuleBasedRoutingPolicy:
 
     Two decision layers, evaluated in order:
 
-    1. **Workflow state machine** — when the state carries the observable
        signals an agent loop produces (``listed``, ``tests_run``,
        ``tests_passed``, ``suggested_read``, ``writes`` …), the policy routes
        the canonical mechanical transitions locally: enumerate the repo,
        reproduce the failure, read the file the traceback names, re-verify
-       after a write, finish on green. Everything else escalates to the LLM.
+       after a write. ``finish`` is deliberately *not* routed — done-ness is
+       a judgment about the spec, not a mechanical transition, so a green
+       verify escalates to the model. Everything else escalates to the LLM.
 
     2. **Keyword fallback** — for generic states without workflow signals,
        route obvious mechanical goals by keyword (read file, run tests,
@@ -60,7 +61,12 @@ class RuleBasedRoutingPolicy:
 
         # Mechanical transitions, highest precedence first.
         if tests_passed is True and writes > 0:
-            return self._route("finish")
+            # Green tests + a patch on disk is where a mechanical policy used
+            # to finish — and where an under-covered suite certifies a
+            # partial fix. Done-ness is a judgment call about the *spec*, not
+            # a mechanical transition, so it belongs to the model.
+            return self._escalate(
+                "verify green — confirm the spec is fully implemented before finishing")
         if verify_pending:
             return self._route("run_tests")  # verify the patch once, then re-diagnose
         if not listed:
