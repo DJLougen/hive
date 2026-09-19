@@ -636,17 +636,17 @@ class HiveStack:
         if self.feedback is None:
             _log.warning("Cannot update policy: no feedback buffer")
             return False
-        batch = self.feedback.get_outcomes()
+        batch = self.feedback.take_batch_for_update()
         success = self._policy_updater.update(self.busybee, batch)
 
         if success:
-            # Only now is it safe to drop the consumed outcomes; a failed
-            # update must leave them buffered for the next attempt.
-            self.feedback.discard(len(batch))
             _log.info(
                 "Successfully updated busybee policy from %d outcomes", len(batch)
             )
         else:
+            # Put the unconsumed batch back; outcomes recorded while training
+            # ran stay in the buffer and are not part of this batch.
+            self.feedback.restore(batch)
             _log.warning("Failed to update busybee policy")
 
         return success
