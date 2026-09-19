@@ -205,12 +205,21 @@
     },
     "pypi_note": "this package has never been published to public PyPI (as of this audit)",
     "ci_status": {
-      "state": "queued (not passed)",
-      "run_id": "35443542860",
-      "url": "https://github.com/DJLougen/hive/actions/runs/35443542860",
-      "workflow": "hive-ci",
-      "head_sha": "af64357c3",
-      "note": "the keep commit is now pushed; its CI run is QUEUED, not green. No CI-pass claim is made."
+      "state": "queued at observation; no pass observed",
+      "observed_at_utc": "2026-09-19T12:47Z",
+      "runs": [
+        {
+          "id": "35443542860",
+          "head_sha": "af64357c3",
+          "status": "queued"
+        },
+        {
+          "id": "35443824173",
+          "head_sha": "8c09427",
+          "status": "queued"
+        }
+      ],
+      "note": "point-in-time observation; not a claim about the current HEAD or any single run. No CI-green claim is made anywhere in this record."
     },
     "github_metadata": {
       "updated": true,

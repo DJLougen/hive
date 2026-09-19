@@ -121,15 +121,21 @@ not a defect until reproduced on a supported interpreter.
 - Fail-closed gate (local): `bash scripts/verify.sh` (ruff, mypy, 353 tests +
   coverage floor, 43/43 claim checks, task oracles, pentest, cargo) **plus a
   fresh-venv install of the documented path** (PASS on Python 3.12). This is not
-  a claim about GitHub Actions. The keep commit `a827980` is **local only — not
-  pushed**, so no remote CI run exists for it at all. (At audit time the queued
-  `hive-ci` run on `main` was for `ca540a2`, and several Dependabot/Cursor PR runs
-  showed failure.) No "CI green" claim is made.
-- Independent recompute: PyPI 404 vs passing control; `git tag`; `uv lock --check`;
-  fresh-venv install from the pushed remote (`af64357`).
-- CI status at final: **queued, not passed** — `hive-ci` run
+  a claim about GitHub Actions.
+- CI status — **queued at the time of observation; no pass observed.** As of
+  2026-09-19T12:47Z the `hive-ci` runs for this work were queued, not completed:
   [35443542860](https://github.com/DJLougen/hive/actions/runs/35443542860) on
-  `af64357c3`. No CI-pass claim is made.
+  `af64357c3` and [35443824173](https://github.com/DJLougen/hive/actions/runs/35443824173)
+  on `8c09427`. This is a point-in-time observation, not a claim about the
+  current HEAD or about any single run; **no CI-green claim is made anywhere in
+  this record.**
+- *Historical snapshot (state at R2 audit time, before the later push):* the keep
+  commit `a827980` was then **local only — not pushed**, so no remote CI run
+  existed for it; the queued `hive-ci` run on `main` was for `ca540a2`, and
+  several Dependabot/Cursor PR runs showed failure.
+- Independent recompute: PyPI 404 vs passing control; `git tag`; `uv lock --check`;
+  fresh-venv install from the pushed remote (`af64357`), which imported
+  `hive 0.7.0`.
 - Same-hash rule: the judge score is measured against the exact clean commit it
   describes — a score from a different tree is not transferable.
 
