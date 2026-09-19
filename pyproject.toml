@@ -82,6 +82,7 @@ dev = [
     "twine>=5.1",
     "pip-audit>=2.7",
     "pre-commit>=4.0",
+    "tomli>=2.0; python_version < '3.11'",  # tests/test_version_consistency.py needs tomllib on 3.10
 ]
 server = ["fastapi>=0.115", "uvicorn[standard]>=0.32"]
 mcp = ["mcp>=1.0"]
@@ -109,6 +110,7 @@ dev = [
     "twine>=5.1",
     "pip-audit>=2.7",
     "pre-commit>=4.0",
+    "tomli>=2.0; python_version < '3.11'",  # tests/test_version_consistency.py needs tomllib on 3.10
 ]
 
 [tool.ruff]

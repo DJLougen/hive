@@ -48,7 +48,11 @@ benchmarks/traces-all/
 # Local review evidence (never part of the package)
 .jev-review/
 
-# Reference fixes for held-out bench tasks — kept out of the public index so a
-# model trained on this repo cannot memorize the gold patch. oracle/tests/
-# stays tracked (CI + --verify-tasks need it); only the patch is private.
-benchmarks/tasks/*/oracle/solution.patch
+# Reference fixes for held-out bench tasks. Tracked: --verify-tasks (CI +
+# scripts/verify.sh) needs solution_patch to verify the apply direction, and the
+# gate must work in a fresh clone. NOTE: oracle/tests/ is tracked and public
+# anyway, so untracking only the patch bought no real contamination cover while
+# it broke the gate in CI (see docs/release-provenance.md, F7). The agent never
+# sees oracle/ — its workdir is repo/ only — so the patch is not agent-visible
+# either way. Contamination on absolute resolve rates remains disclosed
+# (oracle_public_in_git); the routing/cost delta is unaffected.

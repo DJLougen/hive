@@ -1,0 +1,58 @@
+--- a/outbox/consumer.py	2026-09-18 12:48:49.258210766 -0400
++++ b/outbox/consumer.py	2026-09-18 12:49:12.806688047 -0400
+@@ -6,17 +6,51 @@
+ class Consumer:
+     """Apply (account, seq, delta) messages to per-account balances.
+ 
+-    Every message is applied as it arrives: redelivery double-counts and an
+-    out-of-order older message rewinds the balance.
++    Each account expects its next sequence number: a message with that seq
++    applies and may flush held successors; a message with a higher seq is
++    held until the gap fills; a message at or below the newest applied seq
++    is a redelivery and is dropped. The result is exactly-once, in-order
++    application however the broker delivers.
+     """
+ 
+     def __init__(self) -> None:
+         self.balances: dict[str, int] = {}
++        self._next: dict[str, int] = {}                 # account -> expected seq
++        self._held: dict[str, dict[int, int]] = {}      # account -> {seq: delta}
+ 
+     def apply(self, account: str, seq: int, delta: int) -> bool:
+-        """Apply ``delta`` to ``account``'s balance. Returns True if applied."""
++        """Apply ``delta`` to ``account`` if ``seq`` is the next expected.
++
++        Returns True when the message moved the balance — applied now or
++        flushed from the hold queue by a gap-filling arrival. Redeliveries
++        and out-of-order holds return False.
++        """
++        expected = self._next.get(account, 1)
++        if seq < expected:
++            return False  # redelivery of an applied message
++        if seq > expected:
++            # Hold for the gap; a duplicate hold is still one pending message.
++            self._held.setdefault(account, {}).setdefault(seq, delta)
++            return False
++        # seq == expected: apply, then flush any held successors in order.
++        moved = self._apply_one(account, seq, delta)
++        return moved
++
++    def _apply_one(self, account: str, seq: int, delta: int) -> bool:
+         self.balances[account] = self.balances.get(account, 0) + delta
+-        return True
++        self._next[account] = seq + 1
++        moved = True
++        held = self._held.get(account)
++        if held:
++            nxt = seq + 1
++            while nxt in held:
++                d = held.pop(nxt)
++                self.balances[account] += d
++                self._next[account] = nxt + 1
++                nxt += 1
++            if not held:
++                del self._held[account]
++        return moved
+ 
+     def balance(self, account: str) -> int:
+         return self.balances.get(account, 0)

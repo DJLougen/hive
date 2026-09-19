@@ -22,7 +22,10 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-import tomllib
+try:  # tomllib is 3.11+; this project supports 3.10
+    import tomllib
+except ModuleNotFoundError:  # pragma: no cover - exercised on 3.10 only
+    import tomli as tomllib  # type: ignore[no-redef]
 
 ROOT = Path(__file__).resolve().parent.parent
 
