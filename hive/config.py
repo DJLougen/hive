@@ -41,6 +41,11 @@ class HiveConfig:
     semantic_primary: str = "jev"  # jev | djeff
     semantic_shadow: str | None = None
     semantic_schema_version: str = "hive-routing-v1"
+    # NOTE: these are STARTING values, not calibrated ones. A live probe
+    # (docs/benchmarks/jev-calibration.md) found Jev's safe_to_execute never
+    # exceeds ~0.41 across representative states, so these gates reject every
+    # decision today. Deploy semantic_mode="shadow" first, build a
+    # coverage/fidelity curve from the recorded decisions, then set them.
     semantic_tool_threshold: float = 0.90
     semantic_safe_threshold: float = 0.95
     semantic_reasoning_threshold: float = 0.10
