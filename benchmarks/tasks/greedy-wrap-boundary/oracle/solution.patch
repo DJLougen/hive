@@ -1,0 +1,13 @@
+--- a/textwrapx/wrap.py	2026-09-19 09:44:15.066118690 -0400
++++ b/textwrapx/wrap.py	2026-09-19 09:44:15.067095315 -0400
+@@ -20,8 +20,8 @@
+         if not current:
+             current = word
+             continue
+-        # FIXME: ``>`` lets a line reach width+1 before breaking
+-        if len(current) + len(word) > width:
++        # +1 for the joining space: a line must fit width exactly
++        if len(current) + len(word) + 1 > width:
+             lines.append(current)
+             current = word
+         else:

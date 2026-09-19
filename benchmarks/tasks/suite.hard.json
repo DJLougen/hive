@@ -9,6 +9,7 @@
     "reservation-expiry",
     "idempotent-outbox",
     "lru-ttl-cache",
-    "semaphore-fair-queue"
+    "semaphore-fair-queue",
+    "greedy-wrap-boundary"
   ]
 }

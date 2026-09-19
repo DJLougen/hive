@@ -1,0 +1,11 @@
+{
+  "id": "greedy-wrap-boundary",
+  "family": "boundary",
+  "problem_statement": "Our text wrapper breaks a paragraph into lines no longer than `width` characters, keeping words whole and breaking only between them. Today it lets a line reach one character past the limit before breaking, so wrapping a line that exactly fills the width splits it early and can emit lines of `width + 1`. A line is allowed to be exactly `width` characters, never more. A word longer than `width` still takes a line of its own rather than being split, blank or whitespace-only input yields no lines, and lines never carry leading or trailing spaces or double spaces at the joins. A non-positive width raises ValueError.",
+  "test_cmd": "python -m pytest smoke -q",
+  "oracle_cmd": "python -m pytest tests -q",
+  "test_timeout_s": 60,
+  "oracle_dir": "oracle",
+  "solution_patch": "oracle/solution.patch",
+  "solutions_public_since": "2026-09-19"
+}
