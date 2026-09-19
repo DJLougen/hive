@@ -16,6 +16,7 @@ import urllib.error
 import urllib.request
 from typing import Any
 
+from hive.llm import _validate_url
 from hive.semantic_backend import SemanticBackendError, validate_response
 
 #: Default endpoint for the hosted API.
@@ -33,6 +34,7 @@ class _UrllibClient:
         self.last_usage: dict[str, Any] | None = None
 
     def post(self, payload: dict[str, Any]) -> dict[str, Any]:
+        _validate_url(self.endpoint)  # bandit B310: scheme restricted to http(s)
         req = urllib.request.Request(
             self.endpoint,
             data=json.dumps(payload).encode(),
@@ -42,7 +44,7 @@ class _UrllibClient:
             },
         )
         try:
-            with urllib.request.urlopen(req, timeout=self.timeout_s) as fh:
+            with urllib.request.urlopen(req, timeout=self.timeout_s) as fh:  # nosec B310
                 body = json.loads(fh.read().decode())
         except urllib.error.HTTPError as exc:  # pragma: no cover - transport
             raise SemanticBackendError(f"jev: HTTP {exc.code}") from exc
