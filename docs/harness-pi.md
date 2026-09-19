@@ -21,7 +21,7 @@ Hive plugs into Pi as a **lightweight memory + compression layer** — keeping P
 
 ```bash
 # In your Pi project:
-pip install hive-agent-memory
+pip install -e /path/to/hive   # from source (not yet on PyPI)
 ```
 
 ```python

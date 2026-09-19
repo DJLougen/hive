@@ -1,14 +1,14 @@
 # Hive Migration Guide
 
-**Version**: 0.6.1 → 0.7.0  
+**Version**: last release 0.6.1; tree targets 0.7.0 (unreleased)  
 **Policy**: Semantic versioning with deprecation warnings.
 
 ---
 
-## 0.6.1 → 0.7.0
+## 0.6.1 → 0.7.0 (pending — not yet released)
 
-No breaking API changes. This release is a benchmark-integrity pass plus a
-docs/metadata refresh; the library surface is unchanged.
+No breaking API changes. This upcoming release is a benchmark-integrity pass
+plus a docs/metadata refresh; the library surface is unchanged.
 
 - **Benchmark tiering.** Held-out grading (`grade_patch`), the `--arm
   context|hive|all` control, and honest usage accounting are documented in
@@ -16,14 +16,20 @@ docs/metadata refresh; the library surface is unchanged.
   on the hard tier are contaminated for models trained on this repo
   (`oracle/tests/` are git-tracked); the routing/cost delta is the defensible
   claim.
-- **Package metadata.** `hive-agent-memory`, `hive-cpp`, and the Helm chart
-  all move to `0.7.0`; `uv.lock` / `Cargo.lock` regenerated.
+- **Package metadata.** The working tree targets `0.7.0` across the root
+  package, `hive-cpp`, and the Helm chart; `uv.lock` regenerated. (Latest
+  *release* remains `0.6.1`.)
 - **Docs.** README is now a landing page; benchmark detail lives in
   `benchmarks/README.md`.
 
+**When released**, upgrade with:
+
 ```bash
+# after the v0.7.0 tag is cut and the package is on an index:
 pip install --upgrade "hive-agent-memory>=0.7.0,<0.8.0"
 ```
+
+Until then, install from source: `git clone … && pip install -e .`.
 
 ---
 
@@ -102,15 +108,16 @@ None. All changes were backward-compatible additions.
 | 0.3.x | 3.10+ | N/A | N/A | N/A | maintained |
 | 0.4.x | 3.10+ | N/A | N/A | N/A | maintained |
 | 0.5.x | 3.10+ | ≥2.8 | ≥2.0 | ≥41.0 | maintained |
-| 0.6.x | 3.10+ | ≥2.10 | ≥2.10 | ≥43.0 | current |
+| 0.6.x | 3.10+ | ≥2.10 | ≥2.10 | ≥43.0 | latest release |
+| 0.7.x | 3.10+ | ≥2.10 | ≥2.10 | ≥43.0 | pending (unreleased) |
 
 ---
 
 ## Enterprise Upgrade Path
 
 ```bash
-# 1. Pin version
-pip install "hive-agent-memory>=0.6.1,<0.7.0"
+# 1. Pin version (source install until 0.7.0 is published; see above)
+git clone https://github.com/DJLougen/hive && cd hive && pip install -e .
 
 # 2. Run tests
 pytest tests/ -v

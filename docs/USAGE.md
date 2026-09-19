@@ -29,22 +29,26 @@
 
 ## Installation
 
+> **Not yet on PyPI.** Install from source until `hive-agent-memory` resolves on
+> the public index.
+
 ### Basic
 
 ```bash
-pip install hive-agent-memory
+git clone https://github.com/DJLougen/hive && cd hive
+pip install -e .
 ```
 
 ### Full stack (CPU router + ML compressor)
 
 ```bash
-pip install "hive-agent-memory[full]"
+pip install -e ".[full]"
 ```
 
 ### With all extras
 
 ```bash
-pip install "hive-agent-memory[dev,monitor,observability]"
+pip install -e ".[dev,monitor,observability]"
 ```
 
 | Extra | What it adds |

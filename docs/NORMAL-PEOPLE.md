@@ -13,7 +13,7 @@ Hive does three things:
 ## Install
 
 ```bash
-pip install hive-agent-memory
+pip install -e /path/to/hive   # from source (not yet on PyPI)
 ```
 
 That's it. No GPU needed. No API keys needed for the local parts.

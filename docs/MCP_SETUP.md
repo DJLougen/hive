@@ -6,7 +6,9 @@ Hive ships an MCP server that exposes five tools: `hive_route`, `hive_compress`,
 ## 1. Install
 
 ```bash
-pip install "hive-agent-memory[agents]"
+# From source (not yet on PyPI):
+git clone https://github.com/DJLougen/hive && cd hive
+pip install -e ".[agents]"
 ```
 
 This installs the `hive-mcp` console command (stdio server) and the optional
@@ -142,7 +144,7 @@ Point remote MCP entries at `http://127.0.0.1:8080/sse`.
 
 | Symptom | Fix |
 |---------|-----|
-| `hive-mcp: command not found` | Re-run `pip install "hive-agent-memory[agents]"` or use `python -m hive.mcp_server` in config |
+| `hive-mcp: command not found` | Re-run the `[agents]` install (`pip install -e ".[agents]"` from the clone) or use `python -m hive.mcp_server` in config |
 | Server shows red in Cursor | Reload window; check MCP logs in client settings |
 | Claude does not list tools | Confirm JSON is valid and Claude was fully restarted |
 | Codex ignores config | Use `[mcp_servers.hive]` (underscore), not `mcp.servers` |

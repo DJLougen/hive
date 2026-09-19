@@ -10,8 +10,10 @@ benchmark suite, the documentation, and the CI matrix.
 **End users** install from PyPI:
 
 ```bash
-pip install hive-agent-memory
-pip install "hive-agent-memory[full]"   # when busybee-cpu + honey-comb are on PyPI
+# From source (not yet on PyPI):
+git clone https://github.com/DJLougen/hive && cd hive
+pip install -e "."
+pip install -e ".[full]"   # + busybee-cpu + honey-comb (from git until published)
 ```
 
 **Contributors** clone the meta-package and its siblings side-by-side:

@@ -42,9 +42,12 @@ Three jobs, all on the CPU, before the LLM is involved:
 
 ## Run it
 
+> **Not yet on PyPI** — install from source. `pip install hive-agent-memory` is
+> planned but the name does not resolve on PyPI yet.
+
 ```bash
-pip install hive-agent-memory              # base: rule_fast + rust_brain
-pip install "hive-agent-memory[full]"      # + trained CPU router + ML compressor
+git clone https://github.com/DJLougen/hive && cd hive
+pip install -e .                           # base: rule_fast + rust_brain
 ```
 
 ```python

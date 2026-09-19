@@ -50,14 +50,14 @@ No code changes required. The benchmark harness is additive; `hive_bench.py` fla
 ## v0.6.1 (2026-06-29)
 
 ### Highlights
-Security fix for rust_brain snapshot restore, PyPI distribution, and refreshed dependency pins.
+Security fix for rust_brain snapshot restore, PyPI *publishing pipeline*, and refreshed dependency pins.
 
 ### Security
 - `restore_from_file` now verifies SHA-256 checksums embedded in snapshots; tampered files raise `ValueError` and leave existing state untouched.
 
 ### Added
-- PyPI publishing via the release workflow (tag `v*` → build wheels/sdist → upload).
-- `[full]` extra installs `busybee-cpu` and `honey-comb` from PyPI.
+- PyPI publishing workflow: a `v*` tag builds wheels/sdist and **attempts** upload. *(No version has actually been published — `hive-agent-memory` does not resolve on PyPI as of 2026-09; install from source.)*
+- `[full]` extra installs `busybee-cpu` and `honey-comb` (from git until they are on PyPI).
 
 ### Changed
 - Core and optional dependency minimum versions bumped (see `pyproject.toml`).

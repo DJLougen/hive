@@ -41,9 +41,11 @@ Both paths hit the same five tools: `hive_route`, `hive_compress`, `hive_remembe
 ## 1. Install
 
 ```bash
-pip install "hive-agent-memory[agents]"
+# From source (not yet on PyPI):
+git clone https://github.com/DJLougen/hive && cd hive
+pip install -e ".[agents]"
 # optional: trained CPU router + ML compressor
-pip install "hive-agent-memory[full]"
+pip install -e ".[full]"
 ```
 
 For MCP client wiring see [MCP_SETUP.md](MCP_SETUP.md).

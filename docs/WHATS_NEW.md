@@ -6,7 +6,7 @@ Merged: [PR #62](https://github.com/DJLougen/hive/pull/62) · HLC preservation: 
 
 - **Full `pytest` suite green** — validated locally and in CI on Python 3.10–3.13
 - **HLC bug fixed** — logical clocks preserve event order and cause-and-effect (not just time-of-day); snapshot restore and gossip replay keep `hlc`/`ts_ns` intact
-- **MCP server** — `pip install "hive-agent-memory[agents]"` → `hive-mcp`; configs for Cursor, Claude Desktop, and Codex ([MCP_SETUP.md](docs/MCP_SETUP.md))
+- **MCP server** — `pip install -e ".[agents]"` (from source; not yet on PyPI) → `hive-mcp`; configs for Cursor, Claude Desktop, and Codex ([MCP_SETUP.md](docs/MCP_SETUP.md))
 - **Harness integration** — hive-bench real eval + Hermes/OpenClaw guides + MCP bridge ([HARNESS_SETUP.md](docs/HARNESS_SETUP.md))
 - **Long-context eval** — `scripts/hive_long_context_eval.py --smoke` shows up to **153.8×** compression on 50k+ char logs ([`docs/benchmarks/long-context-smoke.json`](benchmarks/long-context-smoke.json))
 - **`HIVE_BACKEND`** — opt-in native hive-cpp for route/compress (`HIVE_BACKEND=native` or `backend="native"`); the default `auto` stays on Python because the Rust compressor is lossy (drops newlines, keeps `ceil(n/2)` tokens), so silently switching on wheel presence would not be reproducible
@@ -67,7 +67,7 @@ PR: github.com/DJLougen/hive/pull/62
 **Technical (for dev audience)**
 
 ```
-Hive August 2026 refresh: HLC snapshot fix, MCP one-liner (pip install hive-agent-memory[agents]), 153.8× long-context compression eval (docs/benchmarks/long-context-smoke.json), HIVE_BACKEND native/python, LinUCB + httpx async LLM. PR: github.com/DJLougen/hive/pull/62
+Hive August 2026 refresh: HLC snapshot fix, MCP one-liner (pip install -e ".[agents]"), 153.8× long-context compression eval (docs/benchmarks/long-context-smoke.json), HIVE_BACKEND native/python, LinUCB + httpx async LLM. PR: github.com/DJLougen/hive/pull/62
 ```
 
 **Longer (technical)**
@@ -77,7 +77,7 @@ Shipped a four-tier modernization of Hive — the CPU orchestration layer that r
 
 ✅ HLC fix: causal timestamps survive snapshot restore + gossip replay
 ✅ Full test suite passing (pytest)
-✅ MCP: `pip install "hive-agent-memory[agents]"` → `hive-mcp`; Cursor / Claude Desktop / Codex configs in [MCP_SETUP.md](docs/MCP_SETUP.md)
+✅ MCP: `pip install -e ".[agents]"` (from source; not yet on PyPI) → `hive-mcp`; Cursor / Claude Desktop / Codex configs in [MCP_SETUP.md](docs/MCP_SETUP.md)
 ✅ Harnesses: hive-bench real eval + Hermes/OpenClaw integration guide in [HARNESS_SETUP.md](docs/HARNESS_SETUP.md)
 ✅ Long-context eval: up to 153.8× compression on 50k+ char logs (`docs/benchmarks/long-context-smoke.json`)
 ✅ HIVE_BACKEND=python|native|auto for hive-cpp hot paths

@@ -1,13 +1,14 @@
 # PyPI Publishing
 
-Hive publishes **`hive-agent-memory`** to [PyPI](https://pypi.org/project/hive-agent-memory/) on every tagged release (`v*`).
+Hive **intends** to publish `hive-agent-memory` to [PyPI](https://pypi.org/project/hive-agent-memory/) on tagged releases (`v*`), via the release workflow. **As of v0.7.0 it is not yet published** — the name does not resolve on PyPI, so install from source below.
 
-## Install
+## Install (from source, until published)
 
 ```bash
-pip install hive-agent-memory
-pip install "hive-agent-memory[full]"          # + busybee-cpu + honey-comb
-pip install "hive-agent-memory[observability]"
+git clone https://github.com/DJLougen/hive && cd hive
+pip install -e .
+pip install -e ".[full]"                        # + busybee-cpu + honey-comb
+pip install -e ".[observability]"
 ```
 
 ## One-time publisher setup
