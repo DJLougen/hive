@@ -108,6 +108,17 @@ Six overclaims from this session, each with the tell that exposed it:
   while the run-level status never left "queued"; PR runs skip the job and
   complete — which is why PRs looked healthy and main never did.
 
+- **F9 — the shipped trained CPU policy crashed on every call** (committed, fixed in
+  `4ba1ef3`). `benchmarks/cpu_router.joblib` was fitted on **19** features while
+  `featurize()` produces **47**, so `CPURouterPolicy.predict()` raised
+  `ValueError: X has 47 features, but RandomForestClassifier is expecting 19` on the
+  first decision of every episode. An arm run with `--policy trained` records **0/N
+  resolved and 0 LLM calls** — a silent total failure that reads as a bad policy, not
+  a stale artifact. *Tell:* running `--policy trained` crashed every episode while
+  `--policy rule` did not; the traceback named the width mismatch. Fixed by retraining
+  on rebuilt trajectories (held out from the hard tier) and by a fail-closed width
+  check in `CPURouterPolicy.load()`.
+
 **Adopted rule:** release-readiness needs a *fresh-clone* run and a real CI
 conclusion, not a local gate. A version bump is not "done" until `uv lock --check` passes and
 no surface asserts a release that `git tag` doesn't show. A *failed install* is

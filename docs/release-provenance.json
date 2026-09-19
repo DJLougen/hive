@@ -156,6 +156,12 @@
       "artifact": "every push to main permanently 'queued', never a CI result",
       "committed": true,
       "reason": "the gpu job targets [self-hosted, gpu, cuda] and 0 runners are registered, so it was never schedulable; continue-on-error only forgives a job that runs. PR runs skip the job and complete, which is why PRs looked healthy and main never did. Tell: `gh api .../actions/runners` -> total_count 0, and every main run's CPU jobs finished success while the run-level status stayed queued. Fixed in c4956de by gating both self-hosted jobs on the ENABLE_SELF_HOSTED_CI variable."
+    },
+    {
+      "id": "F9",
+      "artifact": "benchmarks/cpu_router.joblib — the shipped trained CPU policy",
+      "committed": true,
+      "reason": "the artifact was fitted on 19 features while featurize() produces 47, so CPURouterPolicy.predict() raised 'ValueError: X has 47 features, but RandomForestClassifier is expecting 19' on the FIRST decision of every episode. An arm run with --policy trained therefore records 0/N resolved and 0 LLM calls — a silent total failure that reads as a bad policy rather than a stale artifact. Tell: running --policy trained (not --policy rule) crashed every episode; the traceback named the width mismatch. Fixed by retraining on rebuilt trajectories and by a fail-closed width check in CPURouterPolicy.load()."
     }
   ],
   "closed_levers": [
@@ -186,6 +192,14 @@
     {
       "key": "continue-on-error-does-not-unwedge",
       "detail": "continue-on-error forgives a job that RUNS and fails; it does nothing for a job that can never be scheduled. A job pinned to a non-existent runner label wedges the whole run forever. Gate such jobs on a variable, or the workflow's status is never a signal."
+    },
+    {
+      "key": "silent-artifact-staleness",
+      "detail": "a serialized model that no longer matches its featurizer fails at call time, not load time, and in an eval harness that failure is swallowed into 'unresolved'. Gate the artifact: a saved policy must declare the feature width it was trained on and load() must refuse a mismatch."
+    },
+    {
+      "key": "train-on-test",
+      "detail": "training a router on the same tasks it is scored on measures memorisation, not generalisation. Rebuilt trajectories are split so the hard tier stays held out: the retrained policy learns from the 16 non-hard tasks only."
     }
   ],
   "harness": {
@@ -202,7 +216,8 @@
     "read consistency_honesty_score as a replicated measurement — it is one judge model on one state digest",
     "restate F1–F6 as wins — they are retractions of this session's own overclaims",
     "treat a pip failure under an unsupported interpreter (e.g. python3.9 < requires-python >=3.10) as a packaging bug — check the interpreter precondition first",
-    "read a green local verify.sh as CI evidence — two independent regressions passed it while every CPU CI job was red"
+    "read a green local verify.sh as CI evidence — two independent regressions passed it while every CPU CI job was red",
+    "read a 'resolve 0/N' trained-policy result as evidence about the policy until the artifact's feature width is checked against featurize()"
   ],
   "verification": {
     "gate_command": "bash scripts/verify.sh",
