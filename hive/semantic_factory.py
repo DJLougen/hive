@@ -81,10 +81,30 @@ def build_semantic_stack(
         record_sink=record_sink,
     )
 
+    # In compare mode a second backend is asked the same state (never applied).
+    shadow_policy = None
+    shadow_name = getattr(config, "semantic_shadow", None)
+    if mode == "compare" and shadow_name:
+        if shadow_name == primary_name:
+            raise SemanticBackendError(
+                f"semantic_shadow ({shadow_name!r}) must differ from semantic_primary"
+            )
+        shadow_backend = make_backend(shadow_name, config=config, client=clients.get(shadow_name))
+        shadow_policy = SemanticRoutingPolicy(
+            shadow_backend,
+            tool_threshold=float(getattr(config, "semantic_tool_threshold", 0.90)),
+            safe_threshold=float(getattr(config, "semantic_safe_threshold", 0.95)),
+            reasoning_threshold=float(getattr(config, "semantic_reasoning_threshold", 0.10)),
+            llm_threshold=float(getattr(config, "semantic_llm_threshold", 0.10)),
+            max_state_chars=int(getattr(config, "semantic_max_state_chars", 16_000)),
+            record_sink=record_sink,
+        )
+
     cascade_mode = "cascade" if mode in ("cascade", "compare") else mode
     return CascadeRoutingPolicy(
         fast_policy=fast_policy,
         semantic_policy=semantic,
+        shadow_semantic_policy=shadow_policy,
         mode=cascade_mode,
     )
 

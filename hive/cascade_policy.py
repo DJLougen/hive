@@ -14,6 +14,10 @@ Modes:
 ``cascade``
     Fast policy first; on escalation, the semantic policy is tried; if that also
     escalates, the decision goes to the LLM.
+``compare``
+    The primary semantic policy may influence routing *and* a second (shadow)
+    semantic policy is asked the same state under the same schema, so their
+    decisions can be compared pairwise. Only the primary can change the route.
 """
 
 from __future__ import annotations
@@ -23,7 +27,7 @@ from typing import Any
 
 _log = logging.getLogger("hive.cascade")
 
-VALID_MODES = ("off", "shadow", "cascade")
+VALID_MODES = ("off", "shadow", "cascade", "compare")
 
 
 class CascadeRoutingPolicy:
@@ -34,6 +38,7 @@ class CascadeRoutingPolicy:
         *,
         fast_policy: Any,
         semantic_policy: Any | None = None,
+        shadow_semantic_policy: Any | None = None,
         mode: str = "cascade",
         require_semantic: bool = False,
     ) -> None:
@@ -41,6 +46,9 @@ class CascadeRoutingPolicy:
             raise ValueError(f"mode must be one of {VALID_MODES}, got {mode!r}")
         self.fast_policy = fast_policy
         self.semantic_policy = semantic_policy
+        #: Second backend, asked the same state in ``compare`` mode. It never
+        #: influences routing — that is the whole point of a paired comparison.
+        self.shadow_semantic_policy = shadow_semantic_policy
         self.mode = mode
         self.require_semantic = require_semantic
         self.stats: dict[str, int] = {
@@ -49,6 +57,7 @@ class CascadeRoutingPolicy:
             "semantic_shadow_only": 0,
             "escalated": 0,
             "generation_bypass": 0,
+            "shadow_compared": 0,
         }
 
     def predict(self, state: dict[str, Any]) -> dict[str, Any]:
@@ -66,6 +75,7 @@ class CascadeRoutingPolicy:
                 # Observe only: the semantic decision is recorded, never applied.
                 self.semantic_policy.predict(dict(state))
                 self.stats["semantic_shadow_only"] += 1
+            self._compare_shadow(state)
             return fast
 
         if self.mode == "off" or self.semantic_policy is None:
@@ -75,12 +85,21 @@ class CascadeRoutingPolicy:
                         "escalated": True, "confidence": 0.0, "source": "cascade"}
             return fast
 
+        self._compare_shadow(state)
         semantic = self.semantic_policy.predict(dict(state))
         if _routed(semantic):
             self.stats["semantic_accepted"] += 1
             return semantic
         self.stats["escalated"] += 1
         return semantic
+
+
+    def _compare_shadow(self, state: dict[str, Any]) -> None:
+        """Ask the shadow backend the same state; never apply its answer."""
+        if self.mode != "compare" or self.shadow_semantic_policy is None:
+            return
+        self.shadow_semantic_policy.predict(dict(state))
+        self.stats["shadow_compared"] += 1
 
 
 def _routed(decision: dict[str, Any]) -> bool:

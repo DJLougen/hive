@@ -5,6 +5,8 @@ All Jev responses are mocked — normal CI never touches the paid API.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from hive.cascade_policy import CascadeRoutingPolicy
@@ -304,3 +306,85 @@ def test_factory_builds_cascade_with_injected_client(monkeypatch):
                                  clients={"jev": _FakeClient(_resp())})
     assert isinstance(stack, CascadeRoutingPolicy)
     assert stack.predict(READY_STATE)["source"] == "semantic:jev"
+
+
+# --------------------------------------------------------------------------- #
+# Compare mode + record sink + export
+# --------------------------------------------------------------------------- #
+
+def test_compare_mode_logs_both_backends_but_only_primary_routes():
+    primary = _policy(_FakeClient(_resp(tool="read_file", probs={"read_file": 0.97})))
+    shadow = _policy(_FakeClient(_resp(tool="grep", probs={"grep": 0.97}, backend="djeff")))
+    c = CascadeRoutingPolicy(fast_policy=_FixedPolicy(_ESC), semantic_policy=primary,
+                             shadow_semantic_policy=shadow, mode="compare")
+    d = c.predict(READY_STATE)
+    assert d["source"] == "semantic:jev"          # primary decided
+    assert primary.stats["calls"] == 1
+    assert shadow.stats["calls"] == 1             # shadow observed the same state
+    assert c.stats["shadow_compared"] == 1
+
+
+def test_compare_mode_never_lets_shadow_change_the_route():
+    primary = _policy(_FakeClient(_resp(tool="read_file", probs={"read_file": 0.55})))  # rejects
+    shadow = _policy(_FakeClient(_resp(tool="read_file", probs={"read_file": 0.99})))
+    c = CascadeRoutingPolicy(fast_policy=_FixedPolicy(_ESC), semantic_policy=primary,
+                             shadow_semantic_policy=shadow, mode="compare")
+    assert c.predict(READY_STATE)["escalated"] is True
+
+
+def test_compare_without_shadow_is_harmless():
+    c = CascadeRoutingPolicy(fast_policy=_FixedPolicy(_ROUTE),
+                             semantic_policy=_policy(_FakeClient(_resp())),
+                             shadow_semantic_policy=None, mode="compare")
+    assert c.predict(READY_STATE)["tool"] == "run_tests"
+
+
+def test_factory_compare_requires_distinct_shadow(monkeypatch):
+    class _Cfg:
+        semantic_enabled = True
+        semantic_mode = "compare"
+        semantic_primary = "jev"
+        semantic_shadow = "jev"   # same as primary
+        jev_model = None
+
+    monkeypatch.setenv("HIVE_JEV_API_KEY", "k")
+    with pytest.raises(SemanticBackendError, match="must differ"):
+        build_semantic_stack(_Cfg(), fast_policy=_FixedPolicy(_ROUTE),
+                             clients={"jev": _FakeClient(_resp())})
+
+
+def test_jsonl_sink_round_trips_and_export_keeps_teacher_and_label_separate(tmp_path):
+    import json
+    import subprocess
+    import sys
+
+    from hive.semantic_records import JsonlRecordSink, comparison_record
+
+    sink = JsonlRecordSink(tmp_path / "recs.jsonl")
+    for ep in ("e1", "e2", "e3"):
+        for step in range(4):
+            sink(comparison_record(
+                state={"step": step}, questions={"tool": {}},
+                prediction={"tool": {"probabilities": {"read_file": 0.9}},
+                            "safe_to_execute": {"noul": 0.2}},
+                backend="jev", model_revision="jev-x", selected_tool="read_file",
+                accepted=True, actual_action="read_file", outcome="correct", group_id=ep))
+    assert sink.count == 12
+
+    out = tmp_path / "corpus.jsonl"
+    r = subprocess.run(
+        [sys.executable, "scripts/export_semantic_training_data.py",
+         "--records", str(tmp_path / "recs.jsonl"), "--out", str(out), "--seed", "0"],
+        capture_output=True, text=True, cwd=str(Path(__file__).resolve().parent.parent))
+    assert r.returncode == 0, r.stderr
+    examples = [json.loads(line) for line in out.read_text().splitlines()]
+    assert len(examples) == 12
+    e = examples[0]
+    assert "teacher" in e and "label" in e          # never merged
+    assert e["target_provenance"]["soft_distribution"] == "jev_teacher"
+    assert e["target_provenance"]["actual_action"] == "agent_execution"
+    # group-wise split: no group may appear in two splits
+    by_group: dict[str, set[str]] = {}
+    for ex in examples:
+        by_group.setdefault(ex["group_id"], set()).add(ex["split"])
+    assert all(len(s) == 1 for s in by_group.values())

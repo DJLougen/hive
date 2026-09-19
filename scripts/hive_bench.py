@@ -1406,6 +1406,11 @@ def build_provenance(*, args: Any, stack: Any | None, policy: Any | None,
         "git_dirty": dirty,
         "policy": args.policy if hive_arm else None,
         "policy_path": args.policy_path if hive_arm else None,
+        # getattr: build_provenance is also called from tests / tooling with a
+        # minimal args namespace that predates the semantic flags.
+        "semantic_mode": (getattr(args, "semantic_mode", None) or "off") if hive_arm else None,
+        "semantic_primary": getattr(args, "semantic_primary", None) if hive_arm else None,
+        "semantic_shadow": getattr(args, "semantic_shadow", None) if hive_arm else None,
         "policy_class": type(queried).__name__ if queried is not None else None,
         "temperature": args.temperature,
         "repeat": args.repeat,
@@ -1464,6 +1469,16 @@ def main() -> int:
                     help="JSONL file to log every (state -> action) turn for policy training")
     ap.add_argument("--repeat", type=int, default=1,
                     help="run the suite N times on one brain — pass 2 exercises memory replay")
+    ap.add_argument("--semantic-mode", choices=["off", "shadow", "cascade", "compare"],
+                    default="off", help="semantic routing layer mode (off = current behaviour)")
+    ap.add_argument("--semantic-primary", default="jev", choices=["jev", "djeff"],
+                    help="backend whose decisions may influence routing")
+    ap.add_argument("--semantic-shadow", default=None, choices=["jev", "djeff"],
+                    help="second backend asked the same state in --semantic-mode compare")
+    ap.add_argument("--jev-model", default=None, help="Jev model id (default jev-latest)")
+    ap.add_argument("--djeff-model", default=None, help="d-Jeff checkpoint path/repo")
+    ap.add_argument("--semantic-records", default=None,
+                    help="JSONL path: one comparison record per semantic decision")
     ap.add_argument("--memory", choices=["fresh", "shared"], default="fresh",
                     help="'fresh' (default) builds a HiveStack per pass, so repeats are "
                          "independent; 'shared' keeps one brain per arm, so pass 2+ is a "
@@ -1538,6 +1553,27 @@ def main() -> int:
                     from hive.harness import load_routing_policy
 
                     routing["p"] = load_routing_policy()
+                # Semantic layer wraps whatever fast policy was chosen. Any
+                # failure to build it (missing credential, unknown backend)
+                # must not silently change behaviour: it aborts the run.
+                if args.semantic_mode != "off":
+                    from hive.config import HiveConfig
+                    from hive.semantic_factory import build_semantic_stack
+                    from hive.semantic_records import JsonlRecordSink
+
+                    cfg = HiveConfig(
+                        semantic_enabled=True,
+                        semantic_mode=args.semantic_mode,
+                        semantic_primary=args.semantic_primary,
+                        semantic_shadow=args.semantic_shadow,
+                        jev_model=args.jev_model,
+                        djeff_model=args.djeff_model,
+                    )
+                    sink = JsonlRecordSink(args.semantic_records) if args.semantic_records else None
+                    routing["p"] = build_semantic_stack(cfg, fast_policy=routing["p"],
+                                                        record_sink=sink)
+                    _log.info("semantic layer: mode=%s primary=%s shadow=%s",
+                              args.semantic_mode, args.semantic_primary, args.semantic_shadow)
             policies[arm] = routing["p"]
         return policies[arm]
 
