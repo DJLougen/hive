@@ -1,44 +1,50 @@
 # Hive
 
-**Orchestration layer for AI agents** — CPU-side action routing, context compression, and causal graph memory that keep mechanical work and context bloat off the LLM.
+**Keep the reasoning on the LLM. Move the routine work to the CPU.**
+
+Hive is an orchestration layer for AI agents: route mechanical tool calls locally, trim repetitive context, and recall prior fixes. Add it to your agent loop without replacing your model.
 
 [![Version](https://img.shields.io/github/v/release/DJLougen/hive?label=release)](https://github.com/DJLougen/hive/releases/latest)
 [![Python](https://img.shields.io/badge/python-3.10+-green)](https://python.org)
 [![Tests](https://github.com/DJLougen/hive/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/DJLougen/hive/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-MIT-yellow)](https://opensource.org/licenses/MIT)
 
+[Quickstart](#run-it) · [Benchmark results](benchmarks/README.md) · [Integrate your agent](docs/HARNESS_SETUP.md)
+
 ---
 
 ## Why it matters
 
-An agent loop spends most of its LLM calls on *mechanical* work — list the files, run the tests, read the file the traceback named, re-run the tests. Each of those is a paid call with the whole transcript attached. Hive answers those on the CPU and only escalates the decisions that actually need reasoning. The model sees less, pays less, and resolves the same tasks.
+Your agent shouldn't need a paid reasoning call just to re-run tests after a patch. Hive can handle observable workflow transitions on the CPU and escalate decisions that need the model. Context compression and causal memory help reduce the material your agent sends and the work it repeats.
 
-## The headline — hard tier, n=15, held-out oracle
+## The evidence: fewer paid decisions
 
-On a 6-task benchmark built to *separate* the arms (real repos, hidden pytest oracle injected only at grading, DeepSeek-V4.1-Flash, n=15, spec review equalized):
+In the published hard-tier benchmark, Hive used fewer LLM calls and less total API spend than an agent that asked the LLM to choose every action. Real tool execution, six tasks, hidden grading tests, and repeated runs with DeepSeek-V4.1-Flash:
 
-| | baseline (LLM-everything) | context (escalate-only) | **hive (CPU-routed)** |
+| | baseline (LLM-everything) | context (escalate-only) | **hive (rule-routed)** |
 |---|---|---|---|
 | **Resolve rate** | 77/90 (86%) | 74/90 (82%) | **74/90 (82%)** |
 | **Mean LLM calls** | 7.31 | 7.20 | **3.04** |
 | **Total cost** | $0.368 | $0.394 | **$0.214** |
 | **McNemar vs baseline** | — | not_separable (p=1.0) | **not_separable (p=1.0)** |
 
-Hive matches the LLM-everything baseline task-for-task at **58% fewer LLM calls** and **~45% lower cost** — the routing is free capability, not a capability tax. On the easier 10-task suite it's starker: identical 30/30 resolve at **−83% LLM calls** and **−82% prompt tokens**.
+**The opportunity is lower orchestration cost—not a claim of higher intelligence.** This table measures the rule-based routing path; [the trained CPU router has a separate evaluation](benchmarks/README.md). Resolve counts were lower than baseline, and “not separable” does not prove equal quality. These small, project-authored benchmarks support a pilot, not a guarantee for your workload.
 
-Full per-task tables, the three retracted runs that got us here, and the honest caveats: [`benchmarks/README.md`](benchmarks/README.md) · [`docs/benchmarks/PROVENANCE.md`](docs/benchmarks/PROVENANCE.md).
+[Explore the results and reproduce the runs](benchmarks/README.md) · [Audit the provenance and retractions](docs/benchmarks/PROVENANCE.md)
 
 ## What it does
 
-Three jobs, all on the CPU, before the LLM is involved:
+Three capabilities you can wire into your existing agent:
 
-1. **Routes mechanical decisions** — `read_file`, `run_tests`, `apply_patch` go to a CPU policy. No LLM call. Out-of-distribution states escalate instead of guessing.
-2. **Compresses context** — a content-aware classifier drops or distills the wax (stale logs, unchanged files) so the LLM sees only the honey.
-3. **Remembers causally** — a timestamped graph records cause → effect → supersession, so the agent stops re-deriving what it already learned.
+1. **Spend model calls on reasoning.** Route supported mechanical steps from observable state; escalate when the policy cannot make an accepted, executable decision.
+2. **Keep useful context, trim repetition.** Compress tool output and logs before they enter the next model call.
+3. **Reuse what worked.** Recall prior fixes through causal memory instead of starting every repeat from scratch.
 
 ```text
    agent request → HiveStack → { route, compress, remember } → LLM (only when needed)
 ```
+
+**Best fit:** developers who own an agent's tool loop and want to measure its routing and context costs. Start with a controlled pilot against your existing harness, keep your task-quality checks, and compare total cost per successful task. Hosted semantic routing is optional and is not the source of the headline result.
 
 ## Run it
 
