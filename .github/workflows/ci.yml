@@ -201,7 +201,12 @@ jobs:
   # x86_64 + CUDA. Requires self-hosted runner with GPU label.
   gpu:
     name: x86_64 / Python 3.12 / CUDA (nightly smoke)
-    if: github.event_name == 'schedule' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    # Requires a registered [self-hosted, gpu, cuda] runner. With none
+    # registered the job is unschedulable and would sit queued forever,
+    # leaving every push-to-main run permanently "queued" (never a CI
+    # result at all). Gate it on a repo variable so it is skipped until a
+    # runner exists: set ENABLE_SELF_HOSTED_CI=true to turn it on.
+    if: vars.ENABLE_SELF_HOSTED_CI == 'true' && (github.event_name == 'schedule' || (github.event_name == 'push' && github.ref == 'refs/heads/main'))
     runs-on: [self-hosted, gpu, cuda]
     continue-on-error: true
     steps:
@@ -222,7 +227,8 @@ jobs:
   # aarch64 + CUDA. Jetson / Grace.
   jetson:
     name: aarch64 / Python 3.12 / Jetson (nightly smoke)
-    if: github.event_name == 'schedule'
+    # Same guard as gpu: no [self-hosted, jetson] runner is registered.
+    if: vars.ENABLE_SELF_HOSTED_CI == 'true' && github.event_name == 'schedule'
     runs-on: [self-hosted, jetson]
     continue-on-error: true
     steps:
