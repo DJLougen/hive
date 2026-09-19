@@ -395,6 +395,23 @@ class CPURouterPolicy:
         policy.clf = blob["clf"]
         policy.classes_ = list(blob.get("classes", []))
         policy.train_metrics = blob.get("metrics", {})
+
+        # Fail closed on a stale artifact. A policy fitted against an older
+        # featurize() is not merely inaccurate — sklearn raises on the width
+        # mismatch at the first predict(), so every routed decision crashes
+        # the episode and the arm silently records 0 resolved. Catch it here
+        # instead: a saved policy must declare the feature width it was
+        # trained on and it must match the live featurize().
+        expected = policy.clf.n_features_in_ if hasattr(policy.clf, "n_features_in_") else None
+        if expected is not None:
+            live = len(featurize({}))
+            if expected != live:
+                raise ValueError(
+                    f"stale CPU policy {path}: artifact was fitted on {expected} "
+                    f"features but featurize() now produces {live}. Retrain with "
+                    "scripts/train_cpu_policy.py (see scripts/rebuild_trajectories.py "
+                    "to rebuild a training set from published artifacts)."
+                )
         return policy
 
 
