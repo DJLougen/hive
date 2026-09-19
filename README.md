@@ -86,10 +86,11 @@ python scripts/hive_bench.py --backend openai \
 | Use it from Cursor / Claude Desktop / Codex | [`docs/MCP_SETUP.md`](docs/MCP_SETUP.md) |
 | Understand the architecture & modules | [`docs/architecture.md`](docs/architecture.md) |
 | Deploy it (Docker, K8s, enterprise) | [`docs/`](docs/) |
+| Contribute or report a security issue | [`.github/CONTRIBUTING.md`](.github/CONTRIBUTING.md) · [`.github/SECURITY.md`](.github/SECURITY.md) |
 
 ## Status
 
-v0.7.0 (Beta, unreleased — last release v0.6.1). Routing-accuracy numbers are *in-distribution* — see the OOD caveat in [`docs/architecture.md`](docs/architecture.md). **PFN / busyBee-cpu training-mode integration** is in progress ([busyBee-cpu](https://github.com/DJLougen/busyBee-cpu)).
+v0.7.0 (Beta, unreleased — last release v0.6.1; see [`docs/CHANGELOG.md`](docs/CHANGELOG.md) and [`docs/RELEASE_NOTES.md`](docs/RELEASE_NOTES.md)). Routing-accuracy numbers are *in-distribution* — see the OOD caveat in [`docs/architecture.md`](docs/architecture.md). **PFN / busyBee-cpu training-mode integration** is in progress ([busyBee-cpu](https://github.com/DJLougen/busyBee-cpu)).
 
 ## Roadmap
 

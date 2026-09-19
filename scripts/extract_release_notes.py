@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Extract GitHub release title and body for a semver tag.
 
-Reads CHANGELOG.md for the release body and RELEASE_NOTES.md for a
+Reads docs/CHANGELOG.md for the release body and docs/RELEASE_NOTES.md for a
 human-readable title (Highlights line). Writes:
 
   release_name.txt   — e.g. "Hive v0.6.0 — Real-workload evaluation and API hardening"
-  release_notes.md   — CHANGELOG section for the version
+  release_notes.md   — docs/CHANGELOG.md section for the version
 """
 
 from __future__ import annotations
@@ -16,16 +16,16 @@ from pathlib import Path
 
 
 def _changelog_body(version: str, root: Path) -> str:
-    content = (root / "CHANGELOG.md").read_text(encoding="utf-8")
+    content = (root / "docs" / "CHANGELOG.md").read_text(encoding="utf-8")
     pattern = rf"## \[{re.escape(version)}\].*?(?=\n## \[|\Z)"
     match = re.search(pattern, content, re.DOTALL)
     if match:
         return match.group(0).strip()
-    return f"## [{version}]\n\nSee CHANGELOG.md for details."
+    return f"## [{version}]\n\nSee docs/CHANGELOG.md for details."
 
 
 def _release_title(version: str, root: Path) -> str:
-    notes = (root / "RELEASE_NOTES.md").read_text(encoding="utf-8")
+    notes = (root / "docs" / "RELEASE_NOTES.md").read_text(encoding="utf-8")
     pattern = (
         rf"## v{re.escape(version)}[^\n]*\n+### Highlights\n+"
         r"((?:.+\n?)+?)(?=\n### |\n## |\Z)"

@@ -16,7 +16,7 @@ This document contains release notes for tagged versions of Hive.
 | **Total cost** | $0.368 | $0.394 | **$0.214** |
 | **McNemar vs baseline** | — | not_separable (p=1.0) | **not_separable (p=1.0)** |
 
-Six tasks authored to discriminate (`benchmarks/tasks/suite.hard.json`), every oracle rule disclosed in the problem statement, spec review equalized across all arms, hidden tests injected only at grading. Artifact: [`docs/benchmarks/hive-bench-hard.json`](docs/benchmarks/hive-bench-hard.json) (commit `79a24c7`, clean tree).
+Six tasks authored to discriminate (`benchmarks/tasks/suite.hard.json`), every oracle rule disclosed in the problem statement, spec review equalized across all arms, hidden tests injected only at grading. Artifact: [`docs/benchmarks/hive-bench-hard.json`](benchmarks/hive-bench-hard.json) (commit `79a24c7`, clean tree).
 
 ### What made it trustworthy (the integrity pass)
 
@@ -206,7 +206,7 @@ Enable via environment: `HIVE_USE_RUST=1`
    - Extracts title from `RELEASE_NOTES.md` and body from `CHANGELOG.md` via `scripts/extract_release_notes.py`
    - Creates a GitHub Release named `Hive vX.Y.Z — <highlights>`
    - Uploads wheel/sdist artifacts to the release
-   - Publishes to PyPI when trusted publishing is configured (`docs/PYPI.md`)
+   - Publishes to PyPI when trusted publishing is configured (`PYPI.md`)
 
 ### Release Notes Format
 
