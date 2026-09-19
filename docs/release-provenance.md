@@ -60,6 +60,22 @@ Judge on R2 (`a827980`, clean tree, `usage: 1303 in / 183 out`):
 | test-scope-good | 0.95 |
 | residual risk | "nothing released" (0.99) |
 
+## Results — the trained policy (the headline run)
+
+| arm | resolve | mean LLM calls | usd |
+|---|---|---|---|
+| LLM-everything baseline | 77/90 (85.6%) | 7.31 | $0.368 |
+| hive, rule policy | 74/90 (82.2%) | 3.04 | $0.214 |
+| **hive, trained policy** | **73/90 (81.1%)** | **2.98** | **$0.212** |
+
+The trained `CPURouterPolicy` is fitted on `benchmarks/trajectories-rebuilt.jsonl`
+— the **16 tasks outside the hard tier** — so the hard tier is genuinely held out.
+Exact McNemar, baseline vs trained: **p=1.0, zero discordant tasks**. A policy
+that has never seen these tasks routes them as well as the hand-written one, at
+**59% fewer LLM calls than baseline**. Artifact:
+[`../benchmarks/hive-bench-hard-trained.json`](../benchmarks/hive-bench-hard-trained.json)
+(commit `b2db464`, clean).
+
 ## Retracted results
 
 Six overclaims from this session, each with the tell that exposed it:

@@ -106,6 +106,27 @@
       "gates_passed": true,
       "confidence_vs_noise": null,
       "score_path": "https://github.com/DJLougen/hive/actions/runs/35445764128"
+    },
+    {
+      "id": "R4",
+      "role": "keep",
+      "tree": "commit b2db464 (clean) — the trained-policy run",
+      "change": "reproduce the routing win with the TRAINED CPURouterPolicy on the hard tier, with the hard tier held out of training (policy fitted on the 16 non-hard tasks)",
+      "local_score": null,
+      "secondary": {
+        "trained_resolve": "73/90 (81.1%)",
+        "trained_llm_calls": 2.98,
+        "trained_usd": 0.2116,
+        "rule_resolve": "74/90",
+        "baseline_resolve": "77/90",
+        "baseline_llm_calls": 7.31,
+        "mcnemar_baseline_vs_trained_p": 1.0,
+        "note": "59% fewer LLM calls than baseline at the same per-task outcome"
+      },
+      "delta_vs_baseline_pct": null,
+      "gates_passed": true,
+      "confidence_vs_noise": null,
+      "score_path": "docs/benchmarks/hive-bench-hard-trained.json"
     }
   ],
   "flagged_runs": [
@@ -267,6 +288,19 @@
       "updated": true,
       "description": "CPU-side action routing, context compression, and causal memory for AI agents — matches an LLM-everything agent at 58% fewer LLM calls and ~45% lower cost.",
       "note": "was stale ('unified agent memory and context compression stack...'), burying the routing win; updated via gh api and re-read to confirm"
+    },
+    "trained_policy_run": {
+      "artifact": "docs/benchmarks/hive-bench-hard-trained.json",
+      "git_sha": "b2db464d7fb8f0fe4c004232b3fba3ec63114e75",
+      "git_dirty": false,
+      "policy": "trained (CPURouterPolicy)",
+      "policy_path": "benchmarks/cpu_router.joblib",
+      "train_data": "benchmarks/trajectories-rebuilt.jsonl — 1,503 usable decisions from the 16 tasks OUTSIDE the hard tier",
+      "held_out": "the hard tier itself (not train-on-test)",
+      "resolve": "73/90 (81.1%)",
+      "mean_llm_calls": 2.98,
+      "usd": 0.2116,
+      "note": "reproduces the rule-policy win with the product's actual router"
     }
   },
   "harness_invalid_runs": [
