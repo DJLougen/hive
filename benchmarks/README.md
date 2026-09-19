@@ -94,6 +94,24 @@ then `python scripts/hive_bench.py --backend openai --endpoint <EP> --api-key-en
 --model <M> --suite benchmarks/tasks/suite.hard.json --arm hive --policy trained
 --policy-path benchmarks/cpu_router.joblib --repeat 15 --temperature 0.7`.
 
+### Two new tasks — A/B result (annotated: ceiling)
+
+`semaphore-fair-queue` and `greedy-wrap-boundary` were added to widen the suite
+and balance its families. Verified by `--verify-tasks` (smoke RED→GREEN, oracle
+RED→GREEN) and run at n=15 × 3 arms:
+
+| arm | resolve | mean LLM calls | usd |
+|---|---|---|---|
+| baseline | 30/30 (100%) | 6.93 | $0.1086 |
+| context | 30/30 (100%) | 6.73 | $0.1082 |
+| hive (trained) | 30/30 (100%) | **3.00** | **$0.0559** |
+
+**Both tasks are at ceiling for every arm**, so this run does **not**
+discriminate on resolve — it shows the tasks are solvable and that hive keeps
+its ~48% cost advantage, but adds no resolve signal. It is reported separately
+and never pooled silently with the 6-task tier. Artifact:
+[`docs/benchmarks/hive-bench-hard-new2.json`](../docs/benchmarks/hive-bench-hard-new2.json).
+
 ### Capability tier — held-out tasks, three arms
 
 Six harder tasks graded against **held-out** pytest suites the agent never
