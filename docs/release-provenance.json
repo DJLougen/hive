@@ -203,7 +203,20 @@
         "usage_caveat": "only rounds 3 and the probe had usage captured; earlier rounds' token counts were not recorded"
       }
     },
-    "pypi_note": "this package has never been published to public PyPI (as of this audit)"
+    "pypi_note": "this package has never been published to public PyPI (as of this audit)",
+    "ci_status": {
+      "state": "queued (not passed)",
+      "run_id": "35443542860",
+      "url": "https://github.com/DJLougen/hive/actions/runs/35443542860",
+      "workflow": "hive-ci",
+      "head_sha": "af64357c3",
+      "note": "the keep commit is now pushed; its CI run is QUEUED, not green. No CI-pass claim is made."
+    },
+    "github_metadata": {
+      "updated": true,
+      "description": "CPU-side action routing, context compression, and causal memory for AI agents — matches an LLM-everything agent at 58% fewer LLM calls and ~45% lower cost.",
+      "note": "was stale ('unified agent memory and context compression stack...'), burying the routing win; updated via gh api and re-read to confirm"
+    }
   },
   "harness_invalid_runs": [
     {

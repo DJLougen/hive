@@ -125,7 +125,11 @@ not a defect until reproduced on a supported interpreter.
   pushed**, so no remote CI run exists for it at all. (At audit time the queued
   `hive-ci` run on `main` was for `ca540a2`, and several Dependabot/Cursor PR runs
   showed failure.) No "CI green" claim is made.
-- Independent recompute: PyPI 404 vs passing control; `git tag`; `uv lock --check`.
+- Independent recompute: PyPI 404 vs passing control; `git tag`; `uv lock --check`;
+  fresh-venv install from the pushed remote (`af64357`).
+- CI status at final: **queued, not passed** — `hive-ci` run
+  [35443542860](https://github.com/DJLougen/hive/actions/runs/35443542860) on
+  `af64357c3`. No CI-pass claim is made.
 - Same-hash rule: the judge score is measured against the exact clean commit it
   describes — a score from a different tree is not transferable.
 
