@@ -46,9 +46,9 @@ Publish siblings from their own repos with the same trusted-publishing pattern b
 ### 4. Cut a release
 
 ```bash
-# On main, after CHANGELOG and version bumps land:
-git tag v0.6.1
-git push origin v0.6.1
+# On main, after the CHANGELOG and version bumps land (current tree: 0.7.0):
+git tag v0.7.0
+git push origin v0.7.0
 ```
 
 The [Release workflow](.github/workflows/release.yml) will:

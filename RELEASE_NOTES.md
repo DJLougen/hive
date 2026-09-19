@@ -2,7 +2,7 @@
 
 This document contains release notes for tagged versions of Hive.
 
-## v0.7.0 (2026-09-18)
+## v0.7.0 (unreleased)
 
 ### Highlights
 **Hive now matches an LLM-everything agent on a held-out benchmark built to separate the arms — at 58% fewer LLM calls and ~45% lower cost.** This release is a benchmark-integrity pass: the number that was always true (CPU routing is free capability) is now *provably* true, on tasks hard enough to discriminate, with the grading exploits closed and the contamination vectors flagged.

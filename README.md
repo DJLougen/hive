@@ -80,7 +80,7 @@ python scripts/hive_bench.py --backend openai \
 
 ## Status
 
-v0.7.0 (Beta). Routing-accuracy numbers are *in-distribution* — see the OOD caveat in [`docs/architecture.md`](docs/architecture.md). **PFN / busyBee-cpu training-mode integration** is in progress ([busyBee-cpu](https://github.com/DJLougen/busyBee-cpu)).
+v0.7.0 (Beta, unreleased — last release v0.6.1). Routing-accuracy numbers are *in-distribution* — see the OOD caveat in [`docs/architecture.md`](docs/architecture.md). **PFN / busyBee-cpu training-mode integration** is in progress ([busyBee-cpu](https://github.com/DJLougen/busyBee-cpu)).
 
 ## Roadmap
 

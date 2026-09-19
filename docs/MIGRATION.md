@@ -1,7 +1,29 @@
 # Hive Migration Guide
 
-**Version**: 0.6.0 → 0.6.1  
+**Version**: 0.6.1 → 0.7.0  
 **Policy**: Semantic versioning with deprecation warnings.
+
+---
+
+## 0.6.1 → 0.7.0
+
+No breaking API changes. This release is a benchmark-integrity pass plus a
+docs/metadata refresh; the library surface is unchanged.
+
+- **Benchmark tiering.** Held-out grading (`grade_patch`), the `--arm
+  context|hive|all` control, and honest usage accounting are documented in
+  [`../benchmarks/README.md`](../benchmarks/README.md). Absolute resolve rates
+  on the hard tier are contaminated for models trained on this repo
+  (`oracle/tests/` are git-tracked); the routing/cost delta is the defensible
+  claim.
+- **Package metadata.** `hive-agent-memory`, `hive-cpp`, and the Helm chart
+  all move to `0.7.0`; `uv.lock` / `Cargo.lock` regenerated.
+- **Docs.** README is now a landing page; benchmark detail lives in
+  `benchmarks/README.md`.
+
+```bash
+pip install --upgrade "hive-agent-memory>=0.7.0,<0.8.0"
+```
 
 ---
 

@@ -1918,7 +1918,7 @@ wheels = [
 
 [[package]]
 name = "hive-agent-memory"
-version = "0.6.1"
+version = "0.7.0"
 source = { editable = "." }
 dependencies = [
     { name = "cryptography" },
@@ -2047,7 +2047,7 @@ dev = [
 
 [[package]]
 name = "hive-cpp"
-version = "0.6.1"
+version = "0.7.0"
 source = { editable = "hive-cpp" }
 
 [[package]]
