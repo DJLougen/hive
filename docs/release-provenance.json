@@ -92,6 +92,20 @@
       "confidence_vs_noise": 0.28,
       "score_path": "docs/release-provenance.json (this record)",
       "judged_commit": "a827980 (clean)"
+    },
+    {
+      "id": "R3",
+      "role": "keep",
+      "tree": "commit c4956de (pushed); the CI repair",
+      "change": "fix the two CPU-matrix regressions (tomllib fallback + re-tracked solution patches) and gate the unschedulable self-hosted jobs, so main can actually reach a CI conclusion",
+      "local_score": null,
+      "secondary": {
+        "note": "first CI run on main to complete: hive-ci 35445764128 -> success, all 11 jobs pass/skip"
+      },
+      "delta_vs_baseline_pct": null,
+      "gates_passed": true,
+      "confidence_vs_noise": null,
+      "score_path": "https://github.com/DJLougen/hive/actions/runs/35445764128"
     }
   ],
   "flagged_runs": [
@@ -130,6 +144,18 @@
       "artifact": "install blocks in README / USAGE / MCP_SETUP / HARNESS_SETUP / CONTRIBUTING / harness-omp / harness-pi / NORMAL-PEOPLE / WHATS_NEW; RELEASE_NOTES v0.6.1 'PyPI distribution'",
       "committed": true,
       "reason": "committed at b2f66e8 and earlier: guidance pointed at `pip install hive-agent-memory`, which 404s on PyPI (verified with a passing control), and the v0.6.1 note claimed distribution that never occurred. Replaced with source installs and a corrected note in a827980."
+    },
+    {
+      "id": "F7",
+      "artifact": "every CPU CI job red on main while local verify.sh was green",
+      "committed": true,
+      "reason": "two independent defects introduced by this session, both invisible to a local run on Python 3.12 with untracked files present: (a) tests/test_version_consistency.py imported tomllib (3.11+) while CI runs a 3.10 matrix job -> collection error; (b) oracle/solution.patch was gitignored but task.json references it and --verify-tasks (CI + verify.sh) requires it -> 'no solution_patch' x12 in a fresh clone. Tell: `gh run view <id> --log-failed` showed ModuleNotFoundError: tomllib and the 12 missing patches; a fresh `git clone` reproduced (b) locally. Fixed in adabeea; verified by cloning fresh and running --verify-tasks (12/12)."
+    },
+    {
+      "id": "F8",
+      "artifact": "every push to main permanently 'queued', never a CI result",
+      "committed": true,
+      "reason": "the gpu job targets [self-hosted, gpu, cuda] and 0 runners are registered, so it was never schedulable; continue-on-error only forgives a job that runs. PR runs skip the job and complete, which is why PRs looked healthy and main never did. Tell: `gh api .../actions/runners` -> total_count 0, and every main run's CPU jobs finished success while the run-level status stayed queued. Fixed in c4956de by gating both self-hosted jobs on the ENABLE_SELF_HOSTED_CI variable."
     }
   ],
   "closed_levers": [
@@ -152,6 +178,14 @@
     {
       "key": "trust-the-test-you-wrote",
       "detail": "A gate written alongside a fix can encode the fix's own claim rather than the invariant (see F3). Validate a gate against the exact failure mode it claims to catch — a seeded mismatch exposed it."
+    },
+    {
+      "key": "local-verify-is-not-ci",
+      "detail": "verify.sh ran one interpreter (3.12) on a machine that already had untracked files, so it was blind to a 3.10-only import error and to a file that only exists because it was never committed. Release-readiness needs a fresh-clone run and a real CI conclusion, not just a local gate."
+    },
+    {
+      "key": "continue-on-error-does-not-unwedge",
+      "detail": "continue-on-error forgives a job that RUNS and fails; it does nothing for a job that can never be scheduled. A job pinned to a non-existent runner label wedges the whole run forever. Gate such jobs on a variable, or the workflow's status is never a signal."
     }
   ],
   "harness": {
@@ -167,7 +201,8 @@
     "bake the hive-cpp/Helm-vs-root cadence into a unit test — it is a maintainer policy, not a mechanical invariant",
     "read consistency_honesty_score as a replicated measurement — it is one judge model on one state digest",
     "restate F1–F6 as wins — they are retractions of this session's own overclaims",
-    "treat a pip failure under an unsupported interpreter (e.g. python3.9 < requires-python >=3.10) as a packaging bug — check the interpreter precondition first"
+    "treat a pip failure under an unsupported interpreter (e.g. python3.9 < requires-python >=3.10) as a packaging bug — check the interpreter precondition first",
+    "read a green local verify.sh as CI evidence — two independent regressions passed it while every CPU CI job was red"
   ],
   "verification": {
     "gate_command": "bash scripts/verify.sh",
@@ -205,21 +240,13 @@
     },
     "pypi_note": "this package has never been published to public PyPI (as of this audit)",
     "ci_status": {
-      "state": "queued at observation; no pass observed",
-      "observed_at_utc": "2026-09-19T12:47Z",
-      "runs": [
-        {
-          "id": "35443542860",
-          "head_sha": "af64357c3",
-          "status": "queued"
-        },
-        {
-          "id": "35443824173",
-          "head_sha": "8c09427",
-          "status": "queued"
-        }
-      ],
-      "note": "point-in-time observation; not a claim about the current HEAD or any single run. No CI-green claim is made anywhere in this record."
+      "state": "GREEN — completed success",
+      "run_id": "35445764128",
+      "head_sha": "c4956de85b2e39b52f6f54d3e076794e0298a2a0",
+      "url": "https://github.com/DJLougen/hive/actions/runs/35445764128",
+      "workflow": "hive-ci",
+      "jobs": "11 jobs: 8 success (incl. CPU 3.10/3.11/3.12/3.13, pentest, MCP, SBOM, native, cargo), 3 skipped (gpu, jetson, wheels — self-hosted/wheels not enabled)",
+      "note": "this supersedes the earlier 'queued, no pass observed' entry; it is the first main run to reach a conclusion"
     },
     "github_metadata": {
       "updated": true,

@@ -94,7 +94,22 @@ Six overclaims from this session, each with the tell that exposed it:
   not changed. Recorded because a failed measurement must not be laundered into
   a defect report.
 
-**Adopted rule:** a version bump is not "done" until `uv lock --check` passes and
+- **F7 — every CPU CI job red while local gates were green** (committed, fixed in
+  `adabeea`). Two independent defects, both mine: the version test imported
+  `tomllib` (3.11+) while CI runs a **3.10** matrix job; and
+  `oracle/solution.patch` was gitignored although `task.json` references it and
+  `--verify-tasks` requires it. *Tell:* `gh run view --log-failed` showed
+  `ModuleNotFoundError: tomllib` and 12x "no solution_patch"; a fresh `git clone`
+  reproduced the second locally.
+- **F8 — every push to main stuck "queued" forever, never a result** (committed,
+  fixed in `c4956de`). The `gpu` job targets `[self-hosted, gpu, cuda]` with **0
+  runners registered**, so it was never schedulable; `continue-on-error` only
+  forgives a job that *runs*. *Tell:* every main run's CPU jobs finished success
+  while the run-level status never left "queued"; PR runs skip the job and
+  complete — which is why PRs looked healthy and main never did.
+
+**Adopted rule:** release-readiness needs a *fresh-clone* run and a real CI
+conclusion, not a local gate. A version bump is not "done" until `uv lock --check` passes and
 no surface asserts a release that `git tag` doesn't show. A *failed install* is
 not a defect until reproduced on a supported interpreter.
 
@@ -122,13 +137,11 @@ not a defect until reproduced on a supported interpreter.
   coverage floor, 43/43 claim checks, task oracles, pentest, cargo) **plus a
   fresh-venv install of the documented path** (PASS on Python 3.12). This is not
   a claim about GitHub Actions.
-- CI status — **queued at the time of observation; no pass observed.** As of
-  2026-09-19T12:47Z the `hive-ci` runs for this work were queued, not completed:
-  [35443542860](https://github.com/DJLougen/hive/actions/runs/35443542860) on
-  `af64357c3` and [35443824173](https://github.com/DJLougen/hive/actions/runs/35443824173)
-  on `8c09427`. This is a point-in-time observation, not a claim about the
-  current HEAD or about any single run; **no CI-green claim is made anywhere in
-  this record.**
+- CI status — **GREEN.** `hive-ci`
+  [35445764128](https://github.com/DJLougen/hive/actions/runs/35445764128) on
+  `c4956de8` completed **success**: 8 jobs pass (CPU 3.10/3.11/3.12/3.13, pentest,
+  MCP, SBOM, native, cargo) and 3 are skipped (gpu, jetson, wheels). This
+  supersedes an earlier "no pass observed" note below.
 - *Historical snapshot (state at R2 audit time, before the later push):* the keep
   commit `a827980` was then **local only — not pushed**, so no remote CI run
   existed for it; the queued `hive-ci` run on `main` was for `ca540a2`, and
