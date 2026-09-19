@@ -39,6 +39,7 @@ CPU_POLICY = "docs/benchmarks/hive-bench-cpu-policy.json"
 CAPABILITY = "docs/benchmarks/hive-bench-capability.json"  # 5 repeats x 6 held-out tasks, 3 arms
 HARD = "docs/benchmarks/hive-bench-hard.json"  # 15 repeats x 6 held-out tasks, 3 arms
 BENCH_README = "benchmarks/README.md"  # all benchmark detail lives here now
+TRAINED = "docs/benchmarks/hive-bench-hard-trained.json"  # hard tier, TRAINED policy, hard tier held out of training
 
 CHECKS: list[dict] = [
     # ---- A1: real-workload A/B table (summary of hive-bench-flash.json) ----
@@ -422,6 +423,24 @@ CHECKS: list[dict] = [
         "path": "summary.hive.usd_total",
         "abs_tol": 2e-3,
         "regex": r"^\| hive \| \*\*[\d.]+\*\* \| \*\*\$([\d.]+)\*\* \| \*\*\$",
+    },
+    # ---- hard tier with the TRAINED policy (hard tier held out of training) ----
+    {
+        "label": "trained resolve count",
+        "kind": "single",
+        "file": BENCH_README,
+        "artifact": TRAINED,
+        "path": "summary.hive.resolved",
+        "abs_tol": 0.5,
+        "regex": r"trained policy[^|]*\| *\*?([\d]+)/90",
+    },
+    {
+        "label": "trained mean LLM calls",
+        "kind": "single",
+        "file": BENCH_README,
+        "artifact": TRAINED,
+        "path": "summary.hive.mean_llm_calls",
+        "regex": r"trained policy[^|]*\| *[\d]+/90[^|]*\| *\*?([\d.]+)",
     },
 ]
 

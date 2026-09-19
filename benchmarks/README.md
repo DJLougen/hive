@@ -64,6 +64,36 @@ routing/cost delta is not.
 --api-key-env <KEY> --model <M> --suite benchmarks/tasks/suite.hard.json
 --arm all --repeat 15 --temperature 0.7 --memory fresh`.
 
+### Trained CPU policy — hard tier, held out of training
+
+The line above uses the **rule-based** state machine. This is the same suite with
+the **trained `CPURouterPolicy`**, which is the product's actual router.
+
+The policy is a RandomForest fitted on `benchmarks/trajectories-rebuilt.jsonl`
+(1,503 usable decisions from the **16 tasks outside the hard tier**), so the hard
+tier is genuinely held out — it is not train-on-test. It reaches
+
+| arm | resolve | mean LLM calls | usd |
+|---|---|---|---|
+| trained policy | 73/90 | 2.98 | $0.2116 |
+
+against the rule-policy arm's 74/90 at 3.04 calls, and the LLM-everything
+baseline's 77/90 at 7.31 — i.e. **the same task-for-task outcome at 59% fewer
+LLM calls than baseline**. Exact McNemar over per-task majority: baseline vs
+trained p=1.0 (0 discordant tasks), rule-hive vs trained p=1.0. That is the point:
+a policy that has never seen these tasks routes them as well as the hand-written
+one, so the routing win is not an artifact of hand-tuned rules.
+
+Per-task: sliding-window-limit 15/15, snapshot-event-fold 15/15,
+reservation-expiry 15/15, idempotent-outbox 15/15, kway-merge-dedup 11/15,
+lru-ttl-cache 2/15.
+
+Artifact: [`docs/benchmarks/hive-bench-hard-trained.json`](../docs/benchmarks/hive-bench-hard-trained.json).
+**Reproduce:** `python scripts/rebuild_trajectories.py --out benchmarks/trajectories-rebuilt.jsonl`
+then `python scripts/hive_bench.py --backend openai --endpoint <EP> --api-key-env <KEY>
+--model <M> --suite benchmarks/tasks/suite.hard.json --arm hive --policy trained
+--policy-path benchmarks/cpu_router.joblib --repeat 15 --temperature 0.7`.
+
 ### Capability tier — held-out tasks, three arms
 
 Six harder tasks graded against **held-out** pytest suites the agent never
