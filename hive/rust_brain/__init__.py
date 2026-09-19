@@ -290,10 +290,9 @@ class RustBrain:
         if not self._order:
             return
         oldest_key = self._order[0]
-        if oldest_key:
-            self._nodes.pop(oldest_key, None)
-            self._order_index.pop(oldest_key, None)
-            self._history.pop(oldest_key, None)
+        self._nodes.pop(oldest_key, None)
+        self._order_index.pop(oldest_key, None)
+        self._history.pop(oldest_key, None)
         self._evictions += 1
         self._order.pop(0)
         for k in list(self._order_index):
@@ -433,7 +432,7 @@ class RustBrain:
         """Return keys reachable from ``key`` via ``kind`` edges (any kind if
         ``None``)."""
         node = self._nodes.get(key)
-        if node is None:
+        if node is None or self._expired(node):
             return []
         if kind is None:
             out: set[str] = set()
@@ -451,6 +450,8 @@ class RustBrain:
             snapshot = list(self._nodes.values())
         out: list[MemoryNode] = []
         for node in snapshot:
+            if self._expired(node):
+                continue
             if node.trust < min_trust:
                 continue
             if tag is not None and tag not in node.tags:
@@ -466,7 +467,11 @@ class RustBrain:
             # `_order` can hold keys whose node is gone; membership in _nodes is
             # the truth. Filtering on truthiness would silently drop the
             # empty-string key, which is a legal key.
-            return [self._nodes[k].to_dict() for k in self._order if k in self._nodes]
+            return [
+                self._nodes[k].to_dict()
+                for k in self._order
+                if k in self._nodes and not self._expired(self._nodes[k])
+            ]
 
     # -- bulk ---------------------------------------------------------------
 

@@ -275,6 +275,15 @@ def test_brain_recall_respects_ttl_without_expire_call():
     assert brain.get("k") is None
 
 
+def test_brain_search_and_snapshot_respect_default_ttl():
+    brain = RustBrain(default_ttl_s=0.05, tenant_isolation=False)
+    brain.remember("secret", "sensitive", tags=["credentials"])
+    time.sleep(0.1)
+    assert brain.recall("secret") is None
+    assert brain.search(tag="credentials") == []
+    assert brain.snapshot() == []
+
+
 # ---------------------------------------------------------------------------
 # 7. otel_endpoint must reach the telemetry layer
 # ---------------------------------------------------------------------------
