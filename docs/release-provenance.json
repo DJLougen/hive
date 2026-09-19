@@ -1,0 +1,218 @@
+{
+  "schema": "researchmax-provenance/v0",
+  "title": "hive release-integrity audit — claimed vs actual release state (0.7.0)",
+  "inspired_by": {
+    "pattern": "GLM-5.3-style benchmark card + fail-closed gate record, applied to a release-metadata audit rather than a kernel benchmark",
+    "arxiv": ""
+  },
+  "benchmark": {
+    "id": "repo release-metadata consistency (DJLougen/hive)",
+    "official_score": {
+      "value": null,
+      "authority": "none — no sealed external score exists for release-metadata consistency",
+      "direction": "higher",
+      "note": "the scored artifact is the repo's own claim-vs-artifact agreement, verified by fetchable commands, not a numeric competition score"
+    },
+    "frontier": {
+      "score": null,
+      "commit": "none",
+      "submission": "none (no external submission exists)"
+    }
+  },
+  "local_metric": {
+    "name": "consistency_honesty_score",
+    "formula": "LLM-judged coherence of released-vs-unreleased signalling, 0 (contradictory) .. 3 (coherent), from a balanced state digest",
+    "direction": "higher",
+    "authority": "single judge model (jev-1.13.0), one state, not a replicated measurement — treat as a directional signal, not a precise score",
+    "gate_deviations": [
+      {
+        "gate": "network",
+        "state": "on",
+        "reason": "this audit REQUIRES network (PyPI index, pip resolver); unlike the kernel benchmark loop it is not offline"
+      }
+    ]
+  },
+  "hardware": {
+    "device": "Apple M3 Max (workstation); repo checkout",
+    "chip": "arm64"
+  },
+  "gates": {
+    "max_abs_diff": null,
+    "golden_hash": null,
+    "identity_counters": {
+      "verify_sh": "ruff + mypy + 354 tests (coverage floor 80%) + 43/43 claim checks + task oracles + pentest + cargo",
+      "uv_lock_check": "passes (CI enforces it — this is the gate the half-done bump would have tripped)",
+      "version_test": "tests/test_version_consistency.py — internal coupling only; verified to FAIL on a seeded internal mismatch",
+      "pypi_resolves": "hive-agent-memory -> HTTP 404 (control 'requests' -> 200); python3 -m pip index versions hive-agent-memory -> 'No matching distribution found'",
+      "release_tag_exists": "git tag -> latest is v0.6.1; no v0.7.0",
+      "fresh_install": "PASS on the documented path: fresh `python3.12 -m venv` + `git clone` @ a827980 + `pip install -e .` -> 'Successfully installed hive-agent-memory-0.7.0'; `import hive` -> 0.7.0. Also `pip install -e .[agents]` installs the `hive-mcp` console script."
+    }
+  },
+  "runs": [
+    {
+      "id": "R0",
+      "role": "true_local_baseline",
+      "tree": "commit b2f66e8 (clean)",
+      "change": "state as found: every version surface 0.6.1, and committed install guidance pointing at 'pip install hive-agent-memory' (404 on PyPI) plus a v0.6.1 'PyPI distribution' claim",
+      "local_score": null,
+      "secondary": {
+        "note": "internally version-consistent for the 0.6.1 surfaces, but the committed docs already asserted a non-existent PyPI package and a never-occurred v0.6.1 'PyPI distribution' (verified: PyPI 404, latest tag v0.6.1)"
+      },
+      "delta_vs_baseline_pct": null,
+      "gates_passed": false,
+      "confidence_vs_noise": null,
+      "score_path": "n/a"
+    },
+    {
+      "id": "R1",
+      "role": "discard",
+      "tree": "commit cadfbc2 (clean)",
+      "change": "the half-done bump: pyproject and hive/__init__ raised to 0.7.0, but uv.lock root, hive-cpp (Cargo.toml/pyproject/__init__), and Helm chart left at 0.6.1",
+      "local_score": null,
+      "secondary": {
+        "defects_introduced": 5,
+        "note": "uv lock --check fails here, so CI would have been red"
+      },
+      "delta_vs_baseline_pct": null,
+      "gates_passed": false,
+      "confidence_vs_noise": null,
+      "score_path": "n/a"
+    },
+    {
+      "id": "R2",
+      "role": "keep",
+      "tree": "commit a827980 (clean) — the fixes are committed BEFORE this record, so the tree is clean",
+      "change": "two commits: ca540a2 aligns every mechanically-coupled surface to the tree version and keeps release-claim artifacts at the last release; a827980 makes install guidance source-based, corrects the false PyPI claims, gates the 0.7.0 migration as pending, and narrows the version test to internal coupling",
+      "local_score": 2.28,
+      "secondary": {
+        "note": "fresh-install gate added and PASSED (documented path, Python 3.12); verify.sh green; judge score from one model on one digest"
+      },
+      "delta_vs_baseline_pct": null,
+      "gates_passed": true,
+      "confidence_vs_noise": 0.28,
+      "score_path": "docs/release-provenance.json (this record)",
+      "judged_commit": "a827980 (clean)"
+    }
+  ],
+  "flagged_runs": [
+    {
+      "id": "F1",
+      "artifact": ".github/citation.cff set to version 0.7.0 / date-released 2026-09-18",
+      "committed": false,
+      "reason": "fabricated a release date for a version that was never tagged (latest tag is v0.6.1) and whose tagging would auto-publish to PyPI. Reverted to 0.6.1 / 2026-06-29 before any commit; never entered history."
+    },
+    {
+      "id": "F2",
+      "artifact": "compliance-checklist.md / incident-response-runbook.md / soc2-evidence.md relabelled 0.6.1 -> 0.7.0",
+      "committed": false,
+      "reason": "false compliance metadata: those docs carry their own dates (2026-06-29 / 2026-06-02) and describe v0.5/v0.6 coverage, so the relabel asserted an audit that never happened. Reverted before committing."
+    },
+    {
+      "id": "F3",
+      "artifact": "tests/test_version_consistency.py::test_attestation_docs_do_not_claim_future_version",
+      "committed": true,
+      "reason": "overclaiming gate: asserted 'doc_version <= tree_version', which PASSES the exact bad 0.7.0 relabel when tree is 0.7.0 (0.7.0 <= 0.7.0). It did not block the fabrication it was described as blocking. Removed in R2."
+    },
+    {
+      "id": "F4",
+      "artifact": "tests/test_version_consistency.py forcing hive-cpp and Helm to EQUAL the root version",
+      "committed": true,
+      "reason": "encoded a release-cadence policy as a unit test. This repo has legitimately let hive-cpp lag (at tag v0.6.0, hive-cpp was 0.5.0 while root was 0.6.0). Narrowed in R2 to internal consistency only."
+    },
+    {
+      "id": "F5",
+      "artifact": "docs/MIGRATION.md section '## 0.6.1 -> 0.7.0' + unconditional 'pip install >=0.7.0,<0.8.0'",
+      "committed": true,
+      "reason": "read as released ('This release') and pointed at a version absent from every index. Retitled '(pending — not yet released)' and gated the install command behind 'When released:' in R2."
+    },
+    {
+      "id": "F6",
+      "artifact": "install blocks in README / USAGE / MCP_SETUP / HARNESS_SETUP / CONTRIBUTING / harness-omp / harness-pi / NORMAL-PEOPLE / WHATS_NEW; RELEASE_NOTES v0.6.1 'PyPI distribution'",
+      "committed": true,
+      "reason": "committed at b2f66e8 and earlier: guidance pointed at `pip install hive-agent-memory`, which 404s on PyPI (verified with a passing control), and the v0.6.1 note claimed distribution that never occurred. Replaced with source installs and a corrected note in a827980."
+    }
+  ],
+  "closed_levers": [
+    {
+      "key": "blanket-version-sync",
+      "detail": "Syncing every '0.6.1' string to '0.7.0' asserts a release/audit that did not happen: citation.cff and the compliance/runbook/SOC2 docs assert a RELEASED or AUDITED state and must stay at the last actual release. Only mechanically-coupled build metadata follows the tree version."
+    },
+    {
+      "key": "policy-in-unit-test",
+      "detail": "Encoding the release-cadence decision as an equality assertion (hive-cpp == root, Helm == root) freezes a maintainer policy as a test; the repo has drifted before by choice (v0.6.0: cpp 0.5.0 vs root 0.6.0). Tests assert only internal consistency; cross-artifact alignment is a review item."
+    },
+    {
+      "key": "tag-to-complete-a-bump",
+      "detail": "Cutting a v0.7.0 tag is not a way to 'finish' a version bump: release.yml runs the PyPI publish job on tag, so tagging attempts an external publish — and the existing v0.6.1 tag with a PyPI 404 shows the job did not (does not) guarantee publication. It requires separate authorization, not bookkeeping."
+    },
+    {
+      "key": "doc-stamp-equals-tree",
+      "detail": "Forcing document version stamps to equal the working-tree version fabricates a released/audited state. Live guidance docs (USAGE) may track the tree; attestation docs must not lead it."
+    },
+    {
+      "key": "trust-the-test-you-wrote",
+      "detail": "A gate written alongside a fix can encode the fix's own claim rather than the invariant (see F3). Validate a gate against the exact failure mode it claims to catch — a seeded mismatch exposed it."
+    }
+  ],
+  "harness": {
+    "local_loop": "agent session on DJLougen/hive; two advisory reviews + Jev claim-checking + verify.sh",
+    "engine_commit": "a827980 (clean)",
+    "keep_commit_pushed": false,
+    "remote_ci_note": "the keep commit a827980 is local-only (not pushed), so no remote CI run exists for it; at audit time main's queued hive-ci run was for ca540a2 and several Dependabot/Cursor PR runs showed failure"
+  },
+  "do_not": [
+    "read the tree version 0.7.0 as a RELEASED version — no v0.7.0 tag exists and nothing is on PyPI",
+    "cite 'PyPI distribution' for v0.6.1 — the pipeline exists, but no version has ever been published",
+    "treat the compliance/runbook/SOC2 version stamps as covering 0.7.0 — they remain at 0.6.1 by policy",
+    "bake the hive-cpp/Helm-vs-root cadence into a unit test — it is a maintainer policy, not a mechanical invariant",
+    "read consistency_honesty_score as a replicated measurement — it is one judge model on one state digest",
+    "restate F1–F6 as wins — they are retractions of this session's own overclaims",
+    "treat a pip failure under an unsupported interpreter (e.g. python3.9 < requires-python >=3.10) as a packaging bug — check the interpreter precondition first"
+  ],
+  "verification": {
+    "gate_command": "bash scripts/verify.sh",
+    "gate_result": "LOCAL gates only: bash scripts/verify.sh passed (ruff, mypy, 353 tests + coverage floor, 43/43 claim checks, task oracles, pentest, cargo) + fresh-venv install of the documented path. NOT an assertion about GitHub Actions: main's hive-ci run for ca540a2 was still queued at audit time, and several dependabot/cursor PR runs showed failure — no CI-green claim is made here.",
+    "independent_recompute": {
+      "pypi_404": "curl -o /dev/null -w '%{http_code}' https://pypi.org/pypi/hive-agent-memory/json -> 404; control https://pypi.org/pypi/requests/json -> 200; python3 -m pip index versions hive-agent-memory -> 'No matching distribution found'",
+      "no_release_tag": "git tag -> latest v0.6.1 (no v0.7.0)",
+      "uv_lock": "uv lock --check -> clean at a827980; fails at cadfbc2 (the discard run)",
+      "commit_states": "b2f66e8 all 0.6.1; cadfbc2 pyproject/__init__ 0.7.0 with lock/cpp/helm 0.6.1; ca540a2 all 0.7.0; a827980 all 0.7.0 + source installs + narrowed test"
+    },
+    "reviewer_model": "jev-1.13.0 (TypeSafe), calibrated first: fair-coin probe returned heads=0.49 and a 0.83/0.17 choice spread (a local fallback collapses to 0/1)",
+    "judge": {
+      "model": "jev-1.13.0",
+      "calibration": "fair-coin probe -> heads=0.49, choice spread 0.83/0.17 (a local fallback collapses to 0/1)",
+      "round3_on_clean_commit": {
+        "state_digest": "the version/install/migration/test facts of a827980",
+        "usage": {
+          "input_tokens": 1303,
+          "output_tokens": 183
+        },
+        "cost_usd_estimate": 0.0547,
+        "cost_basis": "input at $42/Mtok (skill-cited), output free",
+        "answers": {
+          "coherence_honesty_score": 2.28,
+          "coherence_score_scale": "0 contradictory .. 3 coherent",
+          "any_false_claim_prob": 0.46,
+          "install_now_works_prob": 0.73,
+          "migration_coherent": 0.94,
+          "test_scope_good": 0.95,
+          "residual_risk": "nothing_released (0.99)"
+        },
+        "honesty_note": "any_false_claim=0.46 is uncertain, NOT a confident all-clear; and round 3 scored 2.28 vs an earlier round's 2.43 on a different digest — both reported, neither cherry-picked",
+        "usage_caveat": "only rounds 3 and the probe had usage captured; earlier rounds' token counts were not recorded"
+      }
+    },
+    "pypi_note": "this package has never been published to public PyPI (as of this audit)"
+  },
+  "harness_invalid_runs": [
+    {
+      "id": "H1",
+      "what": "a fresh-venv install smoke that appeared to prove a packaging bug (`setuptools>=83` unsatisfiable)",
+      "tell": "the smoke used the system `python3` = 3.9.6, below the project's `requires-python >=3.10`; setuptools 83+ declares `Requires-Python: >=3.10`, so pip correctly found no candidate",
+      "resolution": "rerun under Python 3.12.13 (supported): install succeeds -> NO packaging bug. pyproject/CI were NOT changed; the pin `setuptools>=83` is satisfiable on the supported range",
+      "gates_passed": false,
+      "recorded_because": "a failed measurement must not be laundered into a defect report"
+    }
+  ]
+}
