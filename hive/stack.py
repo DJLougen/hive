@@ -503,18 +503,34 @@ class HiveStack:
                 match = (pending_state, pending_decision)
                 break
         if match is None:
-            # Fallback for callers that reconstructed a RouteDecision: scan
-            # newest-first so the most recent matching route wins.
-            for pending_state, pending_decision in reversed(self._pending_decisions):
+            # Fallback for callers that reconstructed a RouteDecision. When
+            # multiple pending routes are structurally identical (common with
+            # no busybee), binding is ambiguous — reject instead of guessing.
+            candidates = [
+                (pending_state, pending_decision)
+                for pending_state, pending_decision in self._pending_decisions
                 if (
                     decision.tool == pending_decision.tool
                     and decision.args == pending_decision.args
                     and decision.source == pending_decision.source
                     and decision.confidence == pending_decision.confidence
                     and decision.escalated == pending_decision.escalated
-                ):
-                    match = (pending_state, pending_decision)
-                    break
+                )
+            ]
+            if len(candidates) == 1:
+                match = candidates[0]
+            elif len(candidates) > 1:
+                _log.warning(
+                    "record_outcome decision matches %d pending routes; "
+                    "rejected — pass the original RouteDecision object",
+                    len(candidates),
+                )
+                self._audit(
+                    "record_outcome_rejected",
+                    tool=decision.tool,
+                    actual_action=actual_action,
+                )
+                return
         if match is None:
             _log.warning(
                 "record_outcome decision does not match a recent route(); "
