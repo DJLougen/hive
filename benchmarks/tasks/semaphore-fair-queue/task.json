@@ -1,0 +1,11 @@
+{
+  "id": "semaphore-fair-queue",
+  "family": "state",
+  "problem_statement": "Our semaphore bounds how many holders run at once, and acquirers that find no permit wait their turn. A permit freed by release is meant to go to whoever has been waiting longest, so a busy service cannot starve an early waiter. Today release wakes the newest waiter instead, so the first in line waits forever while later arrivals keep cutting ahead. Fix that. An acquirer that gives up must never consume a permit: a cancelled waiter is not woken, so a release that finds only cancelled waiters leaves the permit free. Releasing more permits than are held must raise ValueError.",
+  "test_cmd": "python -m pytest smoke -q",
+  "oracle_cmd": "python -m pytest tests -q",
+  "test_timeout_s": 60,
+  "oracle_dir": "oracle",
+  "solution_patch": "oracle/solution.patch",
+  "solutions_public_since": "2026-09-19"
+}

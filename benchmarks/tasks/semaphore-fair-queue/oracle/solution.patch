@@ -1,0 +1,14 @@
+--- a/semaphore/semaphore.py	2026-09-19 09:42:29.394947569 -0400
++++ b/semaphore/semaphore.py	2026-09-19 09:42:29.408791063 -0400
+@@ -41,9 +41,8 @@
+             raise ValueError("release without a matching acquire")
+         self._held -= 1
+         if self._queue:
+-            # FIXME: wakes the newest waiter, not the oldest
+-            woken = self._queue.pop()
+-            _ = woken
++            # longest-waiting first: the queue is FIFO by arrival
++            self._queue.pop(0)
+             self._held += 1
+ 
+     def cancel(self, who: str) -> bool:
