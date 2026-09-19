@@ -114,6 +114,39 @@ def test_corruption_detection_leaves_existing_data_intact():
             os.unlink(path)
 
 
+def test_malformed_node_leaves_existing_data_intact():
+    """A checksum-valid snapshot with a malformed node must not tear the store."""
+    import hashlib
+
+    brain = RustBrain()
+    brain.remember("k1", "v1")
+    brain.remember("k2", "v2")
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".gz") as f:
+        path = f.name
+
+    try:
+        brain.snapshot_to_file(path)
+        with open(path, "rb") as fh:
+            data = json.loads(gzip.decompress(fh.read()).decode("utf-8"))
+        data["nodes"][1].pop("ts_ns")
+        nodes_json = json.dumps(data["nodes"], sort_keys=True, ensure_ascii=False)
+        data["sha256"] = hashlib.sha256(nodes_json.encode("utf-8")).hexdigest()
+        with open(path, "wb") as fh:
+            fh.write(gzip.compress(json.dumps(data).encode("utf-8")))
+
+        target = RustBrain()
+        target.remember("keep", "safe")
+        with pytest.raises(KeyError, match="ts_ns"):
+            target.restore_from_file(path)
+        assert target.recall("keep") == "safe"
+        assert target.recall("k1") is None
+        assert len(target) == 1
+    finally:
+        if os.path.exists(path):
+            os.unlink(path)
+
+
 def test_truncated_snapshot_raises():
     """Raw byte corruption that breaks gzip/JSON framing also fails loudly."""
     brain = RustBrain()

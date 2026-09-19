@@ -290,10 +290,9 @@ class RustBrain:
         if not self._order:
             return
         oldest_key = self._order[0]
-        if oldest_key:
-            self._nodes.pop(oldest_key, None)
-            self._order_index.pop(oldest_key, None)
-            self._history.pop(oldest_key, None)
+        self._nodes.pop(oldest_key, None)
+        self._order_index.pop(oldest_key, None)
+        self._history.pop(oldest_key, None)
         self._evictions += 1
         self._order.pop(0)
         for k in list(self._order_index):
@@ -433,7 +432,7 @@ class RustBrain:
         """Return keys reachable from ``key`` via ``kind`` edges (any kind if
         ``None``)."""
         node = self._nodes.get(key)
-        if node is None:
+        if node is None or self._expired(node):
             return []
         if kind is None:
             out: set[str] = set()
@@ -451,6 +450,8 @@ class RustBrain:
             snapshot = list(self._nodes.values())
         out: list[MemoryNode] = []
         for node in snapshot:
+            if self._expired(node):
+                continue
             if node.trust < min_trust:
                 continue
             if tag is not None and tag not in node.tags:
@@ -466,7 +467,11 @@ class RustBrain:
             # `_order` can hold keys whose node is gone; membership in _nodes is
             # the truth. Filtering on truthiness would silently drop the
             # empty-string key, which is a legal key.
-            return [self._nodes[k].to_dict() for k in self._order if k in self._nodes]
+            return [
+                self._nodes[k].to_dict()
+                for k in self._order
+                if k in self._nodes and not self._expired(self._nodes[k])
+            ]
 
     # -- bulk ---------------------------------------------------------------
 
@@ -634,7 +639,6 @@ class RustBrain:
         def _node_from_dict(node_dict: Mapping[str, Any]) -> MemoryNode:
             ts_ns = node_dict["ts_ns"]
             node_hlc = _parse_hlc(node_dict.get("hlc"), ts_ns=ts_ns)
-            self.update_hlc(node_hlc)
             node = MemoryNode(
                 key=node_dict["key"],
                 value=node_dict["value"],
@@ -649,20 +653,40 @@ class RustBrain:
                     node.attach(kind, n)
             return node
 
+        # Parse the full snapshot before mutating live state so a malformed
+        # node cannot leave the store in a torn partial-restore state.
+        parsed_nodes: list[tuple[str, MemoryNode]] = []
+        max_hlc: tuple[int, int, str] | None = None
+        for node_dict in nodes:
+            node = _node_from_dict(node_dict)
+            storage_key = self._prefix(node.key)
+            parsed_nodes.append((storage_key, node))
+            if max_hlc is None or node.hlc > max_hlc:
+                max_hlc = node.hlc
+
+        parsed_history: dict[str, list[MemoryNode]] = {}
+        for storage_key, chain in history.items():
+            parsed_chain = [_node_from_dict(d) for d in chain]
+            parsed_history[storage_key] = parsed_chain
+            for node in parsed_chain:
+                if max_hlc is None or node.hlc > max_hlc:
+                    max_hlc = node.hlc
+
         with self._lock:
             self._nodes.clear()
             self._order.clear()
             self._order_index.clear()
             self._history.clear()
             self._hlc_high_water = None
-            for node_dict in nodes:
-                node = _node_from_dict(node_dict)
-                storage_key = self._prefix(node.key)
+            for storage_key, node in parsed_nodes:
                 self._nodes[storage_key] = node
                 self._order_index[storage_key] = len(self._order)
                 self._order.append(storage_key)
-            for storage_key, chain in history.items():
-                self._history[storage_key] = [_node_from_dict(d) for d in chain]
+            for storage_key, chain in parsed_history.items():
+                self._history[storage_key] = chain
+            if max_hlc is not None:
+                self._hlc_high_water = max_hlc
+                _hlc.update(max_hlc)
         return len(nodes)
 
     def __repr__(self) -> str:
