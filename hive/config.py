@@ -33,6 +33,23 @@ class HiveConfig:
     otel_endpoint: str | None = None
     prometheus_port: int = 0  # 0 = disabled
 
+    # -- semantic routing (Jev now, d-Jeff later) ---------------------------
+    # Hive depends on the SemanticDecisionBackend protocol, never on a specific
+    # model; these knobs select *which* backend and how it may influence routing.
+    semantic_enabled: bool = False
+    semantic_mode: str = "off"  # off | shadow | cascade | compare
+    semantic_primary: str = "jev"  # jev | djeff
+    semantic_shadow: str | None = None
+    semantic_schema_version: str = "hive-routing-v1"
+    semantic_tool_threshold: float = 0.90
+    semantic_safe_threshold: float = 0.95
+    semantic_reasoning_threshold: float = 0.10
+    semantic_llm_threshold: float = 0.10
+    semantic_max_state_chars: int = 16_000
+    jev_model: str | None = None
+    jev_endpoint: str | None = None
+    djeff_model: str | None = None
+
     @classmethod
     def from_env(cls, prefix: str = "HIVE_") -> HiveConfig:
         """Construct config from environment variables.

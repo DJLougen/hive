@@ -38,6 +38,8 @@ from typing import Any
 
 import numpy as np
 
+from hive.arg_resolvers import resolve_args
+
 _log = logging.getLogger("hive.cpu_policy")
 
 TOOLS = ("list_files", "read_file", "grep", "run_tests", "write_file", "finish")
@@ -94,31 +96,6 @@ def featurize(state: dict[str, Any]) -> list[float]:
         *one_hot,
         *prev2_hot,
     ]
-
-
-def resolve_args(tool: str, state: dict[str, Any]) -> dict[str, Any] | None:
-    """Fill tool args from observable state, or None if not derivable."""
-    if tool in ("list_files", "run_tests", "finish"):
-        return {}
-    if tool == "read_file":
-        path = state.get("suggested_read")
-        if not path or path in (state.get("files_read") or []):
-            return None
-        return {"path": path}
-    if tool == "grep":
-        # Grep the symbol under test: the failing test name or the module
-        # the test file imports are both legitimately observable.
-        sig = str(state.get("fail_signature") or "")
-        for tok in sig.replace("::", " ").split():
-            if tok.startswith("test_"):
-                return {"pattern": tok}
-        return None
-    if tool == "write_file":
-        fix = state.get("recalled_fix")
-        if fix and fix.get("path") and fix.get("content") is not None:
-            return {"path": fix["path"], "content": fix["content"]}
-        return None
-    return None
 
 
 def _make_classifier(name: str) -> Any:

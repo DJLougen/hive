@@ -29,7 +29,16 @@ See :mod:`hive.stack` for the orchestrator.
 from __future__ import annotations
 
 __version__ = "0.7.0"
-__all__ = ["HiveConfig", "HiveStack", "HiveUnavailable", "RouteDecision", "__version__"]
+__all__ = [
+    "CascadeRoutingPolicy",
+    "HiveConfig",
+    "HiveStack",
+    "HiveUnavailable",
+    "RouteDecision",
+    "SemanticBackendError",
+    "SemanticRoutingPolicy",
+    "__version__",
+]
 
 
 def __getattr__(name: str):  # PEP 562 — lazy import
@@ -45,4 +54,14 @@ def __getattr__(name: str):  # PEP 562 — lazy import
         from hive.config import HiveConfig
 
         return HiveConfig
+    if name in ("CascadeRoutingPolicy", "SemanticRoutingPolicy", "SemanticBackendError"):
+        from hive.cascade_policy import CascadeRoutingPolicy
+        from hive.semantic_backend import SemanticBackendError
+        from hive.semantic_policy import SemanticRoutingPolicy
+
+        return {
+            "CascadeRoutingPolicy": CascadeRoutingPolicy,
+            "SemanticRoutingPolicy": SemanticRoutingPolicy,
+            "SemanticBackendError": SemanticBackendError,
+        }[name]
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
