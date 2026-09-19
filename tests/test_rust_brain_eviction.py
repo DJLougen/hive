@@ -31,3 +31,13 @@ def test_eviction_counts_every_entry_dropped() -> None:
     assert len(brain) == 1
     assert brain.stats()["evictions"] == 4
     assert "k4" in brain
+
+
+def test_eviction_drops_empty_string_key_at_capacity() -> None:
+    brain = RustBrain(tenant_isolation=False, max_nodes=1)
+    brain.remember("", 1)
+    brain.remember("k", 2)
+
+    assert brain.recall("") is None
+    assert brain.recall("k") == 2
+    assert len(brain) == 1
