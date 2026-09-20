@@ -182,6 +182,16 @@ def test_eviction_terminates_with_empty_string_key():
     assert brain.stats()["evictions"] == 1
 
 
+def test_eviction_drops_empty_string_key_when_it_is_oldest():
+    """When '' is the LRU entry, a new write must evict it — not lose the write."""
+    brain = RustBrain(tenant_isolation=False, max_nodes=1)
+    brain.remember("", 1)
+    brain.remember("k", 2)
+    assert len(brain) == 1
+    assert brain.recall("k") == 2
+    assert brain.recall("") is None
+
+
 def test_eviction_keeps_order_index_consistent():
     brain = RustBrain(max_nodes=3)
     for i in range(30):
@@ -273,6 +283,28 @@ def test_brain_recall_respects_ttl_without_expire_call():
     time.sleep(0.1)
     assert brain.recall("k") is None
     assert brain.get("k") is None
+
+
+def test_brain_search_and_snapshot_hide_expired_nodes():
+    brain = RustBrain(tenant_isolation=False, default_ttl_s=0.05)
+    brain.remember("k", "v")
+    time.sleep(0.1)
+    assert brain.search() == []
+    assert brain.snapshot() == []
+
+
+def test_restore_leaves_store_unchanged_on_invalid_node(tmp_path):
+    import gzip
+    import json
+
+    brain = RustBrain(tenant_isolation=False)
+    brain.remember("good", 1)
+    path = tmp_path / "bad.snap"
+    data = {"version": "hive-snapshot-v1", "nodes": [{"key": "bad", "value": 1}], "history": {}}
+    path.write_bytes(gzip.compress(json.dumps(data).encode()))
+    with pytest.raises(KeyError):
+        brain.restore_from_file(str(path))
+    assert brain.recall("good") == 1
 
 
 # ---------------------------------------------------------------------------
