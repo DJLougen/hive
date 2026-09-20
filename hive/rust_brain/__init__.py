@@ -290,10 +290,10 @@ class RustBrain:
         if not self._order:
             return
         oldest_key = self._order[0]
-        if oldest_key:
-            self._nodes.pop(oldest_key, None)
-            self._order_index.pop(oldest_key, None)
-            self._history.pop(oldest_key, None)
+        # Empty string is a legal key; truthiness must not skip removal.
+        self._nodes.pop(oldest_key, None)
+        self._order_index.pop(oldest_key, None)
+        self._history.pop(oldest_key, None)
         self._evictions += 1
         self._order.pop(0)
         for k in list(self._order_index):
@@ -433,7 +433,7 @@ class RustBrain:
         """Return keys reachable from ``key`` via ``kind`` edges (any kind if
         ``None``)."""
         node = self._nodes.get(key)
-        if node is None:
+        if node is None or self._expired(node):
             return []
         if kind is None:
             out: set[str] = set()
@@ -451,6 +451,8 @@ class RustBrain:
             snapshot = list(self._nodes.values())
         out: list[MemoryNode] = []
         for node in snapshot:
+            if self._expired(node):
+                continue
             if node.trust < min_trust:
                 continue
             if tag is not None and tag not in node.tags:
@@ -466,7 +468,11 @@ class RustBrain:
             # `_order` can hold keys whose node is gone; membership in _nodes is
             # the truth. Filtering on truthiness would silently drop the
             # empty-string key, which is a legal key.
-            return [self._nodes[k].to_dict() for k in self._order if k in self._nodes]
+            return [
+                self._nodes[k].to_dict()
+                for k in self._order
+                if k in self._nodes and not self._expired(self._nodes[k])
+            ]
 
     # -- bulk ---------------------------------------------------------------
 
@@ -631,10 +637,9 @@ class RustBrain:
                     "snapshot history checksum mismatch: file is corrupt or tampered"
                 )
 
-        def _node_from_dict(node_dict: Mapping[str, Any]) -> MemoryNode:
+        def _node_from_dict(node_dict: Mapping[str, Any]) -> tuple[MemoryNode, tuple[int, int, str]]:
             ts_ns = node_dict["ts_ns"]
             node_hlc = _parse_hlc(node_dict.get("hlc"), ts_ns=ts_ns)
-            self.update_hlc(node_hlc)
             node = MemoryNode(
                 key=node_dict["key"],
                 value=node_dict["value"],
@@ -647,7 +652,15 @@ class RustBrain:
             for kind, neighbours in node_dict.get("edges", {}).items():
                 for n in neighbours:
                     node.attach(kind, n)
-            return node
+            return node, node_hlc
+
+        # Parse the full snapshot before mutating live state. A malformed node
+        # must not clear the store and then fail mid-restore.
+        parsed_nodes = [_node_from_dict(node_dict) for node_dict in nodes]
+        parsed_history = {
+            storage_key: [_node_from_dict(d)[0] for d in chain]
+            for storage_key, chain in history.items()
+        }
 
         with self._lock:
             self._nodes.clear()
@@ -655,14 +668,14 @@ class RustBrain:
             self._order_index.clear()
             self._history.clear()
             self._hlc_high_water = None
-            for node_dict in nodes:
-                node = _node_from_dict(node_dict)
+            for node, node_hlc in parsed_nodes:
+                self.update_hlc(node_hlc)
                 storage_key = self._prefix(node.key)
                 self._nodes[storage_key] = node
                 self._order_index[storage_key] = len(self._order)
                 self._order.append(storage_key)
-            for storage_key, chain in history.items():
-                self._history[storage_key] = [_node_from_dict(d) for d in chain]
+            for storage_key, chain in parsed_history.items():
+                self._history[storage_key] = chain
         return len(nodes)
 
     def __repr__(self) -> str:

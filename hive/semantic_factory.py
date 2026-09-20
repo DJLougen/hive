@@ -100,12 +100,11 @@ def build_semantic_stack(
             record_sink=record_sink,
         )
 
-    cascade_mode = "cascade" if mode in ("cascade", "compare") else mode
     return CascadeRoutingPolicy(
         fast_policy=fast_policy,
         semantic_policy=semantic,
         shadow_semantic_policy=shadow_policy,
-        mode=cascade_mode,
+        mode=mode,
     )
 
 
