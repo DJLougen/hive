@@ -27,10 +27,22 @@ except ModuleNotFoundError as exc:  # pragma: no cover - optional `server` extra
     if exc.name not in {"fastapi", "starlette", "httpx", "httpcore", "anyio"}:
         raise
     TestClient = None  # type: ignore[assignment]
+except RuntimeError as exc:  # pragma: no cover - starlette's own httpx guard
+    # starlette.testclient raises RuntimeError (not ImportError) when httpx is
+    # absent, which otherwise turned "optional dep missing" into a collection
+    # error instead of a skip — but ONLY that exact message may skip; any other
+    # RuntimeError from TestClient (including ones that merely mention httpx)
+    # must still fail loudly.
+    if not str(exc).startswith(
+        "The starlette.testclient module requires the httpx"
+    ):
+        raise
+    TestClient = None  # type: ignore[assignment]
 
 pytestmark_server = pytest.mark.skipif(
     TestClient is None or not api_server._HAS_FASTAPI,
-    reason="optional server dependencies not installed (pip install -e .[server])",
+    reason="optional server deps not installed (pip install -e '.[server,http]' — "
+           "TestClient needs httpx from the http extra)",
 )
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
