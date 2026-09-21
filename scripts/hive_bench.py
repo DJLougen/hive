@@ -54,6 +54,8 @@ try:                                  # imported as a module (tests, other scrip
 except ModuleNotFoundError:           # run directly: sys.path[0] is scripts/
     from trace_bench import wilson
 
+from hive.source_navigation import suggest_reexport
+
 TOOLS = ("list_files", "read_file", "grep", "run_tests", "write_file", "finish")
 MAX_OBSERVATION_CHARS = 24_000
 
@@ -592,8 +594,13 @@ def run_episode(
     log_fh: Any | None = None,
     pass_idx: int = 0,
     temperature: float = 0.0,
+    source_navigation: str = "legacy",
 ) -> AgentResult:
     """Run one real episode: real tools, real LLM, real pytest resolve."""
+    if source_navigation not in ("legacy", "reexports"):
+        raise ValueError(
+            f"source_navigation must be 'legacy' or 'reexports', "
+            f"got {source_navigation!r}")
     uses_hive = arm_uses_hive(arm) and stack is not None
     executor = ToolExecutor(workdir, task.test_cmd, task.test_timeout_s)
     shutil.copytree(task.repo_dir, workdir, dirs_exist_ok=True, ignore=_COPY_IGNORE)
@@ -775,6 +782,17 @@ def run_episode(
                     src = _imports_under_test(observation, executor.workdir)
                     if src and src not in files:
                         state["suggested_read"] = src
+                # A pure re-export facade (``__init__.py`` that only forwards
+                # names from one module) likewise names its own next read.
+                # AST-only, no execution; the existing classify/resolve rules
+                # still decide whether the suggestion is routed.
+                if (source_navigation == "reexports"
+                        and Path(path).name == "__init__.py"):
+                    target = suggest_reexport(
+                        observation, source_path=path,
+                        workdir=executor.workdir, files_read=files)
+                    if target is not None:
+                        state["suggested_read"] = target
         elif tool == "grep":
             observation = executor.grep(args.get("pattern", ""))
         elif tool == "run_tests":
@@ -1395,8 +1413,8 @@ def build_provenance(*, args: Any, stack: Any | None, policy: Any | None,
                 _log.warning(
                     "capability claim at risk: reference fixes for this suite "
                     "have been public since %s — a model trained on this repo "
-                    "may have memorized them; absolute resolve rates are "
-                    "contaminated (routing/cost deltas are not)",
+                    "may have memorized them; both absolute resolve rates and "
+                    "routing/cost deltas may be affected",
                     solutions_public_since)
         except ValueError:
             pass
@@ -1411,6 +1429,9 @@ def build_provenance(*, args: Any, stack: Any | None, policy: Any | None,
         "semantic_mode": (getattr(args, "semantic_mode", None) or "off") if hive_arm else None,
         "semantic_primary": getattr(args, "semantic_primary", None) if hive_arm else None,
         "semantic_shadow": getattr(args, "semantic_shadow", None) if hive_arm else None,
+        # getattr: same minimal-args-namespace reason as the semantic flags —
+        # absent means the run predates the flag, i.e. legacy behaviour.
+        "source_navigation": getattr(args, "source_navigation", None) or "legacy",
         "policy_class": type(queried).__name__ if queried is not None else None,
         "temperature": args.temperature,
         "repeat": args.repeat,
@@ -1467,6 +1488,11 @@ def main() -> int:
                     help="joblib file for --policy trained (see scripts/train_cpu_policy.py)")
     ap.add_argument("--log", default=None,
                     help="JSONL file to log every (state -> action) turn for policy training")
+    ap.add_argument("--source-navigation", choices=["legacy", "reexports"],
+                    default="legacy",
+                    help="'reexports' lets a pure __init__.py facade name its "
+                         "single re-export target as the next read (AST-only, "
+                         "no execution); 'legacy' keeps the original hints")
     ap.add_argument("--repeat", type=int, default=1,
                     help="run the suite N times on one brain — pass 2 exercises memory replay")
     ap.add_argument("--semantic-mode", choices=["off", "shadow", "cascade", "compare"],
@@ -1626,6 +1652,7 @@ def main() -> int:
                             max_turns=args.max_turns, max_tokens=args.max_tokens,
                             workdir=workdir, log_fh=log_fh, pass_idx=rep,
                             temperature=args.temperature,
+                            source_navigation=args.source_navigation,
                         )
                     except Exception:
                         _log.exception("episode %s/%s crashed", task.id, arm)
