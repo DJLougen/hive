@@ -174,7 +174,10 @@ class HiveStack:
         self._native = self._backend == "native"
         self._native_route_model = native_route_model
         self._native_route_warned = False
-        self.brain = rust_brain or RustBrain(
+        # ``is not None``, not truthiness: RustBrain defines __len__, so an
+        # injected but still-empty brain is falsy and ``or`` would silently
+        # replace it with a fresh store.
+        self.brain = rust_brain if rust_brain is not None else RustBrain(
             tenant_id=tenant_id,
             tenant_isolation=self.config.tenant_isolation,
             default_ttl_s=self.config.default_ttl_s,

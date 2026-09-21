@@ -87,16 +87,18 @@ class HybridLogicalClock:
             Tuple of (wall_clock_ns, logical_time, node_id)
         """
         with self._lock:
-            wall_clock = time.time_ns()
-            
-            # If wall clock went backwards (NTP correction), increment logical time
-            if wall_clock <= self._last_wall_clock:
+            physical = time.time_ns()
+            # The wall component never regresses: on an NTP correction or
+            # clock rollback the previous wall clock is retained and the
+            # logical counter carries the tick instead.
+            wall_clock = max(physical, self._last_wall_clock)
+            if wall_clock == self._last_wall_clock:
                 self._logical_time += 1
             else:
                 # Wall clock moved forward, reset logical counter
                 self._logical_time = 0
                 self._last_wall_clock = wall_clock
-            
+
             return (wall_clock, self._logical_time, self.node_id)
     
     def update(self, received_ts: tuple[int, int, str]) -> None:
@@ -108,15 +110,26 @@ class HybridLogicalClock:
         with self._lock:
             their_wall, their_logical, _ = received_ts
             our_wall = time.time_ns()
-            
-            # Take the maximum of our wall clock and theirs
-            max_wall = max(our_wall, their_wall)
-            
-            # If their logical time is >= ours, increment to stay ahead
-            if their_logical >= self._logical_time:
+
+            # Three-way max: local prior wall, physical clock, received wall.
+            # Omitting the local prior would let a stale message drag the
+            # clock backwards and break monotonicity of subsequent now()s.
+            new_wall = max(self._last_wall_clock, our_wall, their_wall)
+
+            if new_wall == self._last_wall_clock == their_wall:
+                # Same wall on both sides: strictly ahead of both logicals.
+                self._logical_time = max(self._logical_time, their_logical) + 1
+            elif new_wall == their_wall:
+                # Their wall dominates: adopt their logical clock + 1.
                 self._logical_time = their_logical + 1
-            
-            self._last_wall_clock = max_wall
+            elif new_wall == self._last_wall_clock:
+                # Our wall dominates: the receive event still consumes a tick.
+                self._logical_time += 1
+            else:
+                # Physical wall moved past both: reset the logical counter.
+                self._logical_time = 0
+
+            self._last_wall_clock = new_wall
 
 
 # Global HLC instance for this process
@@ -686,7 +699,10 @@ class HermesBackend:
     """
 
     def __init__(self, brain: RustBrain | None = None) -> None:
-        self.brain = brain or RustBrain()
+        # ``is not None``, not truthiness: RustBrain defines __len__, so an
+        # injected but still-empty brain is falsy and ``or`` would silently
+        # replace it with a fresh store.
+        self.brain = brain if brain is not None else RustBrain()
 
     def publish(self, event: Mapping[str, Any]) -> MemoryNode:
         """Translate a Hermes memory event into a brain write.
