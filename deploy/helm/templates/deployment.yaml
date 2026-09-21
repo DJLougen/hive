@@ -5,7 +5,14 @@ metadata:
   labels:
     app: {{ .Chart.Name }}
 spec:
+  {{- if gt (int .Values.replicaCount) 1 }}
+  {{- fail "replicaCount > 1 is not supported: Hive memory is per-pod local state and replicas would diverge — see deploy/README.md" }}
+  {{- end }}
   replicas: {{ .Values.replicaCount }}
+  # Recreate: two overlapping pods would serve divergent local memory and
+  # race on the same snapshot file. Never run old+new simultaneously.
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: {{ .Chart.Name }}
@@ -32,6 +39,10 @@ spec:
                   name: {{ .Release.Name }}-api
                   key: HIVE_API_TOKEN
             {{- range $key, $val := .Values.env }}
+            - name: {{ $key }}
+              value: "{{ $val }}"
+            {{- end }}
+            {{- range $key, $val := .Values.serverEnv }}
             - name: {{ $key }}
               value: "{{ $val }}"
             {{- end }}

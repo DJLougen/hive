@@ -5,7 +5,13 @@ metadata:
   labels:
     app: hive
 spec:
-  replicas: 2
+  # Single replica: memory is per-pod local state (see deploy/README.md).
+  # More than one replica silently diverges — do not scale this.
+  replicas: 1
+  # Recreate: two overlapping pods would serve divergent local memory and
+  # race on the same snapshot file. Never run old+new simultaneously.
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: hive
@@ -16,11 +22,15 @@ spec:
     spec:
       containers:
         - name: hive
-          # No published image ships the API server today. Build one from
-          # this repo, e.g.:
-          #   docker build -f docker/Dockerfile.aarch64 -t hive:aarch64 .
-          # (that Dockerfile installs fastapi/uvicorn and defaults to the
-          # command below), or any image with `pip install .[server]`.
+          # No published image ships the API server today — replace this with
+          # an image you built. docker/Dockerfile.aarch64 builds one, but its
+          # build context is the PARENT directory of this checkout (it COPYs
+          # the sibling busyBee-cpu/ and honey-comb/ trees):
+          #   cd .. && docker build -f hive/docker/Dockerfile.aarch64 -t hive:aarch64 .
+          # then reference hive:aarch64 here (locally) or push to your
+          # registry. Any custom image must contain this source tree —
+          # `pip install .[server]` alone does NOT install
+          # scripts/hive_api_server.py (it is not a packaged module).
           image: ghcr.io/djlougen/hive:latest
           # scripts/hive_api_server.py serves /health, /ready, /route,
           # /compress, /remember, /recall on this port.
@@ -29,19 +39,27 @@ spec:
           ports:
             - containerPort: 8080
               name: http
+          # HiveConfig fields (rate limit, tenant isolation, TTL, max nodes)
+          # come from the hive-config ConfigMap — edit configmap.yaml, not
+          # here. Server-specific vars stay inline below; the token comes
+          # from the hive-api Secret.
+          envFrom:
+            - configMapRef:
+                name: hive-config
           env:
             - name: HIVE_API_TOKEN
               valueFrom:
                 secretKeyRef:
                   name: hive-api
                   key: HIVE_API_TOKEN
-            - name: HIVE_HEALTH_BIND
-              value: "0.0.0.0"
-            - name: HIVE_RATE_LIMIT
-              value: "1000"
-            - name: HIVE_TENANT_ISOLATION
-              value: "true"
-            - name: HIVE_VALIDATE_INPUTS
+            # Server-specific env (scripts/hive_api_server.py):
+            # off = no routing policy loaded, /route escalates everything;
+            # rule = local rule-based policy. No paid/unsafe implicit loads.
+            - name: HIVE_ROUTING_POLICY
+              value: "off"
+            # Production gate: the server refuses to start if HIVE_API_TOKEN
+            # is missing or a placeholder (see secret.yaml — replace it).
+            - name: HIVE_PRODUCTION
               value: "true"
           livenessProbe:
             httpGet:

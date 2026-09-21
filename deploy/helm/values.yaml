@@ -1,8 +1,15 @@
-replicaCount: 2
+# Memory is per-pod local state (see deploy/README.md): more than one
+# replica silently diverges, so the chart refuses replicaCount > 1.
+replicaCount: 1
 
 image:
-  # No published image ships the API server today. Build one from this repo
-  # (see docker/Dockerfile.aarch64) or any image with `pip install .[server]`.
+  # No published image ships the API server today — point this at an image
+  # you built. docker/Dockerfile.aarch64 builds one, but its build context
+  # is the PARENT directory of this checkout (it COPYs the sibling
+  # busyBee-cpu/ and honey-comb/ trees):
+  #   cd .. && docker build -f hive/docker/Dockerfile.aarch64 -t hive:aarch64 .
+  # Any custom image must contain this source tree: `pip install .[server]`
+  # alone does NOT install scripts/hive_api_server.py (not a packaged module).
   repository: ghcr.io/djlougen/hive
   tag: latest
   pullPolicy: IfNotPresent
@@ -26,15 +33,28 @@ resources:
     cpu: 500m
 
 # These names map to HiveConfig dataclass fields (hive/config.py), read via
-# HiveConfig.from_env(). NOTE: scripts/hive_api_server.py does not call
-# from_env() today — these take effect only for consumers that build a
-# HiveStack with a HiveConfig.
+# HiveConfig.from_env() by scripts/hive_api_server.py at startup.
 env:
   HIVE_RATE_LIMIT: "1000"
   HIVE_TENANT_ISOLATION: "true"
   HIVE_VALIDATE_INPUTS: "true"
   HIVE_DEFAULT_TTL_S: "86400"
   HIVE_MAX_MEMORY_NODES: "10000"
+# Server-specific env (scripts/hive_api_server.py):
+#   HIVE_ROUTING_POLICY  off|rule — off (default) loads no routing policy
+#                        and escalates every /route; rule uses the local
+#                        rule-based policy. No paid/unsafe implicit loads.
+#   HIVE_PRODUCTION      when true, HIVE_API_TOKEN must be a real token —
+#                        the server refuses to start on a missing or
+#                        placeholder value. The chart already requires
+#                        apiToken, so production posture is on here.
+#   HIVE_MEMORY_SNAPSHOT optional path for atomic per-pod snapshot
+#                        persistence; the chart ships no volume wiring —
+#                        add a PVC/volumeMount to the pod spec yourself or
+#                        snapshots die with the pod (see deploy/README.md).
+serverEnv:
+  HIVE_ROUTING_POLICY: "off"
+  HIVE_PRODUCTION: "true"
 
 livenessProbe:
   path: /health

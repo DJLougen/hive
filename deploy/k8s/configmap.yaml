@@ -4,10 +4,11 @@ metadata:
   name: hive-config
 data:
   # These names map to HiveConfig dataclass fields (hive/config.py), read via
-  # HiveConfig.from_env(). NOTE: scripts/hive_api_server.py does not call
-  # from_env() today — these take effect only for consumers that build a
-  # HiveStack with a HiveConfig. The server reads HIVE_API_TOKEN directly
-  # (see secret.yaml / deployment.yaml).
+  # HiveConfig.from_env() by scripts/hive_api_server.py at startup. The pod
+  # consumes this map wholesale via envFrom in deployment.yaml — every key
+  # here must be a valid HIVE_<field> name. Server-specific vars
+  # (HIVE_ROUTING_POLICY, HIVE_PRODUCTION, HIVE_MEMORY_SNAPSHOT) are set
+  # inline in deployment.yaml; the token lives in secret.yaml.
   HIVE_RATE_LIMIT: "1000"
   HIVE_TENANT_ISOLATION: "true"
   HIVE_VALIDATE_INPUTS: "true"
