@@ -122,11 +122,15 @@ class MyChatbot:
 from hive import HiveStack
 from hive.harness import load_routing_policy
 
+import time  # used by CodeAgent.edit_file
+
 stack = HiveStack(busybee_policy=load_routing_policy())
 # The rule-based fallback routes list_files / run_tests / read_file /
 # apply_patch and escalates anything that needs judgment.
 
 class CodeAgent:
+    # `self.ask_llm(...)` / `self.search(...)` are your own model calls — Hive
+    # only decides when to skip them.
     def edit_file(self, filepath, instruction):
         # Remember what we did
         stack.remember(filepath, {
