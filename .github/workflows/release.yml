@@ -63,9 +63,43 @@ jobs:
           name: sdist
           path: dist/*.tar.gz
 
+  # Gate: the exact artifacts about to be published must install and import
+  # before anything reaches PyPI. publish-pypi needs this job, so a broken
+  # wheel blocks the release instead of shipping.
+  validate-release:
+    name: Validate built artifacts
+    needs: [build-wheels, build-sdist]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v8
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Verify the locally built wheel installs and imports
+        # Install the exact wheel file built in this workflow — NOT a
+        # `pip install <package>` resolver lookup pointed at dist/, which
+        # can fall back to whatever PyPI already has and validate a stale
+        # published package instead of this build.
+        run: |
+          python -m pip install dist/hive_agent_memory-*.whl
+          python - <<'PY'
+          import os
+          import hive, hive.rust_brain
+          tag = os.environ["GITHUB_REF_NAME"].lstrip("v")
+          assert hive.__version__ == tag, f"wheel {hive.__version__} != tag {tag}"
+          print("installed wheel version:", hive.__version__)
+          PY
+
   publish-pypi:
     name: Publish to PyPI
-    needs: [build-wheels, build-sdist]
+    needs: [validate-release]
     runs-on: ubuntu-latest
     environment: pypi
     permissions:
@@ -77,16 +111,6 @@ jobs:
           path: dist
           merge-multiple: true
 
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Verify built wheel installs and imports
-        run: |
-          python -m pip install --find-links dist hive-agent-memory
-          python -c "import hive, hive.rust_brain; print(hive.__version__)"
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
@@ -94,7 +118,9 @@ jobs:
 
   create-release:
     name: Create GitHub Release
-    needs: [build-wheels, build-sdist]
+    # The GitHub release advertises the artifacts — it must not exist for a
+    # version that never reached PyPI.
+    needs: [publish-pypi]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7

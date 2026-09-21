@@ -3,6 +3,9 @@ name: hive-ci
 on:
   push:
     branches: [main]
+    # Tag pushes must reach the rust-wheels job below — without this the
+    # `startsWith(github.ref, 'refs/tags/v')` condition can never fire.
+    tags: ['v*']
   pull_request:
     branches: [main]
   schedule:
@@ -259,8 +262,22 @@ jobs:
         include:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
-          - os: ubuntu-latest
-            target: aarch64-unknown-linux-gnu
+          # aarch64-unknown-linux-gnu is deliberately NOT listed here. On an
+          # x86 ubuntu-latest runner this leg cannot succeed today: (a) there is
+          # no aarch64 cross linker (gcc-aarch64-linux-gnu) installed, and
+          # (b) hive-cpp's pyo3 dependency has no `abi3` feature, so PyO3 needs
+          # PYO3_CROSS_LIB_DIR pointing at a target interpreter. Listing it made
+          # every `v*` tag push fail that leg with no way to produce the wheel.
+          # Restore it only with one of:
+          #   1. a manylinux aarch64 container that ships the cross toolchain
+          #      (e.g. run maturin build --target aarch64-unknown-linux-gnu
+          #      inside ghcr.io/pyo3/maturin), or
+          #   2. explicit cross provisioning on the runner:
+          #      apt-get install -y gcc-aarch64-linux-gnu
+          #      CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc
+          #      PYO3_CROSS=1 PYO3_CROSS_LIB_DIR=<target libpython dir>
+          # Note this job's wheels are CI artifacts only — release.yml does not
+          # consume them, so no published artifact is missing while it is off.
           - os: macos-latest
             target: x86_64-apple-darwin
           - os: macos-latest
