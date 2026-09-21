@@ -1,0 +1,175 @@
+#!/usr/bin/env bash
+# hive-pi — launch Pi 0.85.1 (@earendil-works/pi-coding-agent) with the Hive
+# collector extension and an isolated agent dir.
+#
+# This script resolves the real hive repo through its own symlink, so the
+# ~/.local/bin/hive-pi link Main installs keeps working from any cwd.
+# It never copies credentials, never auto-approves project trust, and never
+# changes provider permissions. OMP is untouched.
+#
+# Usage:
+#   hive-pi [pi args...]        interactive or -p/--mode sessions, Hive attached
+#   hive-pi --hive-mode <mode>  off | observe | compress (default: observe;
+#                             overrides env HIVE_PI_MODE; unrecognized
+#                             values fall back to observe)
+#   hive-pi --hive-report [args]  run the local evidence report and exit
+#   hive-pi --hive-help         this text
+#
+# Environment overrides:
+#   HIVE_PI_RUNTIME   install prefix holding node_modules/@earendil-works/
+#                     pi-coding-agent (default ~/.local/share/hive/pi-runtime)
+#   HIVE_PI_PYTHON    Python for the bridge/report (default repo .venv)
+#   HIVE_PI_BRIDGE    bridge script (default <repo>/scripts/hive_pi.py)
+#   HIVE_PI_DATA_DIR  event output dir (default ~/.local/share/hive/pi/events)
+#   PI_CODING_AGENT_DIR  Pi agent dir (default ~/.local/share/hive/pi-agent)
+
+set -euo pipefail
+
+PINNED_PI_VERSION="0.85.1"
+MIN_NODE_MAJOR=22
+MIN_NODE_MINOR=19
+
+# --- resolve the real repo root through the symlink -------------------------
+SOURCE="$0"
+while [ -h "$SOURCE" ]; do
+  DIR="$(cd -P "$(dirname "$SOURCE")" >/dev/null 2>&1 && pwd)"
+  SOURCE="$(readlink "$SOURCE")"
+  case "$SOURCE" in
+    /*) ;;
+    *) SOURCE="$DIR/$SOURCE" ;;
+  esac
+done
+SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" >/dev/null 2>&1 && pwd)"
+REPO_ROOT="$(cd -P "$SCRIPT_DIR/../.." >/dev/null 2>&1 && pwd)"
+
+HIVE_EXT="$SCRIPT_DIR/hive.ts"
+HIVE_PI_RUNTIME="${HIVE_PI_RUNTIME:-$HOME/.local/share/hive/pi-runtime}"
+PI_PKG="$HIVE_PI_RUNTIME/node_modules/@earendil-works/pi-coding-agent"
+PI_CLI="$PI_PKG/dist/bundle/cli.js"
+HIVE_PI_PYTHON="${HIVE_PI_PYTHON:-$REPO_ROOT/.venv/bin/python}"
+HIVE_PI_BRIDGE="${HIVE_PI_BRIDGE:-$REPO_ROOT/scripts/hive_pi.py}"
+
+export PI_CODING_AGENT_DIR="${PI_CODING_AGENT_DIR:-$HOME/.local/share/hive/pi-agent}"
+export HIVE_PI_DATA_DIR="${HIVE_PI_DATA_DIR:-$HOME/.local/share/hive/pi/events}"
+export HIVE_PI_PYTHON HIVE_PI_BRIDGE
+export PI_OFFLINE=1
+export PI_TELEMETRY=0
+
+die() { printf 'hive-pi: %s\n' "$*" >&2; exit 2; }
+
+hive_help() {
+  cat <<'EOF'
+hive-pi — Pi 0.85.1 with the Hive collector extension (isolated agent dir).
+
+  hive-pi [pi args...]          run Pi; all args after the hive-* flags are
+                                forwarded verbatim (e.g. hive-pi -p "task",
+                                hive-pi -c, hive-pi --mode json "task")
+  hive-pi --hive-mode MODE      off | observe | compress (default observe;
+                                overrides HIVE_PI_MODE env var;
+                                unrecognized values fall back to observe)
+  hive-pi --hive-report [--json] [--strict] [--data-dir DIR]
+                                print the local evidence report and exit
+  hive-pi --hive-help           this help
+
+Modes:
+  off       collector disabled; no event file is written
+  observe   metadata-only JSONL events (usage, tool categories, context byte
+            counters); message content is never logged
+  compress  observe plus opt-in context compression of OLD successful bash
+            test-output tool results via the local Python bridge; the saved
+            transcript is never rewritten
+
+Login:
+  Run `hive-pi` with no prompt, then `/login` and pick your provider
+  (OAuth/subscription or API key). Credentials live only in the isolated
+  agent dir ($PI_CODING_AGENT_DIR/auth.json). Nothing is copied from OMP or
+  any other agent.
+
+Caveats:
+  - --no-approve is passed every run: project-local Pi resources are NOT
+    trusted or auto-approved. Provider permissions are unchanged.
+  - PI_OFFLINE=1 disables startup network work only; it is not a sandbox and
+    does not block inference/login HTTP. Extensions and tools still run with
+    your full user permissions.
+  - compress shells out to scripts/hive_pi.py (local subprocess, no network,
+    no model). A bridge failure leaves context unchanged.
+EOF
+}
+
+need_node() {
+  command -v node >/dev/null 2>&1 || die "node not found on PATH; Pi $PINNED_PI_VERSION requires Node >= $MIN_NODE_MAJOR.$MIN_NODE_MINOR"
+  local ver major minor
+  ver="$(node -p 'process.versions.node' 2>/dev/null)" || die "cannot run node -p; check your Node install"
+  major="${ver%%.*}"; minor="${ver#*.}"; minor="${minor%%.*}"
+  if [ "$major" -lt "$MIN_NODE_MAJOR" ] || { [ "$major" -eq "$MIN_NODE_MAJOR" ] && [ "$minor" -lt "$MIN_NODE_MINOR" ]; }; then
+    die "node $ver is too old; Pi $PINNED_PI_VERSION requires Node >= $MIN_NODE_MAJOR.$MIN_NODE_MINOR"
+  fi
+}
+
+need_pi() {
+  [ -f "$PI_CLI" ] || die "Pi CLI not found at $PI_CLI
+  expected @earendil-works/pi-coding-agent@$PINNED_PI_VERSION under HIVE_PI_RUNTIME=$HIVE_PI_RUNTIME
+  install: npm install --prefix \"$HIVE_PI_RUNTIME\" @earendil-works/pi-coding-agent@$PINNED_PI_VERSION"
+  local ver
+  ver="$(node -p 'require(process.argv[1]).version' "$PI_PKG/package.json" 2>/dev/null)" \
+    || die "cannot read $PI_PKG/package.json"
+  [ "$ver" = "$PINNED_PI_VERSION" ] || die "installed Pi is $ver, expected $PINNED_PI_VERSION (set HIVE_PI_RUNTIME to the pinned install prefix)"
+}
+
+need_bridge() {
+  [ -x "$HIVE_PI_PYTHON" ] || die "HIVE_PI_PYTHON not executable: $HIVE_PI_PYTHON (expected the repo .venv interpreter)"
+  [ -f "$HIVE_PI_BRIDGE" ] || die "HIVE_PI_BRIDGE not found: $HIVE_PI_BRIDGE (expected <repo>/scripts/hive_pi.py)"
+}
+
+# --- hive-owned flags --------------------------------------------------------
+case "${1:-}" in
+  --hive-help)
+    hive_help; exit 0 ;;
+  --hive-report)
+    shift
+    # The report is Python-only: no Node or Pi runtime required.
+    need_bridge
+    exec "$HIVE_PI_PYTHON" "$HIVE_PI_BRIDGE" report "$@" ;;
+esac
+
+# --- preflight ---------------------------------------------------------------
+# Effective mode mirrors the extension exactly: --hive-mode flag >
+# HIVE_PI_MODE env > "observe"; values are trimmed and lowercased, and
+# anything unrecognized falls back to "observe". The flag is forwarded
+# verbatim to Pi below; here it only decides whether the Python bridge
+# is required up front.
+HIVE_MODE=""
+prev=""
+for a in "$@"; do
+  if [ "$prev" = "--hive-mode" ]; then HIVE_MODE="$a"; fi
+  case "$a" in --hive-mode=*) HIVE_MODE="${a#--hive-mode=}" ;; esac
+  prev="$a"
+done
+if [ -z "$HIVE_MODE" ]; then HIVE_MODE="${HIVE_PI_MODE:-observe}"; fi
+HIVE_MODE="$(printf '%s' "$HIVE_MODE" | tr '[:upper:]' '[:lower:]')"
+HIVE_MODE="${HIVE_MODE#"${HIVE_MODE%%[![:space:]]*}"}"
+HIVE_MODE="${HIVE_MODE%"${HIVE_MODE##*[![:space:]]}"}"
+case "$HIVE_MODE" in
+  off|observe|compress) ;;
+  *) HIVE_MODE="observe" ;;
+esac
+
+need_node
+need_pi
+[ -f "$HIVE_EXT" ] || die "Hive extension not found at $HIVE_EXT"
+if [ "$HIVE_MODE" = "compress" ]; then
+  need_bridge
+fi
+
+# --- launch ------------------------------------------------------------------
+# Discovery is fully disabled; only our extension loads explicitly. Project
+# trust is never auto-approved. Context files stay enabled: AGENTS.md is
+# normal project input, not a discovery extension.
+exec node "$PI_CLI" \
+  --no-extensions \
+  --no-skills \
+  --no-prompt-templates \
+  --no-themes \
+  --no-approve \
+  -e "$HIVE_EXT" \
+  "$@"
