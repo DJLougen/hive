@@ -39,7 +39,8 @@ CPU_POLICY = "docs/benchmarks/hive-bench-cpu-policy.json"
 CAPABILITY = "docs/benchmarks/hive-bench-capability.json"  # 5 repeats x 6 held-out tasks, 3 arms
 HARD = "docs/benchmarks/hive-bench-hard.json"  # 15 repeats x 6 held-out tasks, 3 arms
 BENCH_README = "benchmarks/README.md"  # all benchmark detail lives here now
-TRAINED = "docs/benchmarks/hive-bench-hard-trained.json"  # hard tier, TRAINED policy, hard tier held out of training
+TRAINED = "docs/benchmarks/hive-bench-hard-trained.json"  # hard tier, TRAINED policy (checkpoint provenance unverifiable)
+NEW2 = "docs/benchmarks/hive-bench-hard-new2.json"  # 2-task ceiling annex, reported separately
 
 CHECKS: list[dict] = [
     # ---- A1: real-workload A/B table (summary of hive-bench-flash.json) ----
@@ -254,30 +255,30 @@ CHECKS: list[dict] = [
     # ---- capability bench: held-out tasks, 3 arms, verdicts ----
     {
         "label": "capability baseline resolve rate",
-        "kind": "single",
+        "kind": "multi",
         "artifact": CAPABILITY,
-        "path": "summary.baseline.resolve_rate",
-        "percent": True,
+        "paths": [{"path": "summary.baseline.resolve_rate", "percent": True},
+                  "summary.baseline.resolved", "summary.baseline.tasks"],
         "abs_tol": 0.5,
-        "regex": r"^\| baseline \| \*\*([\d.]+)%\*\* \(",
+        "regex": r"^\| baseline \| \*\*([\d.]+)%\*\* \((\d+)/(\d+)\)",
     },
     {
         "label": "capability context resolve rate",
-        "kind": "single",
+        "kind": "multi",
         "artifact": CAPABILITY,
-        "path": "summary.context.resolve_rate",
-        "percent": True,
+        "paths": [{"path": "summary.context.resolve_rate", "percent": True},
+                  "summary.context.resolved", "summary.context.tasks"],
         "abs_tol": 0.5,
-        "regex": r"^\| context \| \*\*([\d.]+)%\*\* \(",
+        "regex": r"^\| context \| \*\*([\d.]+)%\*\* \((\d+)/(\d+)\)",
     },
     {
         "label": "capability hive resolve rate",
-        "kind": "single",
+        "kind": "multi",
         "artifact": CAPABILITY,
-        "path": "summary.hive.resolve_rate",
-        "percent": True,
+        "paths": [{"path": "summary.hive.resolve_rate", "percent": True},
+                  "summary.hive.resolved", "summary.hive.tasks"],
         "abs_tol": 0.5,
-        "regex": r"^\| hive \| \*\*([\d.]+)%\*\* \(",
+        "regex": r"^\| hive \| \*\*([\d.]+)%\*\* \((\d+)/(\d+)\)",
     },
     {
         "label": "capability baseline pass^5",
@@ -369,78 +370,172 @@ CHECKS: list[dict] = [
         "abs_tol": 1e-4,
         "regex": r"baseline vs context: \*\*\w+\*\* \(p=([\d.]+)\)",
     },
-    # ---- hard tier: the README headline table ----
-    # README headline table is 3-arm: | label | baseline | context | hive |
+    # ---- hard tier: the README + RELEASE_NOTES headline table (numerators, denominators, percentages) ----
     {
-        "label": "hard hive resolve count (README headline)",
-        "kind": "single",
-        "file": "README.md",
+        "label": "hard resolve counts (README + RELEASE_NOTES headline)",
+        "kind": "multi",
+        "file": ["README.md", "docs/RELEASE_NOTES.md"],
         "artifact": HARD,
-        "path": "summary.hive.resolved",
+        "paths": ["summary.baseline.resolved", "summary.baseline.tasks",
+                  {"path": "summary.baseline.resolve_rate", "percent": True},
+                  "summary.context.resolved", "summary.context.tasks",
+                  {"path": "summary.context.resolve_rate", "percent": True},
+                  "summary.hive.resolved", "summary.hive.tasks",
+                  {"path": "summary.hive.resolve_rate", "percent": True}],
         "abs_tol": 0.5,
-        "regex": r"^\| \*\*Resolve rate\*\* \| \d+/\d+ \(\d+%\) \| \d+/\d+ \(\d+%\) \| \*\*(\d+)/\d+ \(\d+%\)\*\*",
+        "regex": r"^\| \*\*Resolve rate\*\* \| (\d+)/(\d+) \((\d+)%\) \| (\d+)/(\d+) \((\d+)%\) \| \*\*(\d+)/(\d+) \((\d+)%\)\*\*",
     },
     {
-        "label": "hard hive mean LLM calls (README headline)",
-        "kind": "single",
-        "file": "README.md",
+        "label": "hard mean LLM calls (README + RELEASE_NOTES headline)",
+        "kind": "multi",
+        "file": ["README.md", "docs/RELEASE_NOTES.md"],
         "artifact": HARD,
-        "path": "summary.hive.mean_llm_calls",
-        "regex": r"^\| \*\*Mean LLM calls\*\* \| [\d.]+ \| [\d.]+ \| \*\*([\d.]+)\*\*",
+        "paths": ["summary.baseline.mean_llm_calls",
+                  "summary.context.mean_llm_calls", "summary.hive.mean_llm_calls"],
+        "regex": r"^\| \*\*Mean LLM calls\*\* \| ([\d.]+) \| ([\d.]+) \| \*\*([\d.]+)\*\*",
     },
     {
-        "label": "hard hive usd total (README headline)",
-        "kind": "single",
-        "file": "README.md",
+        "label": "hard usd totals (README + RELEASE_NOTES headline)",
+        "kind": "multi",
+        "file": ["README.md", "docs/RELEASE_NOTES.md"],
         "artifact": HARD,
-        "path": "summary.hive.usd_total",
+        "paths": ["summary.baseline.usd_total", "summary.context.usd_total",
+                  "summary.hive.usd_total"],
         "abs_tol": 2e-3,
-        "regex": r"^\| \*\*Total cost\*\* \| \$[\d.]+ \| \$[\d.]+ \| \*\*\$([\d.]+)\*\*",
+        "regex": r"^\| \*\*Total cost \(est\.\)\*\* \| \$([\d.]+) \| \$([\d.]+) \| \*\*\$([\d.]+)\*\*",
     },
-    # benchmarks/README hard tier: per-task total row + per-arm summary rows
     {
-        "label": "hard baseline resolve count (benchmarks/README total row)",
-        "kind": "single",
-        "file": BENCH_README,
+        "label": "hard McNemar context cell (README + RELEASE_NOTES)",
+        "kind": "comparison",
+        "file": ["README.md", "docs/RELEASE_NOTES.md"],
         "artifact": HARD,
-        "path": "summary.baseline.resolved",
+        "pair": "baseline_vs_context",
+        "p_group": 1,
+        "verdict_group": 0,
+        "verdict_path": "summary.comparisons.baseline_vs_context.verdict",
+        "abs_tol": 1e-4,
+        "regex": r"^\| \*\*McNemar vs baseline\*\* \| — \| (\w+) \(p=([\d.]+)\)",
+    },
+    {
+        "label": "hard McNemar hive cell (README + RELEASE_NOTES)",
+        "kind": "comparison",
+        "file": ["README.md", "docs/RELEASE_NOTES.md"],
+        "artifact": HARD,
+        "pair": "baseline_vs_hive",
+        "p_group": 1,
+        "verdict_group": 0,
+        "verdict_path": "summary.comparisons.baseline_vs_hive.verdict",
+        "abs_tol": 1e-4,
+        "regex": r"\| \*\*(\w+) \(p=([\d.]+)\)\*\* \|$",
+    },
+    # benchmarks/README hard tier: every per-task row, the total row, every arm row
+    *[
+        {
+            "label": f"hard per-task row: {task}",
+            "kind": "task_row",
+            "file": [BENCH_README, "docs/benchmarks/PROVENANCE.md"],
+            "artifact": HARD,
+            "task": task,
+            "arms": ["baseline", "context", "hive"],
+            "regex": rf"^\| {re.escape(task)} \| (\d+)/(\d+) \| (\d+)/(\d+) \| (\d+)/(\d+) \|",
+        }
+        for task in ("sliding-window-limit", "snapshot-event-fold",
+                     "kway-merge-dedup", "reservation-expiry",
+                     "idempotent-outbox", "lru-ttl-cache")
+    ],
+    {
+        "label": "hard total row (benchmarks/README + PROVENANCE)",
+        "kind": "multi",
+        "file": [BENCH_README, "docs/benchmarks/PROVENANCE.md"],
+        "artifact": HARD,
+        "paths": ["summary.baseline.resolved", "summary.baseline.tasks",
+                  {"path": "summary.baseline.resolve_rate", "percent": True},
+                  "summary.context.resolved", "summary.context.tasks",
+                  {"path": "summary.context.resolve_rate", "percent": True},
+                  "summary.hive.resolved", "summary.hive.tasks",
+                  {"path": "summary.hive.resolve_rate", "percent": True}],
         "abs_tol": 0.5,
-        "regex": r"^\| \*\*Total\*\* \| \*\*(\d+)/\d+ \(\d+%\)\*\* \| \*\*\d+/\d+ \(\d+%\)\*\* \| \*\*\d+/\d+ \(\d+%\)\*\*",
+        "regex": r"^\| \*\*Total\*\* \| \*\*(\d+)/(\d+) \((\d+)%\)\*\* \| \*\*(\d+)/(\d+) \((\d+)%\)\*\* \| \*\*(\d+)/(\d+) \((\d+)%\)\*\*",
+    },
+    *[
+        {
+            "label": f"hard {arm} cost row (benchmarks/README)",
+            "kind": "multi",
+            "file": BENCH_README,
+            "artifact": HARD,
+            "paths": [f"summary.{arm}.mean_llm_calls", f"summary.{arm}.usd_total",
+                      f"summary.{arm}.usd_per_resolved_task"],
+            "abs_tol": 2e-3,
+            "regex": rf"^\| {arm} \| \*?\*?([\d.]+)\*?\*? \| \*?\*?\$([\d.]+)\*?\*? \| \*?\*?\$([\d.]+)",
+        }
+        for arm in ("baseline", "context", "hive")
+    ],
+    # ---- two-task ceiling annex (reported separately, still gated) ----
+    {
+        "label": "new2 baseline row (benchmarks/README)",
+        "kind": "multi",
+        "file": BENCH_README,
+        "artifact": NEW2,
+        "paths": ["summary.baseline.resolved", "summary.baseline.tasks",
+                  {"path": "summary.baseline.resolve_rate", "percent": True, "abs_tol": 0.5},
+                  {"path": "summary.baseline.mean_llm_calls", "abs_tol": 2e-3},
+                  {"path": "summary.baseline.usd_total", "abs_tol": 2e-3}],
+        "abs_tol": 0.5,
+        "regex": r"^\| baseline \| (\d+)/(\d+) \((\d+)%\) \| ([\d.]+) \| \$([\d.]+) \|",
     },
     {
-        "label": "hard hive mean LLM calls (benchmarks/README hive row)",
-        "kind": "single",
+        "label": "new2 context row (benchmarks/README)",
+        "kind": "multi",
         "file": BENCH_README,
-        "artifact": HARD,
-        "path": "summary.hive.mean_llm_calls",
-        "regex": r"^\| hive \| \*\*([\d.]+)\*\* \| \*\*\$[\d.]+\*\* \| \*\*\$",
+        "artifact": NEW2,
+        "paths": ["summary.context.resolved", "summary.context.tasks",
+                  {"path": "summary.context.resolve_rate", "percent": True, "abs_tol": 0.5},
+                  {"path": "summary.context.mean_llm_calls", "abs_tol": 2e-3},
+                  {"path": "summary.context.usd_total", "abs_tol": 2e-3}],
+        "abs_tol": 0.5,
+        "regex": r"^\| context \| (\d+)/(\d+) \((\d+)%\) \| ([\d.]+) \| \$([\d.]+) \|",
     },
     {
-        "label": "hard hive usd total (benchmarks/README hive row)",
-        "kind": "single",
+        "label": "new2 hive row (benchmarks/README)",
+        "kind": "multi",
         "file": BENCH_README,
-        "artifact": HARD,
-        "path": "summary.hive.usd_total",
-        "abs_tol": 2e-3,
-        "regex": r"^\| hive \| \*\*[\d.]+\*\* \| \*\*\$([\d.]+)\*\* \| \*\*\$",
+        "artifact": NEW2,
+        "paths": ["summary.hive.resolved", "summary.hive.tasks",
+                  {"path": "summary.hive.resolve_rate", "percent": True, "abs_tol": 0.5},
+                  {"path": "summary.hive.mean_llm_calls", "abs_tol": 2e-3},
+                  {"path": "summary.hive.usd_total", "abs_tol": 2e-3}],
+        "abs_tol": 0.5,
+        "regex": r"^\| hive \(trained\) \| (\d+)/(\d+) \((\d+)%\) \| \*\*([\d.]+)\*\* \| \*\*\$([\d.]+)\*\* \|",
     },
-    # ---- hard tier with the TRAINED policy (hard tier held out of training) ----
+    # ---- hard tier with the TRAINED policy (checkpoint provenance unverifiable) ----
     {
         "label": "trained resolve count",
-        "kind": "single",
+        "kind": "multi",
         "file": BENCH_README,
         "artifact": TRAINED,
-        "path": "summary.hive.resolved",
+        "paths": ["summary.hive.resolved", "summary.hive.tasks"],
         "abs_tol": 0.5,
-        "regex": r"trained policy[^|]*\| *\*?([\d]+)/90",
+        "regex": r"trained policy[^|]*\| *\*?(\d+)/(\d+)",
     },
     {
         "label": "trained mean LLM calls",
-        "kind": "single",
+        "kind": "multi",
         "file": BENCH_README,
         "artifact": TRAINED,
-        "path": "summary.hive.mean_llm_calls",
-        "regex": r"trained policy[^|]*\| *[\d]+/90[^|]*\| *\*?([\d.]+)",
+        "paths": ["summary.hive.tasks",
+                  {"path": "summary.hive.mean_llm_calls", "abs_tol": 2e-3}],
+        "abs_tol": 0.5,
+        "regex": r"trained policy[^|]*\| *\d+/(\d+)[^|]*\| *\*?([\d.]+)",
+    },
+    {
+        "label": "trained usd total",
+        "kind": "multi",
+        "file": BENCH_README,
+        "artifact": TRAINED,
+        "paths": ["summary.hive.tasks",
+                  {"path": "summary.hive.usd_total", "abs_tol": 2e-3}],
+        "abs_tol": 0.5,
+        "regex": r"trained policy[^|]*\| *\d+/(\d+)[^|]*\| *\*?[\d.]+[^|]*\| *\*?\$([\d.]+)",
     },
 ]
 
@@ -565,7 +660,7 @@ def run_check(check: dict, texts: dict[str, str]) -> list[str]:
     if problems:
         return problems
     artifact = load_artifact(check["artifact"])
-    problems: list[str] = []
+    problems = []
 
     if check["kind"] == "pair":
         art_baseline = resolve(artifact, check["baseline"])
@@ -638,32 +733,105 @@ def run_check(check: dict, texts: dict[str, str]) -> list[str]:
         # demand it match both the artifact's own summary and the README.
         a, b, n_tasks = paired_grid(artifact, check["pair"])
         recomputed = mcnemar_exact(a, b)
-        published = resolve(artifact, check["path"])
-        problems: list[str] = []
-        if not close(recomputed["p"], float(published),
-                     check.get("rel_tol", REL_TOL), check.get("abs_tol", ABS_TOL)):
-            problems.append(
-                f"MISMATCH\t{label}\tartifact summary says p={published} but the "
-                f"per-task grid in {check['artifact']} gives p={recomputed['p']} "
-                f"(tasks={n_tasks} a_only={recomputed['a_only']} b_only={recomputed['b_only']})"
-            )
-        for where, g in all_hits:
-            if not close(num(str(g[0])), recomputed["p"],
+        if "path" in check:
+            published = resolve(artifact, check["path"])
+            if not close(recomputed["p"], float(published),
                          check.get("rel_tol", REL_TOL), check.get("abs_tol", ABS_TOL)):
                 problems.append(
-                    f"MISMATCH\t{label}\t{where}: readme={num(str(g[0]))} "
+                    f"MISMATCH\t{label}\tartifact summary says p={published} but the "
+                    f"per-task grid in {check['artifact']} gives p={recomputed['p']} "
+                    f"(tasks={n_tasks} a_only={recomputed['a_only']} b_only={recomputed['b_only']})"
+                )
+        p_idx = check.get("p_group", 0)
+        verdict_idx = check.get("verdict_group")
+        expected_verdict = (str(resolve_raw(artifact, check["verdict_path"]))
+                            if "verdict_path" in check else None)
+        for where, g in all_hits:
+            if not close(num(str(g[p_idx])), recomputed["p"],
+                         check.get("rel_tol", REL_TOL), check.get("abs_tol", ABS_TOL)):
+                problems.append(
+                    f"MISMATCH\t{label}\t{where}: readme={num(str(g[p_idx]))} "
                     f"recomputed={recomputed['p']}"
+                )
+            if expected_verdict is not None and str(g[verdict_idx]) != expected_verdict:
+                problems.append(
+                    f"MISMATCH\t{label}\t{where}: readme verdict={g[verdict_idx]!r} "
+                    f"artifact verdict={expected_verdict!r}"
                 )
         if not problems:
             print(f"OK\t{label}\trecomputed from {n_tasks} paired tasks\t"
                   f"artifact={recomputed['p']}")
         return problems
 
+    if check["kind"] == "multi":
+        # One regex captures several cells; each capture is compared to its own
+        # artifact path (positional, in order). A spec may be a plain path
+        # string or a dict {"path": ..., "percent": true, "abs_tol": ...} —
+        # percent multiplies the artifact value by 100 for displayed
+        # percentages, and abs_tol overrides the check-level tolerance so
+        # counts/percentages and dollar amounts can share one row.
+        specs = check["paths"]
+        rel_tol = check.get("rel_tol", REL_TOL)
+        abs_tol = check.get("abs_tol", ABS_TOL)
+        expected: list[tuple[str, float, float, float]] = []
+        for spec in specs:
+            if isinstance(spec, str):
+                expected.append((spec, resolve(artifact, spec), rel_tol, abs_tol))
+            else:
+                value = resolve(artifact, spec["path"])
+                if spec.get("percent"):
+                    value *= 100
+                expected.append((spec["path"], value,
+                                 spec.get("rel_tol", rel_tol),
+                                 spec.get("abs_tol", abs_tol)))
+        for where, g in all_hits:
+            if len(g) != len(specs):
+                problems.append(
+                    f"MISSING\t{label}\t{where}: regex captured {len(g)} groups, "
+                    f"expected {len(specs)}")
+                continue
+            for (path, av, rt, at), rv in zip(expected, g, strict=True):
+                readme_value = num(str(rv))
+                if not close(readme_value, av, rt, at):
+                    problems.append(
+                        f"MISMATCH\t{label} [{path}]\t{where}: "
+                        f"readme={readme_value} artifact={round(av, 4)}")
+        if not problems:
+            print(f"OK\t{label}\t{len(all_hits)} occurrence(s)\t"
+                  f"{len(specs)} cells each")
+        return problems
+
+    if check["kind"] == "task_row":
+        # A per-task table row: each arm's "resolved/total" cell must equal the
+        # artifact's per_task_resolved entry for that task and arm.
+        arms = check["arms"]
+        expected: list[tuple[int, int]] = []
+        for arm in arms:
+            cell = str(resolve_raw(artifact, f"summary.{arm}.per_task_resolved.{check['task']}"))
+            m = re.match(r"^(\d+)/(\d+)$", cell)
+            if not m:
+                return [f"MISSING\t{label}\tartifact cell {cell!r} is not 'n/m'"]
+            expected.append((int(m.group(1)), int(m.group(2))))
+        for where, g in all_hits:
+            if len(g) != 2 * len(arms):
+                problems.append(
+                    f"MISSING\t{label}\t{where}: regex captured {len(g)} groups, "
+                    f"expected {2 * len(arms)}")
+                continue
+            for arm, (num_s, den_s), (exp_n, exp_d) in zip(
+                    arms, zip(g[::2], g[1::2], strict=True), expected, strict=True):
+                if int(num_s) != exp_n or int(den_s) != exp_d:
+                    problems.append(
+                        f"MISMATCH\t{label} [{arm}]\t{where}: "
+                        f"readme={num_s}/{den_s} artifact={exp_n}/{exp_d}")
+        if not problems:
+            print(f"OK\t{label}\t{len(all_hits)} occurrence(s)\t{len(arms)} arm cells")
+        return problems
+
     if check["kind"] == "null_expected":
         # The claim is that the artifact publishes null (not measured) and the
         # README shows a dash — both halves are asserted.
         value = resolve_raw(artifact, check["path"])
-        problems = []
         if value is not None:
             problems.append(f"MISMATCH\t{label}\tartifact has {value!r}, expected null")
         for where, g in all_hits:
@@ -677,7 +845,6 @@ def run_check(check: dict, texts: dict[str, str]) -> list[str]:
         # A claim that is a word, not a number (e.g. the verdict): the README
         # must state exactly what the artifact computed.
         value = str(resolve_raw(artifact, check["path"]))
-        problems = []
         for name in files:
             if value not in texts[name]:
                 problems.append(f"MISSING\t{label}\t{name} does not state {value!r}")
