@@ -19,14 +19,16 @@ Your agent shouldn't need a paid reasoning call just to re-run tests after a pat
 
 ## The evidence: fewer paid decisions
 
-In the published hard-tier benchmark, Hive used fewer LLM calls and less total API spend than an agent that asked the LLM to choose every action. Real tool execution, six tasks, hidden grading tests, and repeated runs with DeepSeek-V4.1-Flash:
+In the published hard-tier benchmark, Hive used fewer LLM calls and less estimated API spend than an agent that asked the LLM to choose every action. Real tool execution, six tasks, hidden grading tests, and repeated runs with DeepSeek-V4.1-Flash:
 
 | | baseline (LLM-everything) | context (escalate-only) | **hive (rule-routed)** |
 |---|---|---|---|
 | **Resolve rate** | 77/90 (86%) | 74/90 (82%) | **74/90 (82%)** |
 | **Mean LLM calls** | 7.31 | 7.20 | **3.04** |
-| **Total cost** | $0.368 | $0.394 | **$0.214** |
+| **Total cost (est.)** | $0.368 | $0.394 | **$0.214** |
 | **McNemar vs baseline** | — | not_separable (p=1.0) | **not_separable (p=1.0)** |
+
+Costs are token-price estimates computed from API `usage` counts at the run's list prices ($0.22/$0.66 per 1M tokens), not billed amounts.
 
 **The opportunity is lower orchestration cost—not a claim of higher intelligence.** This table measures the rule-based routing path; [the trained CPU router has a separate evaluation](benchmarks/README.md). Resolve counts were lower than baseline, and “not separable” does not prove equal quality. These small, project-authored benchmarks support a pilot, not a guarantee for your workload.
 
@@ -81,11 +83,12 @@ python scripts/hive_bench.py --backend openai \
 | I want to… | Read |
 |---|---|
 | Understand the benchmark numbers | [`benchmarks/README.md`](benchmarks/README.md) |
+| Evaluate on your own untouched tasks | [`docs/EXTERNAL_EVALUATION.md`](docs/EXTERNAL_EVALUATION.md) |
 | See the full API (`route`, `compress`, `remember`, `recall`, `step`) | [`docs/USAGE.md`](docs/USAGE.md) |
 | Wire it into an agent harness | [`docs/HARNESS_SETUP.md`](docs/HARNESS_SETUP.md) |
 | Use it from Cursor / Claude Desktop / Codex | [`docs/MCP_SETUP.md`](docs/MCP_SETUP.md) |
 | Understand the architecture & modules | [`docs/architecture.md`](docs/architecture.md) |
-| Deploy it (Docker, K8s, enterprise) | [`docs/`](docs/) |
+| Deploy the single-replica HTTP service | [`deploy/README.md`](deploy/README.md) |
 | Contribute or report a security issue | [`.github/CONTRIBUTING.md`](.github/CONTRIBUTING.md) · [`.github/SECURITY.md`](.github/SECURITY.md) |
 
 ## Status

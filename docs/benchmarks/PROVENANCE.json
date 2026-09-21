@@ -31,7 +31,9 @@
       {
         "gate": "oracle_privacy",
         "state": "partial",
-        "reason": "oracle/tests/* remain git-tracked (CI + --verify-tasks need them); oracle/solution.patch untracked this session. A model trained on this repo may have seen the hidden tests — absolute resolve rates are contaminated; the routing/cost delta is not."
+        "historical_run_state": "at the kept run (commit 79a24c7) oracle/tests/* were git-tracked and oracle/solution.patch was untracked + gitignored",
+        "current_repository_state": "oracle/tests/* and oracle/solution.patch are both git-tracked — task.json references the patch and --verify-tasks/CI need it in a fresh clone",
+        "reason": "a model trained on this repo may have seen the hidden tests and the gold patch — absolute resolve rates are contaminated. The routing/cost delta is less exposed (memorizing a solution does not change which transitions are mechanical) but is not proven immune: a memorized fix can shorten the mechanical prefix the policy routes."
       }
     ]
   },
@@ -45,7 +47,7 @@
     "smoke_red_on_pristine": "required — visible suite must fail on the buggy repo (reproduction signal)",
     "smoke_green_after_patch": "required — visible suite must pass under solution.patch",
     "oracle_green_after_patch": "required — hidden oracle must pass under solution.patch",
-    "oracle_absent_from_repo": "required — hidden tests never in the agent's workdir",
+    "oracle_absent_from_agent_workdir": "required — repo/ ships no tests/; hidden tests never in the agent's workdir (oracle/ files themselves are git-tracked)",
     "pytest_control_blocked": "conftest.py/pytest.ini/sitecustomize.py writes rejected in write_file + grade_patch",
     "enforced_by": "scripts/hive_bench.py --verify-tasks (12/12 tasks pass)"
   },
@@ -132,7 +134,7 @@
   "do_not": [
     "equate resolve_rate with a sealed external score — there is none; this is the local record",
     "restate capability4/capability5/discriminating numbers as current — all three are superseded by hard-tier-final",
-    "cite absolute resolve rates as capability evidence for a model that has seen this repo — oracle/tests/ are public (oracle_public_in_git=13); only the routing/cost delta survives contamination",
+    "cite absolute resolve rates as capability evidence for a model that has seen this repo — oracle/tests/ and oracle/solution.patch are public (oracle_public_in_git recorded per run); the routing/cost delta is less exposed but not proven immune",
     "read hive's 3.04-vs-7.2 call delta as a learned-policy result — the arm runs the rule-based state machine, not the trained CPURouterPolicy"
   ]
 }

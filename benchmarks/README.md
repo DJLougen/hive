@@ -41,58 +41,103 @@ commit `79a24c7` (clean tree).
 | lru-ttl-cache | 2/15 | 1/15 | 4/15 |
 | **Total** | **77/90 (86%)** | **74/90 (82%)** | **74/90 (82%)** |
 
-| Arm | mean LLM calls | USD total | USD/resolved |
+| Arm | mean LLM calls | USD total (est.) | USD/resolved (est.) |
 |---|---|---|---|
 | baseline | 7.31 | $0.368 | $0.0048 |
 | context | 7.20 | $0.394 | $0.0053 |
 | hive | **3.04** | **$0.214** | **$0.0029** |
 
+USD figures are token-price estimates computed from API `usage` counts at the
+run's list prices ($0.22/$0.66 per 1M prompt/completion tokens), not billed
+amounts.
+
 Verdicts (exact McNemar, n=6 tasks): all pairs **not_separable** (p=1.0, zero
-discordant tasks). Hive matches baseline/context task-for-task at **58% fewer
-LLM calls** and ~45% lower cost. `lru-ttl-cache` is the only task still
-discriminating (hive leads it 4/15 vs 2/15, 1/15).
+discordant tasks). Hive is not separable from baseline/context at the
+per-task level at **58% fewer LLM calls** and ~42% lower estimated cost.
+`lru-ttl-cache` is the only task still discriminating (hive leads it 4/15 vs
+2/15, 1/15).
 
 **Provenance:** [`docs/benchmarks/hive-bench-hard.json`](../docs/benchmarks/hive-bench-hard.json)
 (git_sha `79a24c7`, clean). Full run history, retractions, and closed levers:
 [`docs/benchmarks/PROVENANCE.md`](../docs/benchmarks/PROVENANCE.md) +
 [`PROVENANCE.json`](../docs/benchmarks/PROVENANCE.json). **Contamination note:**
-`oracle/tests/` are git-tracked (`oracle_public_in_git=13`), so absolute
-resolve rates are contaminated for a model that has seen this repo — the
-routing/cost delta is not.
+`oracle/tests/` **and** `oracle/solution.patch` are git-tracked — `task.json`
+references the patch and `--verify-tasks`/CI need it in a fresh clone (the
+patch was untracked at the `79a24c7` run, which recorded
+`oracle_public_in_git=13`). Absolute resolve rates are contaminated for a
+model that has seen this repo. The routing/cost delta is less exposed —
+memorizing a solution does not change which transitions are mechanical — but
+it is not proven immune: a memorized fix can shorten the mechanical prefix
+the policy routes.
 
 **Reproduce:** `python scripts/hive_bench.py --backend openai --endpoint <EP>
 --api-key-env <KEY> --model <M> --suite benchmarks/tasks/suite.hard.json
 --arm all --repeat 15 --temperature 0.7 --memory fresh`.
 
-### Trained CPU policy — hard tier, held out of training
+### Trained CPU policy — hard tier (checkpoint provenance unverifiable)
 
-The line above uses the **rule-based** state machine. This is the same suite with
-the **trained `CPURouterPolicy`**, which is the product's actual router.
+The table above uses the **rule-based** state machine. This section reports the
+same suite with the **trained `CPURouterPolicy`**, which is the product's
+actual router.
 
-The policy is a RandomForest fitted on `benchmarks/trajectories-rebuilt.jsonl`
-(1,503 usable decisions from the **16 tasks outside the hard tier**), so the hard
-tier is genuinely held out — it is not train-on-test. It reaches
+The committed checkpoint `benchmarks/cpu_router.joblib` is a RandomForest
+`CPURouterPolicy`. The reconstruction recipe below produces
+`benchmarks/trajectories-rebuilt.jsonl` — 1,503 usable decisions from the
+**16 tasks outside the hard tier** — and that corpus is verifiably disjoint
+from the hard tier (no hard-tier task id appears in it). **Caveat:** the
+checkpoint's own training history is not recoverable from metadata, so "held
+out" is asserted for the recipe, not proven for the shipped artifact. It
+reaches
 
-| arm | resolve | mean LLM calls | usd |
+| arm | resolve | mean LLM calls | usd (est.) |
 |---|---|---|---|
 | trained policy | 73/90 | 2.98 | $0.2116 |
 
-against the rule-policy arm's 74/90 at 3.04 calls, and the LLM-everything
-baseline's 77/90 at 7.31 — i.e. **the same task-for-task outcome at 59% fewer
+**This is a separate run, not a third arm of the table above.** The rule-policy
+numbers come from `hive-bench-hard.json` (commit `79a24c7`); the trained-policy
+numbers come from `hive-bench-hard-trained.json` (commit `b2db464`), a
+different run at a different commit. The comparison below is therefore
+cross-run and descriptive — the two artifacts were not measured
+contemporaneously, and the McNemar pairing is computed over per-task
+majorities across runs, not within one run.
+
+Against the rule-policy run's 74/90 at 3.04 calls, and the LLM-everything
+baseline's 77/90 at 7.31, the trained policy resolves 73/90 at **59% fewer
 LLM calls than baseline**. Exact McNemar over per-task majority: baseline vs
-trained p=1.0 (0 discordant tasks), rule-hive vs trained p=1.0. That is the point:
-a policy that has never seen these tasks routes them as well as the hand-written
-one, so the routing win is not an artifact of hand-tuned rules.
+trained p=1.0 (0 discordant tasks), rule-hive vs trained p=1.0. Read this as
+the measured behavior of the shipped checkpoint — its training provenance is
+unverifiable, so it is not proof the shipped weights never saw these tasks.
 
 Per-task: sliding-window-limit 15/15, snapshot-event-fold 15/15,
 reservation-expiry 15/15, idempotent-outbox 15/15, kway-merge-dedup 11/15,
 lru-ttl-cache 2/15.
 
 Artifact: [`docs/benchmarks/hive-bench-hard-trained.json`](../docs/benchmarks/hive-bench-hard-trained.json).
-**Reproduce:** `python scripts/rebuild_trajectories.py --out benchmarks/trajectories-rebuilt.jsonl`
-then `python scripts/hive_bench.py --backend openai --endpoint <EP> --api-key-env <KEY>
---model <M> --suite benchmarks/tasks/suite.hard.json --arm hive --policy trained
---policy-path benchmarks/cpu_router.joblib --repeat 15 --temperature 0.7`.
+**Reproduce** (the exclusion flags keep the eval tier out of the corpus and
+fail closed if overlap remains):
+
+```bash
+python scripts/rebuild_trajectories.py \
+    --out benchmarks/trajectories-rebuilt.jsonl \
+    --exclude-suite benchmarks/tasks/suite.hard.json
+python scripts/train_cpu_policy.py \
+    --trajectories benchmarks/trajectories-rebuilt.jsonl \
+    --out /tmp/cpu_router.joblib \
+    --eval-suite benchmarks/tasks/suite.hard.json
+python scripts/hive_bench.py --backend openai --endpoint <EP> --api-key-env <KEY> \
+    --model <M> --suite benchmarks/tasks/suite.hard.json --arm hive \
+    --policy trained --policy-path /tmp/cpu_router.joblib \
+    --repeat 15 --temperature 0.7
+```
+
+`train_cpu_policy.py` refuses to overwrite an existing `--out` without
+`--overwrite`, so the committed `benchmarks/cpu_router.joblib` cannot be
+clobbered by accident — train to a scratch path. The freshly trained model is
+**unsigned**: `CPURouterPolicy.load` refuses it unless you sign it with
+`hive.model_registry.ModelRegistry.sign_model()` (writes `.joblib.sig` +
+`.joblib.sha256` sidecars) or set `HIVE_ALLOW_UNSIGNED_MODEL=1` for a model
+you produced yourself. Signing is not automatic — an unsigned checkpoint is a
+code-execution vector on load, so the bypass is deliberately manual.
 
 ### Two new tasks — A/B result (annotated: ceiling)
 
@@ -100,7 +145,7 @@ then `python scripts/hive_bench.py --backend openai --endpoint <EP> --api-key-en
 and balance its families. Verified by `--verify-tasks` (smoke RED→GREEN, oracle
 RED→GREEN) and run at n=15 × 3 arms:
 
-| arm | resolve | mean LLM calls | usd |
+| arm | resolve | mean LLM calls | usd (est.) |
 |---|---|---|---|
 | baseline | 30/30 (100%) | 6.93 | $0.1086 |
 | context | 30/30 (100%) | 6.73 | $0.1082 |
@@ -108,8 +153,8 @@ RED→GREEN) and run at n=15 × 3 arms:
 
 **Both tasks are at ceiling for every arm**, so this run does **not**
 discriminate on resolve — it shows the tasks are solvable and that hive keeps
-its ~48% cost advantage, but adds no resolve signal. It is reported separately
-and never pooled silently with the 6-task tier. Artifact:
+its ~48% estimated-cost advantage, but adds no resolve signal. It is reported
+separately and never pooled silently with the 6-task tier. Artifact:
 [`docs/benchmarks/hive-bench-hard-new2.json`](../docs/benchmarks/hive-bench-hard-new2.json).
 
 ### Capability tier — held-out tasks, three arms
@@ -121,13 +166,13 @@ injects the hidden tests only there). The visible `smoke/` suite covers the
 the stated requirements are met; the oracle keeps the edge cases. 5 repeats ×
 6 tasks = 30 episodes per arm, `temperature=0.7`, memory fresh.
 
-| Arm | Resolve rate | 95% CI | pass^5 | USD/resolved |
+| Arm | Resolve rate | 95% CI | pass^5 | USD/resolved (est.) |
 |---|---|---|---|---|
 | baseline | **97%** (29/30) | [83%, 99%] | **83%** pass^5 | $0.0103/resolved |
 | context | **87%** (26/30) | [70%, 95%] | **67%** pass^5 | $0.0129/resolved |
 | hive | **93%** (28/30) | [79%, 98%] | **83%** pass^5 | $0.0084/resolved |
 
-Verdicts (exact McNemar over per-task majority outcomes, n=6 tasks): baseline vs context: **not_separable** (p=1.0); baseline vs hive: **not_separable** (p=1.0, zero discordant tasks); context vs hive: **not_separable** (p=1.0). Hive matches baseline task-for-task while spending **37% fewer LLM calls** (7.33 vs 11.6 mean).
+Verdicts (exact McNemar over per-task majority outcomes, n=6 tasks): baseline vs context: **not_separable** (p=1.0); baseline vs hive: **not_separable** (p=1.0, zero discordant tasks); context vs hive: **not_separable** (p=1.0). Hive is not separable from baseline at the per-task level while spending **37% fewer LLM calls** (7.33 vs 11.6 mean).
 
 **Provenance:** all three arms fully measured in one run (90 episodes).
 Raw artifact: [`docs/benchmarks/hive-bench-capability.json`](../docs/benchmarks/hive-bench-capability.json).
@@ -184,10 +229,26 @@ python scripts/hive_bench.py \
 Useful flags: `--tasks <ids...>`, `--arm baseline|context|hive|all`,
 `--max-turns`, `--keep-workdirs`, `--driver scripted` (no-LLM plumbing smoke;
 resolve rate is meaningless in that mode), `--log <file.jsonl>` (log every
-turn's `state -> action` for training), `--repeat N` (run each task N times
-against the same stack — exercises memory replay), `--policy rule|trained`,
-`--policy-path <file.joblib>`, `--suite <manifest>` (pin a task list),
-`--memory {fresh,shared}`, `--verify-tasks` (no-cost integrity gate).
+turn's `state -> action` for training), `--repeat N` (run each task N times),
+`--policy rule|trained`, `--policy-path <file.joblib>`, `--suite <manifest>`
+(pin a task list), `--memory {fresh,shared}`, `--verify-tasks` (no-cost
+integrity gate).
+
+**Repeats and the memory unit.** `--repeat N` runs the whole suite N times per
+arm, so the unit of repetition is a *pass*: one pass = every task in the suite
+once. With `--memory fresh` (the default, used for the current hard and capability
+tables), the `HiveStack` — including causal memory — is rebuilt at the start of
+each pass. Memory can still transfer between tasks within a pass; repeated
+attempts on the same small task set are not independent evidence of transfer to
+new tasks. With `--memory shared`, one brain persists across passes, so pass 2+
+measures **memory replay**, not fresh capability. The historical A1 and original
+trained-policy repeat results include replay; do not mix those with fresh-memory
+claims.
+
+For pinned external tasks, three comparison conditions, isolated per-episode
+memory, and bounded usage accounting, see the [external evaluation
+guide](../docs/EXTERNAL_EVALUATION.md). Its offline tests validate the runner,
+not a real-world performance gain.
 
 ## Trained CPU policy
 
@@ -201,17 +262,18 @@ confidence floor, when args can't be resolved from state, and always for
 # 1. log trajectories (any arm — LLM and policy decisions both count)
 python scripts/hive_bench.py ... --log benchmarks/trajectories.jsonl
 
-# 2. train
+# 2. train — to a scratch path; --out refuses to overwrite an existing file
+#    without --overwrite, so the committed checkpoint is safe
 python scripts/train_cpu_policy.py \
     --trajectories benchmarks/trajectories.jsonl \
-    --out benchmarks/cpu_router.joblib
+    --out /tmp/cpu_router.joblib
 
-# 3. run with the trained policy; --repeat 2 shows memory replay
-# benchmarks/cpu_router.joblib has no .joblib.sig sidecar, and CPURouterPolicy.load
+# 3. run with the trained policy; --repeat 2 --memory shared shows memory replay
+# a freshly trained .joblib has no .joblib.sig sidecar, and CPURouterPolicy.load
 # refuses unsigned models by default (joblib unpickles arbitrary objects):
-export HIVE_ALLOW_UNSIGNED_MODEL=1        # or sign it: scripts/train_cpu_policy.py --sign
+export HIVE_ALLOW_UNSIGNED_MODEL=1   # or sign it via hive.model_registry.ModelRegistry.sign_model()
 python scripts/hive_bench.py ... \
-    --policy trained --policy-path benchmarks/cpu_router.joblib --repeat 2
+    --policy trained --policy-path /tmp/cpu_router.joblib --repeat 2 --memory shared
 ```
 
 Measured on this suite (`deepseek-v4p1-flash`, `docs/benchmarks/hive-bench-cpu-policy.json`):

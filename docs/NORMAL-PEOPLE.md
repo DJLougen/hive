@@ -4,7 +4,7 @@ You don't need to know what a "causal graph memory store" is. You just want your
 
 Hive does three things:
 
-1. **Routes dumb decisions locally** — "read this file" doesn't need a $0.03 LLM call
+1. **Routes dumb decisions locally** — "read this file" doesn't need a $0.03 LLM call (needs a routing policy attached; see below)
 2. **Compresses bloated context** — 5000 lines of logs become 30 words
 3. **Remembers what happened** — so it doesn't ask the same thing twice
 
@@ -24,23 +24,31 @@ That's it. No GPU needed. No API keys needed for the local parts.
 
 ```python
 from hive import HiveStack
+from hive.harness import load_routing_policy
 
-stack = HiveStack()
+# With no model_path, load_routing_policy() always returns the built-in
+# rule-based policy (pass model_path=... to load a trained busyBee model —
+# it falls back to the same rules if that fails). A bare HiveStack() has NO
+# policy and escalates every route, so attach one to route anything locally.
+stack = HiveStack(busybee_policy=load_routing_policy())
 
-# Your agent gets a request:
-request = "Fix the login bug"
-
-# 1. Hive routes it locally if it's obvious
-state = {"goal": request, "available_tools": ["read_file", "run_tests", "edit_file"]}
+# 1. Route the mechanical steps locally
+state = {
+    "goal": "read file auth.py and check the traceback",
+    "available_tools": ["read_file", "run_tests", "apply_patch", "escalate"],
+}
 decision = stack.route(state)
+# decision.tool == "read_file", escalated == False → you just saved an LLM call.
 
-# If decision.tool == "read_file", you just saved an LLM call.
-# If decision.tool == "escalate", it wasn't obvious — send to LLM.
+# Anything the policy does not recognise escalates, and that is the point —
+# deciding the fix is done is a judgment call, not a mechanical transition:
+decision = stack.route({"goal": "Fix the login bug", "available_tools": state["available_tools"]})
+# decision.tool == "escalate", escalated == True → send it to the LLM.
 
 # 2. Compress huge outputs before the LLM sees them
 logs = "5000 lines of server logs..."
 compressed = stack.compress("user", logs)
-# compressed.content is ~30 words. The LLM only sees that.
+# compressed.content is a compact summary. The LLM only sees that.
 
 # 3. Remember the fix so you don't ask again
 stack.remember("login_bug_fix", {
@@ -59,15 +67,17 @@ fix = stack.recall("login_bug_fix")
 
 ### `stack.route(state)` — "Is this obvious?"
 
-If the answer is "read a file," "run tests," or "look at the logs" — Hive handles it locally. Only confusing stuff goes to the LLM.
+With a routing policy attached, "read a file", "run tests" and "look at the logs" are handled
+locally, and only confusing stuff goes to the LLM. **With the default `HiveStack()` — no policy
+attached — every call escalates** (`source="fallback"`); see "The route always says escalate".
 
-**Result:** 35% fewer LLM calls. Saves money.
+**Measured result:** on the published hard-tier benchmark, 58% fewer LLM calls with resolve rates not separable from the LLM-everything baseline — see [`../benchmarks/README.md`](../benchmarks/README.md). Saves money.
 
 ### `stack.compress(role, content)` — "Make this shorter"
 
 Your agent wants to paste 5000 lines of logs into the LLM prompt. Hive compresses it to ~30 words. The LLM still gets the point, but you pay for 30 tokens instead of 5000.
 
-**Result:** ~64% fewer tokens per LLM call. Saves money.
+**Measured result:** ~45% fewer prompt tokens per episode on the hard tier (compression plus fewer calls compound). Saves money.
 
 ### `stack.remember(key, value)` / `recall(key)` — "Don't forget"
 
@@ -85,27 +95,23 @@ from hive import HiveStack
 stack = HiveStack()
 
 class MyChatbot:
+    # This example deliberately uses only the parts that work with plain
+    # defaults. Routing needs a policy AND a mechanical goal; the policy
+    # cannot emit domain tools like "search"/"summarize", so don't route
+    # chat turns — keep asking the LLM and use Hive for context + memory.
     def handle_message(self, user_msg):
         # Compress if the user pasted a wall of text
         if len(user_msg) > 1000:
             user_msg = stack.compress("user", user_msg).content
 
-        # Route: is this a mechanical request?
-        decision = stack.route({
-            "goal": user_msg,
-            "available_tools": ["search", "summarize", "escalate"],
-        })
+        # Cheap dedupe: has this been asked before?
+        previous = stack.recall(user_msg)
+        if previous:
+            return previous
 
-        if decision.tool == "search":
-            result = self.search(user_msg)
-            stack.remember(f"search_{user_msg}", result)
-            return result
-
-        if decision.tool == "summarize":
-            return self.summarize(user_msg)
-
-        # Not mechanical — ask the LLM
-        return self.ask_llm(user_msg)
+        answer = self.ask_llm(user_msg)
+        stack.remember(user_msg, answer)  # otherwise recall() never hits
+        return answer
 ```
 
 ---
@@ -114,8 +120,11 @@ class MyChatbot:
 
 ```python
 from hive import HiveStack
+from hive.harness import load_routing_policy
 
-stack = HiveStack()
+stack = HiveStack(busybee_policy=load_routing_policy())
+# The rule-based fallback routes list_files / run_tests / read_file /
+# apply_patch and escalates anything that needs judgment.
 
 class CodeAgent:
     def edit_file(self, filepath, instruction):
@@ -154,11 +163,14 @@ class CodeAgent:
 
 | Before Hive | After Hive | What Changed |
 |-------------|-----------|--------------|
-| Every decision → LLM ($0.03) | Obvious decisions → CPU ($0) | `route()` |
+| Every decision → LLM ($0.03) | Obvious decisions → CPU ($0) | `route()` — with a policy attached |
 | Full logs → LLM (5000 tokens) | Summary → LLM (30 tokens) | `compress()` |
 | "Fix login again" → LLM | "Already fixed: ..." → local | `remember()` / `recall()` |
 
-**Bottom line:** Your LLM bill drops by ~80% for mechanical agent tasks.
+**Bottom line:** on the published hard-tier benchmark the routing arm used 58% fewer LLM calls at
+resolve rates that were **not separable** from the LLM-everything baseline; compression cut prompt
+tokens ~45% per episode. `compress()` and `remember()`/`recall()` work with plain defaults —
+routing needs a policy.
 
 ---
 
@@ -170,7 +182,8 @@ class CodeAgent:
 - **Rust backend** — extra speed. Skip it. The Python version is fast enough.
 - **Multi-tenancy** — user isolation. Skip it unless you have multiple users.
 
-Just use `HiveStack()` with defaults. It works.
+Just use `HiveStack()` with defaults for compression and memory. It works. Routing stays in
+"escalate everything" until you attach a policy — that default is deliberate, not a bug.
 
 ---
 
@@ -179,8 +192,12 @@ Just use `HiveStack()` with defaults. It works.
 ### "It's not compressing enough"
 
 ```python
+from hive import HiveStack
+from hive.rule_fast import RuleFastHoneyComb
+
 stack = HiveStack(honey_comb=RuleFastHoneyComb())
-# RuleFast is more aggressive than the ML model.
+# RuleFast is the in-repo rule-based compressor (what you get by default when
+# honey-comb is not installed); pass a honeycomb model here to use the ML one.
 ```
 
 ### "It forgot everything"
@@ -196,14 +213,20 @@ stack.brain.restore_from_file("memory_backup.gz")
 
 ### "The route always says escalate"
 
-You need a trained policy. Without one, everything escalates to the LLM:
+That is the default: a stack with no policy attached escalates everything.
 
 ```python
-# This is expected — busybee needs training data
-stack = HiveStack()  # no policy loaded → everything escalates
+from hive import HiveStack
+from hive.harness import load_routing_policy
+
+stack = HiveStack()                                    # escalates every route
+stack = HiveStack(busybee_policy=load_routing_policy())  # routes the mechanical steps
 ```
 
-Training a policy is advanced. For now, just use `compress()` and `remember()`.
+The built-in rule-based policy needs no training and routes `read_file`,
+`run_tests`, `apply_patch` and friends for goals it recognises; a trained
+busyBee model (see `benchmarks/README.md`) replaces it when you have data.
+Anything unrecognised still escalates — including "is this fix complete?".
 
 ---
 

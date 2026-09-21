@@ -79,8 +79,8 @@ policy-routed call. The two target columns are the original design budget, not m
 CPU routing is a proven win **in-distribution** — where the workflow shape is
 known, as in the structured bug-fix suites (see
 [`../benchmarks/README.md`](../benchmarks/README.md)), where ~85% of calls are
-mechanical and the hard tier shows a 58% LLM-call reduction at equal resolve
-rate. **Out-of-distribution performance is unproven**: on the deidentified
+mechanical and the hard tier shows a 58% LLM-call reduction with resolve
+rates not separable from baseline (McNemar p=1.0 — not proof of equal quality). **Out-of-distribution performance is unproven**: on the deidentified
 real-session trace bake-off, the best state-only model reaches only 48.0%
 next-tool accuracy — barely above a repeat-last baseline — because real-session
 tool choice is driven by tool-output *content*, which observable state does not

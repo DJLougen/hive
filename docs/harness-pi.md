@@ -1,110 +1,100 @@
 # Using Hive with Pi
 
-**Pi** is a minimal terminal coding harness. Philosophy: "Bash is all you need." It intentionally skips complex agent patterns — just read, write, edit, bash, repeat.
+**Pi** (`@earendil-works/pi-coding-agent`) is a minimal terminal coding
+harness. Hive ships a native Pi extension (`integrations/pi/hive.ts`)
+that adds **metadata-only observation** and **opt-in context
+compression** — nothing else. It does not route models or tools, does
+not add memory to Pi, and makes no token-savings claims.
 
-Hive plugs into Pi as a **lightweight memory + compression layer** — keeping Pi minimal while adding causal memory and context compression.
-
----
-
-## What Hive Adds to Pi
-
-| Pi Native | + Hive | Result |
-|-----------|--------|--------|
-| No memory | rust-brain graph memory | Cross-session file relationships |
-| Full context to LLM | honey-comb compression | 64% fewer tokens |
-| Manual tool selection | busybee-cpu routing | Mechanical edits skip LLM |
-| Single-file edits | Multi-file causal tracking | "Changed X, broke Y" is remembered |
+> **Checkout only.** The extension, launcher, bridge, and report are not
+> packaged — `pip install` does not provide them. Run everything from a
+> source checkout of this repository.
 
 ---
 
-## Quick Start
+## What the integration does
+
+| Mode | Behavior |
+|------|----------|
+| `off` | Fully inert: no files, no events, no bridge calls. |
+| `observe` (default) | Writes a JSONL event log: lifecycle, per-message token/cost usage, tool-call categories, and context byte counters. Message content, prompts, paths, tool arguments, and error strings are never recorded. |
+| `compress` | `observe` plus a context hook that rewrites *eligible* historical bash tool results — old, successful test-run logs only — through a local Python bridge (`scripts/hive_pi.py`, backed by `hive.rule_fast`). The persisted transcript is never modified; any bridge failure leaves context unchanged. |
+
+All hooks are fail-open: a collector or bridge failure never affects the
+Pi session.
+
+## Requirements
+
+- This repository checked out, with its `.venv` (Python ≥ 3.10) for the
+  bridge/report.
+- Node ≥ 22.19.
+- Pi 0.85.1 installed into an isolated prefix:
+
+  ```bash
+  npm install --prefix ~/.local/share/hive/pi-runtime \
+      @earendil-works/pi-coding-agent@0.85.1
+  ```
+
+## Running
 
 ```bash
-# In your Pi project:
-pip install -e /path/to/hive   # from source (not yet on PyPI)
+# from the repo checkout
+integrations/pi/hive-pi                  # interactive Pi, observe mode
+integrations/pi/hive-pi -p "task"        # print mode; args forwarded verbatim
+integrations/pi/hive-pi --hive-mode compress
+integrations/pi/hive-pi --hive-mode off
 ```
 
-```python
-from hive import HiveStack
+`--hive-mode` overrides `HIVE_PI_MODE`; both accept `off | observe |
+compress` and default to `observe`. Optionally symlink the launcher onto
+your PATH (e.g. `~/.local/bin/hive-pi`); it resolves the repo through
+its own symlink.
 
-stack = HiveStack()  # defaults are fine for Pi
+The launcher runs Pi with discovery disabled (`--no-extensions
+--no-skills --no-prompt-templates --no-themes`) and `--no-approve`, loads
+only the Hive extension, sets `PI_OFFLINE=1`/`PI_TELEMETRY=0`, and points
+`PI_CODING_AGENT_DIR` at an isolated agent dir
+(`~/.local/share/hive/pi-agent`). Credentials are never copied; log in
+inside Pi with `/login`. `PI_OFFLINE=1` only disables startup network
+work — it is not a sandbox.
 
-# After reading a file:
-stack.remember("read_file", {"path": "auth.py", "content": snippet})
+## Evidence report
 
-# After editing:
-stack.remember("edit_file", {"path": "auth.py", "change": "+null_check"},
-               edges={"caused_by": ["read_file"]})
-
-# Before LLM call — compress context
-compressed = stack.compress("user", "5000 lines of test output...")
-# → Only the summary reaches the LLM
+```bash
+integrations/pi/hive-pi --hive-report [--json] [--strict] [--data-dir DIR]
 ```
 
----
+Runs `scripts/hive_pi.py report` — Python only, no Node required. It
+summarizes the local JSONL event log strictly observationally: usage
+totals are `null` when incomplete (never zero-filled), context byte
+counters are per-event payload observations — **not** token or monetary
+savings — and malformed rows are dropped and counted. `--strict` exits
+nonzero on dropped rows, duplicates, unreadable files, or flagged runs.
 
-## Pi-Style Workflow
+## Data locations
 
-```python
-# In Pi's turn loop:
-def pi_turn(files_read, bash_output, user_prompt):
-    # 1. Remember what Pi read
-    for f in files_read:
-        stack.remember(f"file_{f}", {"path": f})
+| What | Default | Override |
+|------|---------|----------|
+| Event log | `~/.local/share/hive/pi/events/<run_id>.jsonl` | `HIVE_PI_DATA_DIR` |
+| Pi agent dir (auth, sessions) | `~/.local/share/hive/pi-agent` | `PI_CODING_AGENT_DIR` |
+| Pi runtime prefix | `~/.local/share/hive/pi-runtime` | `HIVE_PI_RUNTIME` |
+| Bridge script | `<repo>/scripts/hive_pi.py` | `HIVE_PI_BRIDGE` |
+| Python for bridge/report | `<repo>/.venv/bin/python` | `HIVE_PI_PYTHON` |
 
-    # 2. Compress bash output if bloated
-    if len(bash_output) > 2000:
-        bash_output = stack.compress("tool", bash_output).content
+Event dirs are `0700`, files `0600`; project/session/call/message ids
+are salted-HMAC pseudonyms (salt stored locally, never committed).
 
-    # 3. Route mechanical edits
-    if "apply_patch" in user_prompt:
-        decision = stack.route({
-            "goal": "apply patch",
-            "available_tools": ["apply_patch"],
-        })
-        if not decision.escalated:
-            return "apply_patch", decision.args
+## Tests and smoke
 
-    # 4. Build context with causal memory
-    memories = stack.brain.search(tag="file")[:8]
-    context = [m.to_dict() for m in memories]
-
-    return "llm", {"context": context, "prompt": user_prompt}
+```bash
+bun test integrations/pi/hive.test.ts        # unit: hooks, bridge, cache, privacy
+pytest tests/test_hive_pi.py                 # bridge + report contract
+node integrations/pi/smoke.mjs               # end-to-end against real Pi CLI
 ```
 
----
-
-## Minimal Config
-
-Pi values minimalism. Hive respects that:
-
-```python
-# No extras needed
-stack = HiveStack(
-    honey_comb=RuleFastHoneyComb(),  # no ML model
-    validate=False,                   # no Pydantic overhead
-    config=HiveConfig(
-        tenant_isolation=False,       # single user
-        default_ttl_s=3600,           # 1h TTL — Pi sessions are short
-    ),
-)
-```
-
----
-
-## Session Snapshot
-
-Pi sessions are short-lived. Save memory before exit:
-
-```python
-# .pi_exit_hook
-stack.brain.snapshot_to_file(".pi_memory.gz")
-
-# .pi_startup_hook
-stack.brain.restore_from_file(".pi_memory.gz")
-```
-
----
+The smoke runner drives the actual pinned Pi CLI with an isolated HOME,
+a synthetic provider, and a stubbed bash tool — no network, credentials,
+or real shell.
 
 ## See Also
 

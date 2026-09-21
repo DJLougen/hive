@@ -25,17 +25,21 @@ resolve cost, on tasks hard enough to separate the arms? The scored artifact is
   pristine repo and injects the hidden `oracle/tests/` only there — the agent
   never sees them.
 - **Deviation flag:** `oracle/tests/*` are git-tracked (CI + `--verify-tasks`
-  need them); `oracle/solution.patch` was untracked this session. A model
-  trained on this repo may have seen the hidden tests — **absolute resolve
-  rates are contaminated; the routing/cost delta is not.**
+  need them in a fresh clone). `oracle/solution.patch` was untracked at the
+  time of this run (commit `79a24c7`); it is tracked now for the same reason —
+  `task.json` references it and the gate must work in a fresh clone. A model
+  trained on this repo may have seen the hidden tests and the gold patch —
+  **absolute resolve rates are contaminated**. The routing/cost delta is less
+  exposed (memorizing a solution does not change which transitions are
+  mechanical) but is not proven immune: a memorized fix can shorten the
+  mechanical prefix the policy routes.
 
 ## Scoring surface
 
 | Metric | Authority | Direction |
-|---|---|---|
 | resolve_rate | local — hidden oracle pytest on the replayed patch | higher |
 | mean_llm_calls | local — LLM invocations per episode | lower |
-| usd_total | endpoint-reported | lower |
+| usd_total | local estimate — API `usage` tokens × list price ($0.22/$0.66 per 1M), not billed | lower |
 
 There is no sealed external score; the artifact is the record.
 
@@ -58,10 +62,10 @@ There is no sealed external score; the artifact is the record.
 | hive | **3.04** | **$0.214** | **$0.0029** |
 
 **Verdicts (exact McNemar, n=6 tasks):** all pairs `not_separable` (p=1.0, zero
-discordant tasks). Hive matches baseline/context task-for-task at **58% fewer
-LLM calls** and ~45% lower cost — the CPU routing is free capability, not a
-capability tax. `lru-ttl-cache` is the only genuinely hard task left (hive
-leads it 4/15 vs 2/15, 1/15).
+discordant tasks). Hive is not separable from baseline/context at the
+per-task level at **58% fewer LLM calls** and ~42% lower estimated cost.
+`lru-ttl-cache` is the only genuinely hard task left (hive leads it 4/15 vs
+2/15, 1/15).
 
 ## Retracted results
 
@@ -100,7 +104,8 @@ across all arms.
 
 - One coherent change per run; fail-closed gates (`--verify-tasks`: smoke RED
   on pristine, smoke GREEN after patch, oracle GREEN after patch, oracle
-  absent from repo, pytest-control blocked).
+  absent from the agent workdir — `repo/` ships no `tests/` — pytest-control
+  blocked).
 - Noise floor: at n=15, temp 0.7, a per-cell difference under ~3/15 is within
   the Wilson interval of the other arm — only larger gaps earn a claim.
 - Same-binary rule: the routing delta is read off one artifact's
@@ -112,5 +117,34 @@ across all arms.
 - `benchmarks/tasks/suite.hard.json` — the 6-task tier manifest.
 - `scripts/hive_bench.py` — the harness (`--verify-tasks`, `grade_patch`,
   `_is_pytest_control`, `_SPEC_REVIEW_NOTE`).
+
 - `scripts/check_claims.py` — the README-vs-artifact claim gate.
 - `docs/benchmarks/PROVENANCE.json` — the machine-readable form of this record.
+
+## Training-data provenance (rebuild + train recipe)
+
+`benchmarks/trajectories-rebuilt.jsonl` is regenerated from the published
+artifacts by `scripts/rebuild_trajectories.py`. To keep an eval tier out of
+the corpus:
+
+```bash
+python scripts/rebuild_trajectories.py \
+    --out benchmarks/trajectories-rebuilt.jsonl \
+    --exclude-suite benchmarks/tasks/suite.hard.json
+python scripts/train_cpu_policy.py \
+    --trajectories benchmarks/trajectories-rebuilt.jsonl \
+    --out /tmp/cpu_router.joblib \
+    --eval-suite benchmarks/tasks/suite.hard.json
+```
+
+Both steps fail closed: a missing source artifact, an empty corpus, a row
+with no task id, or any residual overlap with the declared eval suite is an
+error, not a warning. Every rebuild writes
+`<out>.provenance.json` (schema `hive-trajectory-provenance/v1`) recording
+source SHA-256s, the corpus SHA-256, kept/dropped task ids, and the row
+count. **Caveat:** that sidecar documents the new corpus only — it is not
+evidence about how the committed `benchmarks/cpu_router.joblib` was trained;
+that history is not recoverable from metadata. The freshly trained model is
+unsigned; `CPURouterPolicy.load` refuses it unless it is signed with
+`ModelRegistry.sign_model()` or `HIVE_ALLOW_UNSIGNED_MODEL=1` is set — the
+bypass is deliberately manual, never automatic.

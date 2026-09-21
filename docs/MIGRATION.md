@@ -14,8 +14,8 @@ plus a docs/metadata refresh; the library surface is unchanged.
   context|hive|all` control, and honest usage accounting are documented in
   [`../benchmarks/README.md`](../benchmarks/README.md). Absolute resolve rates
   on the hard tier are contaminated for models trained on this repo
-  (`oracle/tests/` are git-tracked); the routing/cost delta is the defensible
-  claim.
+  (`oracle/tests/` are git-tracked); the routing/cost delta is less exposed
+  but not proven immune.
 - **Package metadata.** The working tree targets `0.7.0` across the root
   package, `hive-cpp`, and the Helm chart; `uv.lock` regenerated. (Latest
   *release* remains `0.6.1`.)
