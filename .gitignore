@@ -48,6 +48,14 @@ benchmarks/traces-all/
 # Local review evidence (never part of the package)
 .jev-review/
 
+# Installed JavaScript dependencies; package lockfiles remain tracked.
+node_modules/
+
+# Local development trials: raw responses and incomplete experiment evidence.
+results/pi-improvement-zzcsh8en/
+results/source-navigation-20260919/
+results/snapcompact-prototype/
+
 # Reference fixes for held-out bench tasks. Tracked: --verify-tasks (CI +
 # scripts/verify.sh) needs solution_patch to verify the apply direction, and the
 # gate must work in a fresh clone. NOTE: oracle/tests/ is tracked and public
@@ -55,4 +63,4 @@ benchmarks/traces-all/
 # it broke the gate in CI (see docs/release-provenance.md, F7). The agent never
 # sees oracle/ — its workdir is repo/ only — so the patch is not agent-visible
 # either way. Contamination on absolute resolve rates remains disclosed
-# (oracle_public_in_git); the routing/cost delta is unaffected.
+# (oracle_public_in_git); routing/cost comparisons are not immune to exposure.
