@@ -237,6 +237,47 @@ def test_shadow_mode_cannot_alter_execution():
     assert c.stats["semantic_shadow_only"] == 1
 
 
+@pytest.mark.parametrize("response", [
+    _resp(),
+    _resp(safe=0.1),
+    {"answers": {}},
+])
+def test_shadow_preserves_fast_escalation(response):
+    sem = _policy(_FakeClient(response))
+    c = CascadeRoutingPolicy(fast_policy=_FixedPolicy(_ESC),
+                             semantic_policy=sem, mode="shadow")
+    assert c.predict(READY_STATE) == _ESC
+    assert sem.stats["calls"] == 1
+    assert c.stats["semantic_shadow_only"] == 1
+    assert c.stats["semantic_accepted"] == 0
+    assert c.stats["escalated"] == 1
+
+def test_shadow_mode_semantic_error_and_refusal_do_not_alter_execution():
+    """In shadow mode the semantic layer is observational: backend errors and
+    threshold refusals must leave the fast route untouched."""
+    for client in (_FakeClient(error=SemanticBackendError("down")),
+                   _FakeClient(_resp(safe=0.0))):
+        sem = _policy(client)
+        c = CascadeRoutingPolicy(fast_policy=_FixedPolicy(_ROUTE),
+                                 semantic_policy=sem, mode="shadow")
+        assert c.predict(READY_STATE) == _ROUTE
+        assert sem.stats["calls"] == 1
+        assert c.stats["semantic_shadow_only"] == 1
+        assert c.stats["semantic_accepted"] == 0
+
+
+def test_shadow_mode_raising_policy_cannot_break_fast_route():
+    """A duck-typed shadow policy that raises must not interfere either."""
+    class _Raising:
+        def predict(self, state):
+            raise RuntimeError("boom")
+
+    c = CascadeRoutingPolicy(fast_policy=_FixedPolicy(_ROUTE),
+                             semantic_policy=_Raising(), mode="shadow")
+    assert c.predict(READY_STATE) == _ROUTE
+    assert c.stats["semantic_shadow_only"] == 1
+
+
 def test_off_mode_never_calls_semantic():
     sem = _policy(_FakeClient(_resp()))
     c = CascadeRoutingPolicy(fast_policy=_FixedPolicy(_ESC), semantic_policy=sem, mode="off")
@@ -338,6 +379,34 @@ def test_compare_without_shadow_is_harmless():
                              shadow_semantic_policy=None, mode="compare")
     assert c.predict(READY_STATE)["tool"] == "run_tests"
 
+def test_compare_shadow_error_does_not_interfere_with_primary():
+    """A shadow backend that errors (or raises) must not change the primary
+    route in compare mode."""
+    primary = _policy(_FakeClient(_resp(tool="read_file",
+                                        probs={"read_file": 0.97})))
+    shadow = _policy(_FakeClient(error=SemanticBackendError("down")))
+    c = CascadeRoutingPolicy(fast_policy=_FixedPolicy(_ESC),
+                             semantic_policy=primary,
+                             shadow_semantic_policy=shadow, mode="compare")
+    d = c.predict(READY_STATE)
+    assert d["tool"] == "read_file"          # primary route unaffected
+    assert shadow.stats["calls"] == 1        # shadow was still asked
+    # The policy converted the backend error into a normal escalation, so the
+    # shadow call completed and counts as a comparison.
+    assert c.stats["shadow_compared"] == 1
+
+    class _Raising:
+        def predict(self, state):
+            raise RuntimeError("boom")
+
+    c2 = CascadeRoutingPolicy(fast_policy=_FixedPolicy(_ESC),
+                              semantic_policy=_policy(
+                                  _FakeClient(_resp(tool="read_file",
+                                                    probs={"read_file": 0.97}))),
+                              shadow_semantic_policy=_Raising(), mode="compare")
+    assert c2.predict(READY_STATE)["tool"] == "read_file"
+    assert c2.stats["shadow_compared"] == 0
+
 
 def test_factory_compare_requires_distinct_shadow(monkeypatch):
     class _Cfg:
@@ -351,6 +420,32 @@ def test_factory_compare_requires_distinct_shadow(monkeypatch):
     with pytest.raises(SemanticBackendError, match="must differ"):
         build_semantic_stack(_Cfg(), fast_policy=_FixedPolicy(_ROUTE),
                              clients={"jev": _FakeClient(_resp())})
+
+def test_factory_compare_calls_both_backends_but_only_primary_routes(monkeypatch):
+    """A factory-built compare stack must keep mode='compare': on fast
+    escalation both injected clients are asked, and only the primary routes."""
+    class _Cfg:
+        semantic_enabled = True
+        semantic_mode = "compare"
+        semantic_primary = "jev"
+        semantic_shadow = "djeff"
+        jev_model = "jev-test"
+        djeff_model = "djeff-x"
+
+    jev_client = _FakeClient(_resp(tool="read_file", probs={"read_file": 0.97}))
+    djeff_client = _FakeClient(_resp(tool="grep", probs={"grep": 0.97},
+                                     backend="djeff"))
+    monkeypatch.setenv("HIVE_JEV_API_KEY", "test-key")
+    stack = build_semantic_stack(
+        _Cfg(), fast_policy=_FixedPolicy(_ESC),
+        clients={"jev": jev_client, "djeff": djeff_client})
+
+    d = stack.predict(READY_STATE)
+    assert d["source"] == "semantic:jev"      # primary decided the route
+    assert d["tool"] == "read_file"           # shadow's "grep" never applied
+    assert len(jev_client.calls) == 1
+    assert len(djeff_client.calls) == 1       # shadow actually consulted
+    assert stack.stats["shadow_compared"] == 1
 
 
 def test_jsonl_sink_round_trips_and_export_keeps_teacher_and_label_separate(tmp_path):

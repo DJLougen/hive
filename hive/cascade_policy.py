@@ -72,8 +72,14 @@ class CascadeRoutingPolicy:
         if _routed(fast):
             self.stats["fast_accepted"] += 1
             if self.mode == "shadow" and self.semantic_policy is not None:
-                # Observe only: the semantic decision is recorded, never applied.
-                self.semantic_policy.predict(dict(state))
+                # Observe only: the semantic decision is recorded, never
+                # applied — and an observational call that raises must not
+                # break the fast route either.
+                try:
+                    self.semantic_policy.predict(dict(state))
+                except Exception:
+                    _log.warning("shadow semantic policy raised; ignoring",
+                                 exc_info=True)
                 self.stats["semantic_shadow_only"] += 1
             self._compare_shadow(state)
             return fast
@@ -86,6 +92,18 @@ class CascadeRoutingPolicy:
             return fast
 
         self._compare_shadow(state)
+        if self.mode == "shadow":
+            # Observation must preserve even the fast policy's escalation:
+            # an accepted shadow prediction is not permission to execute it,
+            # and an observational call that raises must not break routing.
+            try:
+                self.semantic_policy.predict(dict(state))
+            except Exception:
+                _log.warning("shadow semantic policy raised; ignoring",
+                             exc_info=True)
+            self.stats["semantic_shadow_only"] += 1
+            self.stats["escalated"] += 1
+            return fast
         semantic = self.semantic_policy.predict(dict(state))
         if _routed(semantic):
             self.stats["semantic_accepted"] += 1
@@ -98,8 +116,13 @@ class CascadeRoutingPolicy:
         """Ask the shadow backend the same state; never apply its answer."""
         if self.mode != "compare" or self.shadow_semantic_policy is None:
             return
-        self.shadow_semantic_policy.predict(dict(state))
-        self.stats["shadow_compared"] += 1
+        try:
+            self.shadow_semantic_policy.predict(dict(state))
+        except Exception:
+            # A shadow that fails must not interfere with the primary route.
+            _log.warning("compare shadow policy raised; ignoring", exc_info=True)
+        else:
+            self.stats["shadow_compared"] += 1
 
 
 def _routed(decision: dict[str, Any]) -> bool:
