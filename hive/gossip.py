@@ -196,6 +196,15 @@ class GossipProtocol:
                     node_hlc = None
                 else:
                     node_hlc = tuple(raw_hlc)
+                    # Synthetic "legacy" HLCs are for snapshot/bulk import only.
+                    # Gossip peers must supply real node IDs; accepting legacy
+                    # would bypass the global high-water replay guard on warm brains.
+                    if node_hlc[-1] == "legacy":
+                        _log.debug(
+                            "Rejecting gossip event for %r: synthetic legacy HLC",
+                            key,
+                        )
+                        continue
                     if hasattr(self._brain, "update_hlc"):
                         self._brain.update_hlc(node_hlc)
 
