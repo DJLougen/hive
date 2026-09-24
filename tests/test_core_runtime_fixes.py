@@ -182,6 +182,17 @@ def test_eviction_terminates_with_empty_string_key():
     assert brain.stats()["evictions"] == 1
 
 
+def test_eviction_drops_empty_string_key_not_newer_write():
+    """When '' is oldest, capacity eviction must remove '' — not the new key."""
+    brain = RustBrain(tenant_isolation=False, max_nodes=1)
+    brain.remember("", 1)
+    brain.remember("k", 2)
+    assert len(brain) == 1
+    assert brain.recall("k") == 2
+    assert brain.recall("") is None
+    assert brain.stats()["evictions"] == 1
+
+
 def test_eviction_keeps_order_index_consistent():
     brain = RustBrain(max_nodes=3)
     for i in range(30):
@@ -273,6 +284,16 @@ def test_brain_recall_respects_ttl_without_expire_call():
     time.sleep(0.1)
     assert brain.recall("k") is None
     assert brain.get("k") is None
+
+
+def test_search_and_snapshot_respect_default_ttl():
+    brain = RustBrain(default_ttl_s=0.05)
+    brain.remember("k", "v", tags=["t"])
+    time.sleep(0.1)
+    assert brain.search() == []
+    assert brain.search(tag="t") == []
+    assert brain.snapshot() == []
+    assert brain.neighbours("k") == []
 
 
 # ---------------------------------------------------------------------------
