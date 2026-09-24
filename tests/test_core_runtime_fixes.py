@@ -275,6 +275,24 @@ def test_brain_recall_respects_ttl_without_expire_call():
     assert brain.get("k") is None
 
 
+def test_brain_search_and_snapshot_respect_default_ttl():
+    brain = RustBrain(default_ttl_s=0.05)
+    brain.remember("secret", "leaked", tags=["pii"])
+    time.sleep(0.1)
+    assert brain.recall("secret") is None
+    assert brain.search() == []
+    assert brain.search(tag="pii") == []
+    assert brain.snapshot() == []
+
+
+def test_brain_neighbours_respects_default_ttl():
+    brain = RustBrain(default_ttl_s=0.05)
+    brain.remember("a", "1", edges={"related_to": ["b"]})
+    brain.remember("b", "2")
+    time.sleep(0.1)
+    assert brain.neighbours("a") == []
+
+
 # ---------------------------------------------------------------------------
 # 7. otel_endpoint must reach the telemetry layer
 # ---------------------------------------------------------------------------
