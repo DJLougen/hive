@@ -34,3 +34,13 @@ async def test_async_compress_many():
     stack = AsyncHiveStack(honey_comb=RuleFastHoneyComb())
     results = await stack.compress_many([("user", "a"), ("user", "b")])
     assert len(results) == 2
+
+
+@pytest.mark.asyncio
+async def test_async_compress_many_rejects_oversized_batch():
+    """Each message may be under max_content_bytes while the batch exceeds it."""
+    stack = AsyncHiveStack(honey_comb=RuleFastHoneyComb())
+    stack._stack._max_content_bytes = 50
+    turns = [("user", "x" * 40) for _ in range(10)]
+    with pytest.raises(ValueError, match="exceeds max_content_bytes"):
+        await stack.compress_many(turns)
