@@ -408,6 +408,27 @@ def test_compare_shadow_error_does_not_interfere_with_primary():
     assert c2.stats["shadow_compared"] == 0
 
 
+def test_factory_compare_mode_asks_shadow_backend(monkeypatch):
+    class _Cfg:
+        semantic_enabled = True
+        semantic_mode = "compare"
+        semantic_primary = "jev"
+        semantic_shadow = "djeff"
+        jev_model = "jev-test"
+        djeff_model = "djeff-test"
+
+    jev = _FakeClient(_resp(tool="read_file", probs={"read_file": 0.97}))
+    djeff = _FakeClient(_resp(tool="grep", probs={"grep": 0.97}, backend="djeff"))
+    monkeypatch.setenv("HIVE_JEV_API_KEY", "k")
+    stack = build_semantic_stack(_Cfg(), fast_policy=_FixedPolicy(_ESC),
+                                   clients={"jev": jev, "djeff": djeff})
+    assert stack.mode == "compare"
+    stack.predict(READY_STATE)
+    assert len(jev.calls) == 1
+    assert len(djeff.calls) == 1
+    assert stack.stats["shadow_compared"] == 1
+
+
 def test_factory_compare_requires_distinct_shadow(monkeypatch):
     class _Cfg:
         semantic_enabled = True
