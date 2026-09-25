@@ -129,6 +129,48 @@ def test_update_policy_success_still_clears():
     assert len(fb) == 0
 
 
+class _SlowOkPolicy:
+    def __init__(self) -> None:
+        self.release = threading.Event()
+
+    def predict(self, state: dict) -> dict:
+        return {"tool": "tool_a", "confidence": 0.9}
+
+    def train(self, examples) -> bool:
+        self.release.wait(timeout=5.0)
+        return True
+
+
+def test_update_policy_does_not_drop_outcomes_recorded_during_training():
+    """Outcomes added while train() runs must survive a successful update."""
+    fb = FeedbackBuffer(capacity=3)
+    policy = _SlowOkPolicy()
+    stack = HiveStack(
+        honey_comb=RuleFastHoneyComb(),
+        busybee_policy=policy,
+        feedback_buffer=fb,
+    )
+    _fill_buffer(stack, fb, 3)
+    assert stack.should_update_policy()
+
+    done = threading.Event()
+
+    def _run() -> None:
+        stack.update_policy()
+        done.set()
+
+    t = threading.Thread(target=_run, daemon=True)
+    t.start()
+    time.sleep(0.05)
+    d = stack.route({"goal": "during_train"})
+    stack.record_outcome(d, "tool_a", OutcomeType.CORRECT)
+    policy.release.set()
+    assert done.wait(timeout=5.0)
+
+    goals = {o.state.get("goal") for o in fb.get_outcomes()}
+    assert goals == {"during_train"}
+
+
 # ---------------------------------------------------------------------------
 # 3. FeedbackBuffer: dropped counter + thread safety
 # ---------------------------------------------------------------------------
@@ -179,6 +221,17 @@ def test_eviction_terminates_with_empty_string_key():
     t.start()
     assert done.wait(timeout=5.0), "eviction spun on a falsy key"
     assert len(brain) == 1
+    assert brain.stats()["evictions"] == 1
+
+
+def test_eviction_drops_empty_string_key_not_newer_write():
+    """When '' is oldest, capacity eviction must remove '' — not the new key."""
+    brain = RustBrain(tenant_isolation=False, max_nodes=1)
+    brain.remember("", 1)
+    brain.remember("k", 2)
+    assert len(brain) == 1
+    assert brain.recall("k") == 2
+    assert brain.recall("") is None
     assert brain.stats()["evictions"] == 1
 
 
@@ -273,6 +326,16 @@ def test_brain_recall_respects_ttl_without_expire_call():
     time.sleep(0.1)
     assert brain.recall("k") is None
     assert brain.get("k") is None
+
+
+def test_search_and_snapshot_respect_default_ttl():
+    brain = RustBrain(default_ttl_s=0.05)
+    brain.remember("k", "v", tags=["t"])
+    time.sleep(0.1)
+    assert brain.search() == []
+    assert brain.search(tag="t") == []
+    assert brain.snapshot() == []
+    assert brain.neighbours("k") == []
 
 
 # ---------------------------------------------------------------------------
