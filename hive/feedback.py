@@ -113,6 +113,24 @@ class FeedbackBuffer:
             self.buffer.clear()
             return batch
 
+    def take_batch_for_update(self) -> list[RoutingOutcome]:
+        """Atomically remove all buffered outcomes for policy training.
+
+        Outcomes recorded while training runs land in the now-empty buffer and
+        are not part of this batch. On a failed update, call :meth:`restore`
+        to put the batch back without touching those newer records.
+        """
+        with self._lock:
+            batch = self.buffer[:]
+            self.buffer.clear()
+            return batch
+
+    def restore(self, outcomes: list[RoutingOutcome]) -> None:
+        """Re-insert outcomes after a failed policy update (oldest first)."""
+        with self._lock:
+            for outcome in outcomes:
+                self._append_locked(outcome)
+
     def discard(self, count: int) -> int:
         """Drop ``count`` already-consumed outcomes (oldest first).
 

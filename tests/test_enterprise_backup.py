@@ -87,6 +87,31 @@ def test_corruption_detection():
             os.unlink(path)
 
 
+def test_restore_leaves_store_unchanged_on_invalid_node():
+    """A malformed node row must not wipe the destination store."""
+    brain = RustBrain()
+    brain.remember("good", "value")
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".gz") as f:
+        path = f.name
+
+    try:
+        nodes = brain.snapshot()
+        data = {"version": "hive-snapshot-v1", "nodes": nodes, "history": {}}
+        data["nodes"].append({"key": "bad"})  # missing ts_ns
+        with open(path, "wb") as fh:
+            fh.write(gzip.compress(json.dumps(data).encode("utf-8")))
+
+        target = RustBrain()
+        target.remember("keep", "safe")
+        with pytest.raises(KeyError, match="ts_ns"):
+            target.restore_from_file(path)
+        assert target.recall("keep") == "safe"
+    finally:
+        if os.path.exists(path):
+            os.unlink(path)
+
+
 def test_corruption_detection_leaves_existing_data_intact():
     """A failed restore must not wipe the destination store."""
     brain = RustBrain()

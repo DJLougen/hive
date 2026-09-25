@@ -303,10 +303,11 @@ class RustBrain:
         if not self._order:
             return
         oldest_key = self._order[0]
-        if oldest_key:
-            self._nodes.pop(oldest_key, None)
-            self._order_index.pop(oldest_key, None)
-            self._history.pop(oldest_key, None)
+        # Empty string is a legal key; truthiness would skip removal and evict
+        # the wrong (newer) entry on the next pass instead.
+        self._nodes.pop(oldest_key, None)
+        self._order_index.pop(oldest_key, None)
+        self._history.pop(oldest_key, None)
         self._evictions += 1
         self._order.pop(0)
         for k in list(self._order_index):
@@ -446,7 +447,7 @@ class RustBrain:
         """Return keys reachable from ``key`` via ``kind`` edges (any kind if
         ``None``)."""
         node = self._nodes.get(key)
-        if node is None:
+        if node is None or self._expired(node):
             return []
         if kind is None:
             out: set[str] = set()
@@ -464,6 +465,8 @@ class RustBrain:
             snapshot = list(self._nodes.values())
         out: list[MemoryNode] = []
         for node in snapshot:
+            if self._expired(node):
+                continue
             if node.trust < min_trust:
                 continue
             if tag is not None and tag not in node.tags:
@@ -479,7 +482,11 @@ class RustBrain:
             # `_order` can hold keys whose node is gone; membership in _nodes is
             # the truth. Filtering on truthiness would silently drop the
             # empty-string key, which is a legal key.
-            return [self._nodes[k].to_dict() for k in self._order if k in self._nodes]
+            return [
+                self._nodes[k].to_dict()
+                for k in self._order
+                if k in self._nodes and not self._expired(self._nodes[k])
+            ]
 
     # -- bulk ---------------------------------------------------------------
 
@@ -647,7 +654,6 @@ class RustBrain:
         def _node_from_dict(node_dict: Mapping[str, Any]) -> MemoryNode:
             ts_ns = node_dict["ts_ns"]
             node_hlc = _parse_hlc(node_dict.get("hlc"), ts_ns=ts_ns)
-            self.update_hlc(node_hlc)
             node = MemoryNode(
                 key=node_dict["key"],
                 value=node_dict["value"],
@@ -662,20 +668,34 @@ class RustBrain:
                     node.attach(kind, n)
             return node
 
+        # Parse the full snapshot before mutating state so a malformed row
+        # cannot wipe an existing store and then fail mid-restore.
+        parsed_nodes: list[MemoryNode] = []
+        for node_dict in nodes:
+            parsed_nodes.append(_node_from_dict(node_dict))
+        parsed_history: dict[str, list[MemoryNode]] = {
+            storage_key: [_node_from_dict(d) for d in chain]
+            for storage_key, chain in history.items()
+        }
+        parsed_hlcs: list[tuple[int, int, str]] = [n.hlc for n in parsed_nodes]
+        for chain in parsed_history.values():
+            parsed_hlcs.extend(n.hlc for n in chain)
+
         with self._lock:
             self._nodes.clear()
             self._order.clear()
             self._order_index.clear()
             self._history.clear()
             self._hlc_high_water = None
-            for node_dict in nodes:
-                node = _node_from_dict(node_dict)
+            for node_hlc in parsed_hlcs:
+                self.update_hlc(node_hlc)
+            for node in parsed_nodes:
                 storage_key = self._prefix(node.key)
                 self._nodes[storage_key] = node
                 self._order_index[storage_key] = len(self._order)
                 self._order.append(storage_key)
-            for storage_key, chain in history.items():
-                self._history[storage_key] = [_node_from_dict(d) for d in chain]
+            for storage_key, chain in parsed_history.items():
+                self._history[storage_key] = chain
         return len(nodes)
 
     def __repr__(self) -> str:
