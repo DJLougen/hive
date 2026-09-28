@@ -66,19 +66,22 @@ class SemanticRoutingPolicy:
 
     def predict(self, state: dict[str, Any]) -> dict[str, Any]:
         """A Hive ``RoutingPolicy``: return a route dict, or escalate."""
-        compiled = compile_state(state, max_chars=self.max_state_chars)
-        questions = routing_questions()
         self.stats["calls"] += 1
-
         try:
+            compiled = compile_state(state, max_chars=self.max_state_chars)
+            questions = routing_questions()
             resp = self.backend.decide(state=compiled, questions=questions)
+            return self._decide_from(state, compiled, resp)
         except SemanticBackendError as exc:
             self.stats["errors"] += 1
             _log.warning("semantic backend failed, escalating: %s", exc)
-            self._record(state, compiled, None, "error", None, str(exc))
+            self._record(state, {}, None, "error", None, str(exc))
             return _escalate(f"semantic backend error: {exc}")
-
-        return self._decide_from(state, compiled, resp)
+        except Exception as exc:
+            self.stats["errors"] += 1
+            _log.warning("semantic routing failed, escalating: %s", exc)
+            self._record(state, {}, None, "error", None, str(exc))
+            return _escalate(f"semantic routing error: {exc}")
 
     def _decide_from(
         self,
