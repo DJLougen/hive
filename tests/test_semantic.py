@@ -278,6 +278,27 @@ def test_shadow_mode_raising_policy_cannot_break_fast_route():
     assert c.stats["semantic_shadow_only"] == 1
 
 
+def test_cascade_mode_malformed_state_escalates_instead_of_crashing():
+    """Cascade must honour the semantic layer's failure-escalates contract.
+
+    Shadow mode was hardened in b8b0b13; cascade must not crash /route when
+    compile_state cannot coerce workflow counters (e.g. JSON stringly-typed
+    ``step``).
+    """
+    sem = _policy(_FakeClient(_resp()))
+    c = CascadeRoutingPolicy(
+        fast_policy=_FixedPolicy(_ESC),
+        semantic_policy=sem,
+        mode="cascade",
+    )
+    bad_state = {**READY_STATE, "step": "not-a-number"}
+    d = c.predict(bad_state)
+    assert d["escalated"] is True
+    assert d["tool"] == "escalate"
+    assert sem.stats["errors"] == 1
+    assert c.stats["escalated"] == 1
+
+
 def test_off_mode_never_calls_semantic():
     sem = _policy(_FakeClient(_resp()))
     c = CascadeRoutingPolicy(fast_policy=_FixedPolicy(_ESC), semantic_policy=sem, mode="off")
